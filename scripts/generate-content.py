@@ -454,26 +454,35 @@ def submit(url, key, body, label, retries=6):
     raise RuntimeError(f"{label}: gave up submitting after repeated 429/503")
 
 
+def poll_once(job, key, label, state):
+    """One poll of a BFL task. Returns the final result dict, or None while still running.
+
+    `state` is a per-task mutable dict used to tolerate a few transient "Task not found" replies."""
+    try:
+        res = render.call(job["polling_url"], key)
+    except urllib.error.HTTPError as e:
+        try:
+            res = json.load(e)
+        except ValueError:
+            log(f"  {label} poll HTTP {e.code}, retrying")
+            return None
+    except OSError as e:
+        log(f"  {label} poll error {e}, retrying")
+        return None
+    status = res.get("status")
+    state["not_found"] = state.get("not_found", 0) + 1 if status == "Task not found" else 0
+    if status not in render.DONE or 0 < state["not_found"] < 10:
+        return None
+    return res
+
+
 def wait(job, key, label, timeout_s):
-    poll, deadline, not_found = job["polling_url"], time.time() + timeout_s, 0
+    deadline, state = time.time() + timeout_s, {}
     while time.time() < deadline:
         time.sleep(6)
-        try:
-            res = render.call(poll, key)
-        except urllib.error.HTTPError as e:
-            try:
-                res = json.load(e)
-            except ValueError:
-                log(f"  {label} poll HTTP {e.code}, retrying")
-                continue
-        except OSError as e:
-            log(f"  {label} poll error {e}, retrying")
-            continue
-        status = res.get("status")
-        not_found = not_found + 1 if status == "Task not found" else 0
-        if status not in render.DONE or 0 < not_found < 10:
-            continue
-        return res
+        res = poll_once(job, key, label, state)
+        if res is not None:
+            return res
     return {"status": "Timeout", "id": job.get("id")}
 
 
@@ -699,27 +708,46 @@ def main():
     quoted = sum(float(j.get("cost") or 0) for *_, j in jobs)
     log(f"all submitted; quoted total {quoted:.0f} credits (~${quoted / 100:.2f})")
 
+    # Poll every task round-robin and download each result the moment it is Ready. Waiting on tasks one
+    # at a time let a 12-minute video render outlive the 10-minute signed URL of an already-finished poster.
     results = {}
-    for v, kind, body, job in jobs:
-        label = f"{v['variant_id']} {kind}"
-        res = wait(job, key, label, max(60, deadline - time.time()))
-        vdir = campaign_dir / v["variant_id"]
-        vdir.mkdir(exist_ok=True)
-        entry = {"task_id": job.get("id"), "quoted_credits": job.get("cost"), "status": res.get("status"),
-                 "settled_credits": res.get("cost"), "request": {k: x for k, x in body.items() if k != "prompt"}}
-        if res.get("status") == "Ready":
-            url = render.find_url(res.get("result"))
-            if url:
-                dest = vdir / ("poster.jpg" if kind == "poster" else "creative.mp4")
-                entry["bytes"] = download(url, dest)  # signed URL expires (10 min image, ~2 h video): fetch now
-                entry["file"] = dest.name
-                log(f"  saved {dest} ({entry['bytes']} bytes, settled {res.get('cost')} credits)")
+    pending = [(v, kind, body, job, {}) for v, kind, body, job in jobs]
+    while pending:
+        time.sleep(6)
+        timed_out = time.time() >= deadline
+        still_running = []
+        for v, kind, body, job, state in pending:
+            label = f"{v['variant_id']} {kind}"
+            res = poll_once(job, key, label, state)
+            if res is None:
+                if not timed_out:
+                    still_running.append((v, kind, body, job, state))
+                    continue
+                res = {"status": "Timeout", "id": job.get("id")}
+            vdir = campaign_dir / v["variant_id"]
+            vdir.mkdir(exist_ok=True)
+            entry = {"task_id": job.get("id"), "quoted_credits": job.get("cost"), "status": res.get("status"),
+                     "settled_credits": res.get("cost"), "request": {k: x for k, x in body.items() if k != "prompt"}}
+            if res.get("status") == "Ready":
+                url = render.find_url(res.get("result"))
+                if url:
+                    dest = vdir / ("poster.jpg" if kind == "poster" else "creative.mp4")
+                    try:
+                        entry["bytes"] = download(url, dest)  # signed URL expires (10 min image, ~2 h video): fetch now
+                        entry["file"] = dest.name
+                        log(f"  saved {dest} ({entry['bytes']} bytes, settled {res.get('cost')} credits)")
+                    except (urllib.error.URLError, OSError) as e:
+                        entry["status"] = "Download-failed"
+                        entry["error"] = str(e)
+                        dest.unlink(missing_ok=True)
+                        log(f"::warning::{label} ready but download failed: {e}")
+                else:
+                    entry["status"] = "Ready-without-url"
+                    log(f"  {label} ready but no URL: {json.dumps(res)[:300]}")
             else:
-                entry["status"] = "Ready-without-url"
-                log(f"  {label} ready but no URL: {json.dumps(res)[:300]}")
-        else:
-            log(f"  {label} ended {res.get('status')}: {res.get('details')}")
-        results.setdefault(v["variant_id"], {})[kind] = entry
+                log(f"  {label} ended {res.get('status')}: {res.get('details')}")
+            results.setdefault(v["variant_id"], {})[kind] = entry
+        pending = still_running
 
     if vision_base:
         for v in variants:
@@ -742,7 +770,7 @@ def main():
         has_poster = r.get("poster", {}).get("file") == "poster.jpg"
         if not (has_video or has_poster):
             log(f"{v['variant_id']}: no media rendered; not staged")
-            if vdir.exists():
+            if vdir.exists() and not v.get("staged_meta"):  # never delete a variant Thomas already staged
                 for f in vdir.glob("*"):
                     f.unlink()
                 vdir.rmdir()
