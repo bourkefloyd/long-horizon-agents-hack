@@ -7,14 +7,17 @@ Keep Thomas's local-news-reactive ad generator reliable: trusted Nimble inputs b
 
 ## Current plan
 
-1. Validate the existing mock-news dry run and its marketing concept output on every LH run.
+1. On subsequent runs, run offline checks (`checks.sh` is bash-only for CI; agent uses allowed tools) and fix failures one change at a time.
 2. Tighten the output contract and add focused tests before changing generation behavior.
-3. Exercise live Nimble discovery only in an explicitly requested task with `NIMBLE_API_KEY` available.
+3. Exercise live Nimble discovery only when explicitly requested with `NIMBLE_API_KEY` available.
 
 ## Done
 
 - Thomas's Python CLI exists under `viral-local-ad-generator/` with staged discovery, concept generation, and optional BFL submission.
 - The target has deterministic offline checks using mock news and a one-video dry run.
+- First LH smoke run read the agent: `NimbleClient` posts to `/v2/search` with Bearer auth from settings; `pipeline` discovers stories,
+  generates concepts via prompts, optional BFL video; `cli` exposes run, discover-news, generate-ad, generate-video; nimble normalizes
+  results and filters sensitive terms; `brand_guard` blocks famous-brand leakage on outputs.
 
 ## Open
 
