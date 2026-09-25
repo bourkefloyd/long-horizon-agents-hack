@@ -1,0 +1,341 @@
+name: LH run (reusable)
+
+# One long-horizon run of the Cursor CLI against a target (web | agents).
+# The agent step only edits files. Branching, committing, pushing, PR
+# open/update, and the issue comment are deterministic steps below.
+# Design note: docs/lh-workflow.md. State layout: .lh/README.md.
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: "Target directory under .lh/ (web | agents)"
+        required: true
+        type: string
+      issue_number:
+        description: "Issue that owns this run (0 for a manual run)"
+        required: false
+        type: number
+        default: 0
+      instruction:
+        description: "Extra one-shot instruction (text after /lh in a comment)"
+        required: false
+        type: string
+        default: ""
+      model:
+        description: "Cursor CLI model slug"
+        required: false
+        type: string
+        default: composer-2.5
+      state_max_lines:
+        description: "Hard cap on .lh/<target>/state.md line count"
+        required: false
+        type: number
+        default: 80
+      keep_logs:
+        description: "How many run logs to keep in .lh/log/"
+        required: false
+        type: number
+        default: 5
+    secrets:
+      CURSOR_API_KEY:
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  run:
+    name: lh-${{ inputs.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: lh-${{ inputs.target }}-${{ inputs.issue_number }}
+      cancel-in-progress: false
+    env:
+      TARGET: ${{ inputs.target }}
+      ISSUE_NUMBER: ${{ inputs.issue_number }}
+      MODEL: ${{ inputs.model }}
+      STATE_MAX_LINES: ${{ inputs.state_max_lines }}
+      KEEP_LOGS: ${{ inputs.keep_logs }}
+      BASE_REF: ${{ github.ref_name }}
+    steps:
+      - name: Validate inputs
+        run: |
+          case "$TARGET" in
+            web|agents) ;;
+            *) echo "::error::target must be web or agents, got '$TARGET'"; exit 1 ;;
+          esac
+          if [ "$BASE_REF" != "${{ github.event.repository.default_branch }}" ]; then
+            echo "::notice::Running on non-default ref '$BASE_REF' (smoke or test run). PR base will be '$BASE_REF'."
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # No git credentials on disk: the agent step cannot push even if it
+          # found a way around the shell deny list. Publish uses the token
+          # explicitly on the URL.
+          persist-credentials: false
+
+      - name: Resolve work branch
+        id: branch
+        run: |
+          if [ "$ISSUE_NUMBER" != "0" ]; then
+            BRANCH="lh/${TARGET}/issue-${ISSUE_NUMBER}"
+          else
+            BRANCH="lh/${TARGET}/manual-${{ github.run_id }}"
+          fi
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          if [ "$BRANCH" = "$DEFAULT_BRANCH" ] || [ "$BRANCH" = "main" ]; then
+            echo "::error::refusing to work directly on $BRANCH"; exit 1
+          fi
+          # Continue an unmerged PR branch if one exists so the state file
+          # carries over between runs before merge.
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            echo "resumed=true" >> "$GITHUB_OUTPUT"
+          else
+            git checkout -B "$BRANCH"
+            echo "resumed=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "Work branch: $BRANCH"
+
+      - name: Check target files
+        run: |
+          for f in ".lh/$TARGET/prompt.md" ".lh/$TARGET/state.md" ".lh/$TARGET/checks.sh" ".cursor/cli.json"; do
+            [ -f "$f" ] || { echo "::error::missing $f"; exit 1; }
+          done
+          bash .lh/bin/check-state.sh ".lh/$TARGET/state.md" "$STATE_MAX_LINES" \
+            || { echo "::error::state.md on the branch is already invalid; fix it by hand"; exit 1; }
+          cp ".lh/$TARGET/state.md" "$RUNNER_TEMP/state.before.md"
+
+      - name: Fetch issue text
+        if: inputs.issue_number != 0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json number,title,body \
+            --jq '"# Issue #\(.number): \(.title)\n\n\(.body // "")"' \
+            > "$RUNNER_TEMP/issue.md"
+          wc -l "$RUNNER_TEMP/issue.md"
+
+      - name: Compose prompt
+        env:
+          INSTRUCTION: ${{ inputs.instruction }}
+        run: |
+          bash .lh/bin/compose-prompt.sh "$TARGET" "$RUNNER_TEMP/issue.md" "$KEEP_LOGS" "$STATE_MAX_LINES" "$INSTRUCTION" \
+            > "$RUNNER_TEMP/prompt.txt"
+          echo "Prompt: $(wc -l < "$RUNNER_TEMP/prompt.txt") lines, $(wc -c < "$RUNNER_TEMP/prompt.txt") bytes"
+
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+
+      - name: Run agent (restricted, file edits only)
+        id: agent
+        # Only CURSOR_API_KEY here. No GH token, no git credentials.
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          set -o pipefail
+          agent --version
+          # Fall back to auto if the requested slug is not available to this key.
+          USE_MODEL="$MODEL"
+          if agent models > "$RUNNER_TEMP/models.txt" 2>/dev/null; then
+            if ! grep -qi -- "$MODEL" "$RUNNER_TEMP/models.txt"; then
+              echo "::warning::model '$MODEL' not in 'agent models' output; using 'auto'"
+              USE_MODEL="auto"
+            fi
+          else
+            echo "::warning::'agent models' failed; passing '$MODEL' through untested"
+          fi
+          echo "model=$USE_MODEL" >> "$GITHUB_OUTPUT"
+          agent -p --force --trust --output-format text --model "$USE_MODEL" "$(cat "$RUNNER_TEMP/prompt.txt")" \
+            2>&1 | tee "$RUNNER_TEMP/agent-output.txt"
+
+      - name: Discard edits outside the allowed surface
+        # Belt and braces on top of .cursor/cli.json deny rules.
+        run: |
+          git checkout -- .github .cursor 2>/dev/null || true
+          git clean -fdq -- .github .cursor 2>/dev/null || true
+          find . -path ./.git -prune -o -name '.env*' -newer "$RUNNER_TEMP/prompt.txt" -type f -print -exec rm -f {} + 2>/dev/null || true
+          rm -rf .lh/log/*.tmp 2>/dev/null || true
+          echo "Changed files:"; git status --short
+
+      - name: Enforce state file contract
+        id: state
+        run: |
+          set +e
+          bash .lh/bin/check-state.sh ".lh/$TARGET/state.md" "$STATE_MAX_LINES" > "$RUNNER_TEMP/state-check.txt" 2>&1
+          rc=$?
+          set -e
+          cat "$RUNNER_TEMP/state-check.txt"
+          if [ $rc -ne 0 ]; then
+            echo "::warning::state.md rewrite rejected; restoring previous version"
+            cp "$RUNNER_TEMP/state.before.md" ".lh/$TARGET/state.md"
+            echo "result=rejected" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=ok" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run target checks
+        id: checks
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          bash ".lh/$TARGET/checks.sh" 2>&1 | tee "$RUNNER_TEMP/checks-output.txt"
+
+      - name: Write run log and prune
+        env:
+          CHECKS_OUTCOME: ${{ steps.checks.outcome }}
+          STATE_RESULT: ${{ steps.state.outputs.result }}
+          USED_MODEL: ${{ steps.agent.outputs.model }}
+          RESUMED: ${{ steps.branch.outputs.resumed }}
+        run: |
+          mkdir -p .lh/log
+          LOG=".lh/log/${{ github.run_id }}.md"
+          {
+            echo "# Run ${{ github.run_id }}"
+            echo
+            echo "- date: $(date -u +%Y-%m-%dT%H:%MZ)"
+            echo "- target: $TARGET"
+            echo "- issue: ${ISSUE_NUMBER}"
+            echo "- model: ${USED_MODEL}"
+            echo "- trigger: ${{ github.event_name }} on ${BASE_REF}"
+            echo "- branch resumed: ${RESUMED}"
+            echo "- checks: ${CHECKS_OUTCOME}"
+            echo "- state.md: ${STATE_RESULT}"
+            echo
+            echo "## Files changed"
+            echo
+            git add -A -- . ':!.github' ':!.cursor' >/dev/null 2>&1 || true
+            git diff --cached --stat -- . ':!.lh/log' | tail -n 20 | sed 's/^/    /'
+            git reset -q
+            echo
+            echo "## Agent summary (tail)"
+            echo
+            tail -n 15 "$RUNNER_TEMP/agent-output.txt" | cut -c1-200 | sed 's/^/    /'
+            if [ "$CHECKS_OUTCOME" != "success" ]; then
+              echo
+              echo "## Checks output (tail)"
+              echo
+              tail -n 15 "$RUNNER_TEMP/checks-output.txt" | cut -c1-200 | sed 's/^/    /'
+            fi
+            if [ "$STATE_RESULT" = "rejected" ]; then
+              echo
+              echo "## State rejection"
+              echo
+              sed 's/^/    /' "$RUNNER_TEMP/state-check.txt"
+            fi
+          } > "$LOG"
+          bash .lh/bin/prune-logs.sh "$KEEP_LOGS"
+          {
+            echo "## LH run: $TARGET"
+            echo
+            echo "- model: \`${USED_MODEL}\`"
+            echo "- checks: **${CHECKS_OUTCOME}**"
+            echo "- state.md: **${STATE_RESULT}**"
+            echo
+            cat "$LOG"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish branch and PR (deterministic)
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          CHECKS_OUTCOME: ${{ steps.checks.outcome }}
+          STATE_RESULT: ${{ steps.state.outputs.result }}
+          USED_MODEL: ${{ steps.agent.outputs.model }}
+        run: |
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          if [ "$BRANCH" = "$DEFAULT_BRANCH" ] || [ "$BRANCH" = "main" ]; then
+            echo "::error::refusing to push to $BRANCH"; exit 1
+          fi
+          git config user.name "lh-bot"
+          git config user.email "lh-bot@users.noreply.github.com"
+          git add -A -- . ':!.github' ':!.cursor'
+          if git diff --cached --quiet; then
+            echo "No changes to publish."
+            echo "pr_url=" >> "$GITHUB_OUTPUT"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          TITLE="lh(${TARGET}): run ${{ github.run_id }}"
+          [ "$ISSUE_NUMBER" != "0" ] && TITLE="lh(${TARGET}): issue #${ISSUE_NUMBER}, run ${{ github.run_id }}"
+          git commit -q -m "$TITLE" -m "checks: ${CHECKS_OUTCOME}; state.md: ${STATE_RESULT}; model: ${USED_MODEL}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+          BODY_FILE="$RUNNER_TEMP/pr-body.md"
+          {
+            echo "Long-horizon run of target \`${TARGET}\` by the Cursor CLI (\`${USED_MODEL}\`)."
+            echo
+            [ "$ISSUE_NUMBER" != "0" ] && echo "Closes #${ISSUE_NUMBER}." && echo
+            echo "- Latest run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "- Checks: **${CHECKS_OUTCOME}**"
+            echo "- state.md contract: **${STATE_RESULT}**"
+            echo
+            echo "Review \`.lh/${TARGET}/state.md\` and \`.lh/${TARGET}/prompt.md\` with the code: edits there take effect on the next run only after merge."
+            echo
+            echo "## Current state"
+            echo
+            cat ".lh/${TARGET}/state.md"
+          } > "$BODY_FILE"
+
+          PR_URL=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --base "$BASE_REF" --state open --json url --jq '.[0].url // empty')
+          if [ -z "$PR_URL" ]; then
+            set +e
+            PR_URL=$(gh pr create --repo "$GITHUB_REPOSITORY" --base "$BASE_REF" --head "$BRANCH" \
+              --title "$(git log -1 --format=%s | sed 's/, run [0-9]*$//')" --body-file "$BODY_FILE" 2> "$RUNNER_TEMP/pr-create.err")
+            rc=$?
+            set -e
+            if [ $rc -ne 0 ]; then
+              echo "::warning::gh pr create failed: $(cat "$RUNNER_TEMP/pr-create.err")"
+              echo "::warning::If it says Actions may not create PRs, enable 'Allow GitHub Actions to create and approve pull requests' in repo Settings > Actions > General."
+              PR_URL="${{ github.server_url }}/${{ github.repository }}/compare/${BASE_REF}...${BRANCH}?expand=1"
+            fi
+          else
+            gh pr edit "$PR_URL" --body-file "$BODY_FILE"
+          fi
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "PR: $PR_URL"
+
+      - name: Comment on issue (deterministic)
+        if: inputs.issue_number != 0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.publish.outputs.pr_url }}
+          CHANGED: ${{ steps.publish.outputs.changed }}
+          CHECKS_OUTCOME: ${{ steps.checks.outcome }}
+          STATE_RESULT: ${{ steps.state.outputs.result }}
+          USED_MODEL: ${{ steps.agent.outputs.model }}
+        run: |
+          {
+            echo "**LH ${TARGET} run** ([log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}), model \`${USED_MODEL}\`)"
+            echo
+            if [ "$CHANGED" = "true" ]; then
+              echo "- PR: ${PR_URL}"
+            else
+              echo "- No file changes this run."
+            fi
+            echo "- Checks: ${CHECKS_OUTCOME}"
+            echo "- state.md: ${STATE_RESULT}"
+            echo
+            echo "Comment \`/lh <instruction>\` on this issue to run again."
+          } > "$RUNNER_TEMP/comment.md"
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/comment.md"
+
+      - name: Fail if checks failed
+        if: steps.checks.outcome != 'success'
+        run: |
+          echo "::error::target checks failed; work was still published so the next run can see it"
+          exit 1
