@@ -350,6 +350,61 @@ def script_text(v):
     ])
 
 
+# ---------------------------------------------------------------- staged variants (render-only mode)
+
+SHOT_LINE = re.compile(r"^\s*(?P<t>[\d.]+\s*-\s*[\d.]+s)\s*\|\s*Shot:\s*(?P<shot>.*?)\s*(?:\|\s*On-screen text:.*?)?(?:\|\s*Voiceover:\s*\"?(?P<vo>.*?)\"?\s*)?$")
+
+
+def prompts_from_script(script, hook, duration):
+    """Video and poster prompts from a staged script.txt (viral-local-ad-generator layout: timed shot lines).
+    On-screen text is dropped on purpose: the feed overlays hook and CTA itself."""
+    shots = []
+    for line in script.splitlines():
+        m = SHOT_LINE.match(line)
+        if m:
+            shots.append((m.group("t").replace(" ", ""), m.group("shot").rstrip("."), (m.group("vo") or "").strip()))
+    if not shots:  # free-form script: use its body as the visual description
+        body = re.sub(r"\s+", " ", script).strip()
+        shots = [(f"0-{duration}s", body[:900], "")]
+    video = [f"A {duration}-second vertical 9:16 mobile video ad in {len(shots)} shots. Bright, clean, upbeat. {NO_TEXT}"]
+    for i, (t, shot, _) in enumerate(shots):
+        video.append(f"{'HARD CUT. ' if i else ''}SHOT {i + 1} ({t}): {shot}.")
+    vo = " ".join(v for _, _, v in shots if v)
+    video.append(f"AUDIO: upbeat modern soundtrack; a warm, friendly narrator in English. At 0 seconds the narrator says: \"{hook}\"."
+                 + (f" Then: {vo[:400]}" if vo else ""))
+    hero = next((s for _, s, _ in shots if "hero" in s.lower() or "product" in s.lower()), shots[len(shots) // 2][1])
+    poster = (f"Vertical 9:16 poster photograph for a mobile ad: {hero}. Editorial photography, shallow depth of field, "
+              f"the subject centered with calm negative space in the top third and bottom quarter of the frame. {NO_TEXT}")
+    return "\n".join(video), poster
+
+
+def staged_variants(campaign_dir):
+    """Variants already staged under cdn/staging/<campaign>/<variant>/ (meta.json + script.txt), ready to render."""
+    index = {}
+    if (campaign_dir / "campaign.json").exists():
+        index = json.loads((campaign_dir / "campaign.json").read_text())
+    record = index.get("campaign") or {}
+    out = []
+    for vdir in sorted(p for p in campaign_dir.iterdir() if p.is_dir() and (p / "meta.json").exists()):
+        if not SAFE_ID.fullmatch(vdir.name):
+            continue
+        meta = json.loads((vdir / "meta.json").read_text())
+        script_file = meta.get("script_file") or "script.txt"
+        script = (vdir / script_file).read_text() if (vdir / script_file).exists() else ""
+        duration = int(meta.get("duration_s") or 10)
+        duration = duration if duration in (5, 10) else 10
+        video_p, poster_p = prompts_from_script(script, meta["hook"], duration)
+        audience = (meta.get("targeting") or {}).get("audience") or []
+        out.append({
+            "variant_id": vdir.name, "hook": meta["hook"], "cta": meta["cta"],
+            "audience": audience[0] if audience else "Open", "authored_by": (meta.get("source") or {}).get("agent", "staged"),
+            "story": None, "story_safe": None, "duration_s": duration,
+            "staged_meta": meta, "script_file": script_file,
+            "prompts": {"video": video_p, "poster": poster_p},
+        })
+    return record, out
+
+
 # ---------------------------------------------------------------- cost
 
 def estimate_usd(n_images, n_videos, seconds=VIDEO_SECONDS, resolution=RESOLUTION, draft=False):
@@ -489,9 +544,12 @@ def main():
                     help="load brief, market and audience for --campaign from the campaign service ($CAMPAIGN_SERVICE_URL)")
     ap.add_argument("--campaign-file", type=Path, default=None,
                     help="campaign record JSON, or a task-issue body with a ```json block; overrides --brief/--campaign/--market")
+    ap.add_argument("--render-staged", metavar="CAMPAIGN_ID", default=None,
+                    help="render posters/videos for the variants already staged under cdn/staging/<CAMPAIGN_ID>/*/meta.json "
+                         "instead of discovering news and writing new scripts")
     ap.add_argument("--variants", type=int, default=4)
-    ap.add_argument("--videos", type=int, default=2, help="how many of the top variants get a FLUX 3 video")
-    ap.add_argument("--max-usd", type=float, default=5.0)
+    ap.add_argument("--videos", default="2", help="how many of the top variants get a FLUX 3 video, or 'all'")
+    ap.add_argument("--max-usd", type=float, default=5.0, help="abort if the estimate exceeds this; 0 = unlimited")
     ap.add_argument("--market", default=MARKET)
     ap.add_argument("--staging", type=Path, default=ROOT / "cdn" / "staging")
     ap.add_argument("--dry-run", action="store_true", help="discover, write the plan, estimate cost; call nothing paid")
@@ -515,25 +573,48 @@ def main():
             sys.exit(f"campaign service record is not usable: {e}")
 
     today = dt.datetime.now(dt.timezone.utc)
-    campaign = a.campaign or f"local-news-{today:%Y%m%d}"
+    campaign = a.render_staged or a.campaign or f"local-news-{today:%Y%m%d}"
     if not SAFE_ID.fullmatch(campaign):
         sys.exit(f"campaign id {campaign!r} must match {SAFE_ID.pattern}")
-    if not 1 <= a.variants <= 8 or not 0 <= a.videos <= a.variants:
-        sys.exit("--variants must be 1..8 and 0 <= --videos <= --variants")
+    if a.videos != "all" and not a.videos.isdigit():
+        sys.exit("--videos must be an integer or 'all'")
+    if not 1 <= a.variants <= 8:
+        sys.exit("--variants must be 1..8")
+    if a.max_usd < 0:
+        sys.exit("--max-usd must be >= 0 (0 = unlimited)")
 
-    data = json.loads((ADS / "scripts.json").read_text())
-    stories, provenance = discover(a.market, a.variants)
-    log(f"discovery via {provenance['via']}: " + " | ".join(short_topic(s) for s in stories))
-    for s in stories:
-        safe = sanitized(a.market, s)
-        log(f"  sanitized: {safe['reference']} [{', '.join(safe['notes'])}]")
+    if a.render_staged:
+        campaign_dir = a.staging / campaign
+        if not campaign_dir.is_dir():
+            sys.exit(f"--render-staged: {campaign_dir} does not exist")
+        record, variants = staged_variants(campaign_dir)
+        if not variants:
+            sys.exit(f"--render-staged: no <variant>/meta.json under {campaign_dir}")
+        a.brief = record.get("brief") or a.brief
+        a.market = record.get("geo") or a.market
+        a.campaign_name = record.get("name") or None
+        a.campaign_audience = (record.get("audience") or "").strip() or None
+        stories, provenance = [], {"via": "staged", "agent": (variants[0]["staged_meta"].get("source") or {}).get("agent")}
+        product_name = a.campaign_name or campaign
+        log(f"render-staged: {len(variants)} variants under {campaign_dir} ({product_name})")
+    else:
+        data = json.loads((ADS / "scripts.json").read_text())
+        stories, provenance = discover(a.market, a.variants)
+        log(f"discovery via {provenance['via']}: " + " | ".join(short_topic(s) for s in stories))
+        for s in stories:
+            safe = sanitized(a.market, s)
+            log(f"  sanitized: {safe['reference']} [{', '.join(safe['notes'])}]")
+        product_key, variants = build_variants(a.brief, data, a.variants, stories, a.market)
+        product_name = data["products"][product_key]["name"]
+        for v in variants:
+            v["prompts"] = {"video": video_prompt(v), "poster": poster_prompt(v)}
+            v["duration_s"] = VIDEO_SECONDS
 
-    product_key, variants = build_variants(a.brief, data, a.variants, stories, a.market)
+    n_videos = len(variants) if a.videos == "all" else min(int(a.videos), len(variants))
     for v in variants:
         v["brief"] = a.brief
         v["campaign_id"] = campaign
         v["campaign_name"] = a.campaign_name
-        v["prompts"] = {"video": video_prompt(v), "poster": poster_prompt(v)}
         blocked = set()
         for text in (v["hook"], v["cta"], v["prompts"]["video"], v["prompts"]["poster"]):
             blocked |= find_famous_brand_terms(text)
@@ -542,29 +623,34 @@ def main():
         if blocked:
             sys.exit(f"{v['variant_id']}: creative references third-party brands: {sorted(blocked)}")
 
-    img_usd, vid_usd = estimate_usd(len(variants), a.videos)
+    video_seconds = sum(v["duration_s"] for v in variants[:n_videos])
+    img_usd, _ = estimate_usd(len(variants), 0)
+    vid_usd = round(video_seconds * VIDEO_USD_PER_SEC[RESOLUTION], 4)
     est = round(img_usd + vid_usd, 2)
-    log(f"plan: {len(variants)} variants of {data['products'][product_key]['name']}, {len(variants)} posters (~${img_usd:.2f}) "
-        f"+ {a.videos} x {VIDEO_SECONDS}s {RESOLUTION} videos (~${vid_usd:.2f}) = ~${est:.2f}; cap ${a.max_usd:.2f}")
+    cap = "no cap" if a.max_usd == 0 else f"cap ${a.max_usd:.2f}"
+    log(f"plan: {len(variants)} variants of {product_name}, {len(variants)} posters (~${img_usd:.2f}) "
+        f"+ {n_videos} videos totalling {video_seconds}s {RESOLUTION} (~${vid_usd:.2f}) = ~${est:.2f}; {cap}")
     for i, v in enumerate(variants):
-        log(f"  [{i + 1}] {v['variant_id']}: \"{v['hook']}\" / {v['cta']}" + (" (video)" if i < a.videos else ""))
-    if est > a.max_usd:
+        log(f"  [{i + 1}] {v['variant_id']}: \"{v['hook'][:80]}\" / {v['cta']}" + (f" (video {v['duration_s']}s)" if i < n_videos else ""))
+    if a.max_usd > 0 and est > a.max_usd:
         sys.exit(f"estimated ${est:.2f} exceeds --max-usd {a.max_usd:.2f}; aborting before any submit")
 
     campaign_dir = a.staging / campaign
     campaign_dir.mkdir(parents=True, exist_ok=True)
     run = {"campaign_id": campaign, "campaign_name": a.campaign_name, "brief": a.brief, "market": a.market,
            "audience": a.campaign_audience, "generated_at": today.isoformat(timespec="seconds"),
+           "mode": "render-staged" if a.render_staged else "generate",
            "discovery": provenance, "stories": [s.to_dict() for s in stories],
            "sanitized_stories": [sanitized(a.market, s) for s in stories],
-           "estimate_usd": {"images": img_usd, "videos": vid_usd, "total": est, "cap": a.max_usd},
+           "estimate_usd": {"images": img_usd, "videos": vid_usd, "total": est, "cap": a.max_usd or None},
            "variants": [], "liquid_qa": None}
 
     if a.dry_run:
         for v in variants:
             run["variants"].append({k: v[k] for k in ("variant_id", "hook", "cta", "audience", "authored_by", "story",
                                                       "story_safe", "prompts")})
-            run["variants"][-1]["script"] = script_text(v)
+            if not v.get("staged_meta"):
+                run["variants"][-1]["script"] = script_text(v)
         (campaign_dir / "run.json").write_text(json.dumps(run, indent=1, ensure_ascii=False) + "\n")
         log(f"dry run: wrote {campaign_dir / 'run.json'}; nothing submitted")
         return
@@ -598,8 +684,8 @@ def main():
             img_body = {"prompt": v["prompts"]["poster"], "width": POSTER_W, "height": POSTER_H, "output_format": "jpeg",
                         "safety_tolerance": 2}
             jobs.append((v, "poster", img_body, submit(IMAGE_ENDPOINT, key, img_body, f"{v['variant_id']} poster")))
-            if i < a.videos:
-                vid_body = {"mode": "t2v", "prompt": v["prompts"]["video"], "aspect_ratio": "9:16", "duration": VIDEO_SECONDS,
+            if i < n_videos:
+                vid_body = {"mode": "t2v", "prompt": v["prompts"]["video"], "aspect_ratio": "9:16", "duration": v["duration_s"],
                             "resolution": RESOLUTION, "generate_audio": True, "safety_tolerance": 2}
                 jobs.append((v, "video", vid_body, submit(VIDEO_ENDPOINT, key, vid_body, f"{v['variant_id']} video")))
     except OutOfCredits as e:
@@ -662,26 +748,41 @@ def main():
                 vdir.rmdir()
             run["variants"].append({"variant_id": v["variant_id"], "staged": False, "render": r})
             continue
-        (vdir / "script.txt").write_text(script_text(v) + "\n")
         text_verdict = (qa.get(v["variant_id"], {}).get("text") or {})
         active = text_verdict.get("ok", True) is not False
-        # Persona label first, then the campaign's own audience line so the feed shows both.
-        audience = [v["audience"]] + ([a.campaign_audience] if a.campaign_audience else [])
-        meta = {
-            "id": f"{campaign}-{slug(v['variant_id'])}",
-            "hook": v["hook"], "cta": v["cta"],
-            "media_type": "video" if has_video else "image",
-            "media_file": "creative.mp4" if has_video else "poster.jpg",
-            "script_file": "script.txt",
-            "aspect": "9:16",
-            "targeting": {"audience": audience, "geo": ["US"], "weight": 2 if has_video else 1, "active": active},
-            "source": {"agent": "scripts/generate-content.py", "generated_at": today.isoformat(timespec="seconds").replace("+00:00", "Z"),
-                       "brief_ref": a.brief_ref or (v["story"]["url"] if v["story"] and v["story"].get("url") else a.brief)},
-        }
+        stamp = today.isoformat(timespec="seconds").replace("+00:00", "Z")
+        if v.get("staged_meta"):
+            # Render-only mode: keep Thomas's id, hook, cta, targeting and script; swap the media in.
+            meta = dict(v["staged_meta"])
+            meta["media_type"] = "video" if has_video else "image"
+            meta["media_file"] = "creative.mp4" if has_video else "poster.jpg"
+            meta["script_file"] = v["script_file"]
+            meta.setdefault("targeting", {})["weight"] = 2 if has_video else 1
+            if text_verdict.get("ok") is False:
+                meta["targeting"]["active"] = False
+            # source allows only agent/generated_at/brief_ref; the render provenance lives in run.json.
+            meta["source"] = {**(meta.get("source") or {}), "generated_at": stamp}
+        else:
+            (vdir / "script.txt").write_text(script_text(v) + "\n")
+            # Persona label first, then the campaign's own audience line so the feed shows both.
+            audience = [v["audience"]] + ([a.campaign_audience] if a.campaign_audience else [])
+            meta = {
+                "id": f"{campaign}-{slug(v['variant_id'])}",
+                "hook": v["hook"], "cta": v["cta"],
+                "media_type": "video" if has_video else "image",
+                "media_file": "creative.mp4" if has_video else "poster.jpg",
+                "script_file": "script.txt",
+                "aspect": "9:16",
+                "targeting": {"audience": audience, "geo": ["US"], "weight": 2 if has_video else 1, "active": active},
+                "source": {"agent": "scripts/generate-content.py", "generated_at": stamp,
+                           "brief_ref": a.brief_ref or (v["story"]["url"] if v["story"] and v["story"].get("url") else a.brief)},
+            }
         if has_poster:
             meta["poster_file"] = "poster.jpg"
         if has_video:
-            meta["duration_s"] = VIDEO_SECONDS
+            meta["duration_s"] = v["duration_s"]
+        elif not v.get("staged_meta"):
+            meta.pop("duration_s", None)
         (vdir / "meta.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n")
         published += 1
         run["variants"].append({"variant_id": v["variant_id"], "staged": True, "id": meta["id"], "media_type": meta["media_type"],
