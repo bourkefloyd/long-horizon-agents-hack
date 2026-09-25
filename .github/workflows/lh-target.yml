@@ -40,6 +40,9 @@ jobs:
   guard:
     name: Route task
     runs-on: ubuntu-latest
+    concurrency:
+      group: lh-route-${{ inputs.target }}-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
+      cancel-in-progress: false
     outputs:
       run: ${{ steps.decide.outputs.run }}
       issue_number: ${{ steps.decide.outputs.issue_number }}
@@ -70,7 +73,9 @@ jobs:
             issues)
               if [ "$IS_PR" = "false" ]; then
                 if [ "$ACTION" = "labeled" ] && [ "$LABEL_ADDED" = "$TARGET_LABEL" ]; then RUN=true; fi
-                if [ "$ACTION" = "opened" ] && [ "$HAS_LABEL" = "true" ]; then RUN=true; fi
+                if [ "$ACTION" = "opened" ] && [ "$HAS_LABEL" = "true" ]; then
+                  echo "::notice::issue opened with $TARGET_LABEL; waiting for issues.labeled (avoids opened+labeled double trigger)"
+                fi
                 ISSUE="$EVENT_ISSUE"
               fi ;;
             issue_comment)

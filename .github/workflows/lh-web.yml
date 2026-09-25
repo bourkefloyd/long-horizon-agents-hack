@@ -33,6 +33,9 @@ permissions:
 
 jobs:
   route:
+    concurrency:
+      group: lh-web-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
+      cancel-in-progress: false
     uses: ./.github/workflows/lh-target.yml
     with:
       target: web
