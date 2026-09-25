@@ -13,8 +13,8 @@ on:
       issue_number:
         description: "Manual issue number (0 = no issue)"
         required: false
-        type: number
-        default: 0
+        type: string
+        default: "0"
       instruction:
         description: "Manual one-shot instruction"
         required: false
