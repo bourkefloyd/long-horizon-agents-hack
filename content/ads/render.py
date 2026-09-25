@@ -77,8 +77,8 @@ def build_requests(data, only, draft):
         body = {
             "mode": d["mode"],
             "prompt": compile_prompt(data["products"][v["product"]], data["personas"][v["persona"]],
-                                     v, d["duration"], d["aspect_ratio"]),
-            "duration": d["duration"],
+                                     v, v.get("duration", d["duration"]), d["aspect_ratio"]),
+            "duration": v.get("duration", d["duration"]),
             "aspect_ratio": d["aspect_ratio"],
             "resolution": d["resolution"],
             "generate_audio": d["generate_audio"],
@@ -152,7 +152,7 @@ def wait(item_id, poll, body, key, out_dir):
                 return False
             dest = out_dir / f"{item_id}.mp4"
             urllib.request.urlretrieve(url, dest)
-            meta = {"request": {k: v for k, v in body.items() if k != "start_video"}, "result": res}
+            meta = {"request": {k: v for k, v in body.items() if k not in ("start_video", "reference_images", "keyframes")}, "result": res}
             (out_dir / f"{item_id}.json").write_text(json.dumps(meta, indent=2))
             print(f"  saved {dest}")
             return True

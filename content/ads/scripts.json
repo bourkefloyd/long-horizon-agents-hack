@@ -170,6 +170,14 @@
           "expires_at": "2026-09-30"
         }
       ]
+    },
+    "playable_player": {
+      "who": "no people on screen",
+      "where": "a sunny San Francisco burger counter",
+      "when": "lunchtime",
+      "voice": "an upbeat, playful narrator, American English",
+      "language": "English",
+      "music": "bouncy arcade-style chiptune mixed with hip hop drums"
     }
   },
   "variants": [
@@ -377,6 +385,54 @@
         3.33,
         5.88,
         7.42
+      ]
+    },
+    {
+      "id": "sutrostack__endcard_win",
+      "product": "sutro_stack",
+      "persona": "playable_player",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "the camera pushes in on a perfectly stacked sourdough smash burger as confetti falls and cheese drips in slow motion, triumphant",
+          "vo": "Perfect stack! Come get the real one."
+        }
+      ]
+    },
+    {
+      "id": "sutrostack__endcard_almost",
+      "product": "sutro_stack",
+      "persona": "playable_player",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "a slightly leaning sourdough smash burger wobbles and a hand catches it just in time, playful near-miss energy",
+          "vo": "So close. The real one stacks itself."
+        }
+      ]
+    },
+    {
+      "id": "sutrostack__endcard_retry",
+      "product": "sutro_stack",
+      "persona": "playable_player",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "a sourdough smash burger tumbles apart in slow motion, bun, patty and cheese bouncing comically onto the counter",
+          "vo": "Messy! Try again, or let us stack it."
+        }
       ]
     }
   ],
