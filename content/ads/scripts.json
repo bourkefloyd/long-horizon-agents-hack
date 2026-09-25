@@ -69,15 +69,15 @@
       "sonic_logo": "a low foghorn note blending into a warm brass chord on the final frame",
       "cta": "Since 1849"
     },
-    "big_mac": {
-      "name": "McDonald's Big Mac",
-      "category": "spec ad, not an SF brand; not affiliated with or endorsed by McDonald's",
+    "sutro_stack": {
+      "name": "Sutro Stack",
+      "category": "fictional San Francisco burger shop, invented for this experiment (no real brand)",
       "sources": [],
       "look": "punchy social-feed look, fast cuts, saturated warm colors, crisp commercial food lighting",
-      "hero": "a warm, craveable double-patty burger with a three-part sesame seed bun, special sauce, shredded lettuce, melted cheese, pickles and onions, clean slow-motion product close-up",
-      "sfx": "phone notification pings, swipe whooshes, a bun squish, a sizzle",
+      "hero": "a juicy double smash burger on a toasted sourdough bun, crispy lacy beef edges, melted cheddar dripping, grilled onions, pickles and garlic aioli, slow-motion clean product close-up",
+      "sfx": "phone notification pings, swipe whooshes, a sizzle on a flat-top grill, a crunchy first bite",
       "sonic_logo": "a short upbeat five-note whistle-and-horn sting on the final frame",
-      "cta": "Grab a Big Mac today"
+      "cta": "Grab a Sutro Stack today"
     }
   },
   "personas": {
@@ -331,8 +331,8 @@
       ]
     },
     {
-      "id": "bigmac__soma_lunch_headline",
-      "product": "big_mac",
+      "id": "sutrostack__soma_lunch_headline",
+      "product": "sutro_stack",
       "persona": "soma_lunch",
       "shots": [
         {
@@ -358,18 +358,18 @@
             4,
             7
           ],
-          "shot": "smash cut to a warm, craveable burger reveal: three-part sesame seed bun, special sauce, shredded lettuce, melted cheese, slow-motion clean product close-up",
-          "text": "New Big Mac energy.",
-          "vo": "...make your next twist a Big Mac."
+          "shot": "smash cut to a sizzling flat-top grill and a warm, craveable burger reveal: a double smash burger on a toasted sourdough bun, crispy beef edges, melted cheddar dripping, slow-motion clean product close-up",
+          "text": "New craving unlocked.",
+          "vo": "...make your next lunch a Sutro Stack."
         },
         {
           "t": [
             7,
             10
           ],
-          "shot": "hero product shot of the burger on a table in bright sunshine against a sunny San Francisco backdrop with painted houses and blue sky, then it holds still for an end card with empty space at the top for text",
-          "text": "Grab a Big Mac today.",
-          "vo": "Grab a Big Mac today."
+          "shot": "hero product shot of the sourdough smash burger on a table in bright sunshine against a sunny San Francisco backdrop with painted houses and blue sky, then it holds still for an end card with empty space at the top for text",
+          "text": "Grab a Sutro Stack today.",
+          "vo": "Grab a Sutro Stack today."
         }
       ]
     }
