@@ -1,18 +1,18 @@
-# Hyper-personalized video ads (FLUX 3 video)
+# Hyper-personalized SF video ads (FLUX 3 video)
 
-These are sample scripts for short video ads with sound. Each ad pairs a **product** with a **persona**, and FLUX 3 video renders it with music, sound effects and voiceover in a single call. All products and brands here are fictional.
+These are spec (unofficial) scripts for short video ads with sound, for real San Francisco brands: Sightglass, Tartine, Bi-Rite Creamery, Dandelion Chocolate and Boudin. They are for a public hackathon experiment and are not affiliated with or endorsed by those brands. Each ad pairs a **product** with an SF **persona**, and FLUX 3 video renders it with music, sound effects and voiceover in a single call. Every brand fact cites a source in `scripts.json`, and no offers or prices are invented. Ideas and the Nimble hand-off format are in [IDEAS.md](IDEAS.md).
 
 ## Files
 
 - `scripts.json` has three parts:
-  - `products`: look, hero shot, signature sound effects, sonic logo and call to action.
+  - `products`: look, hero shot, signature sound effects, sonic logo, call to action and sources.
   - `personas`: who the viewer is, where and when the ad happens, narrator voice, language and music taste.
   - `variants`: one product × persona pairing with a three-beat story (tension → turn → payoff) and two voiceover lines.
 - `render.py` compiles each variant into one FLUX 3 prompt, prints it, and with `--submit` renders it.
 
 ## How personalization works
 
-The product decides the look, the hero shot, the sound effects and the sonic logo. The persona decides the setting, the time of day, the narrator voice, the language and the music genre. The variant writes the story beats and the spoken lines for that person. The same cold brew sounds like lo-fi piano for a nurse coming off a night shift and like synthwave for a developer at 2 AM. The Spanish-language personas get Spanish voiceover.
+The product decides the look, the hero shot, the sound effects and the sonic logo. The persona decides the setting, the time of day, the narrator voice, the language and the music genre. The variant writes the story beats and the spoken lines for that person. Sightglass gets a tense minimal beat for a founder on demo day and lo-fi for a commuter who missed the N-Judah. The Mission family persona gets Spanish voiceover.
 
 A persona is a small, editable record. It is not a history. An agent can rewrite a field when it learns something new, for example `music` or `when`, and the next render picks up the change.
 
@@ -30,8 +30,8 @@ The prompt asks for no on-screen text. Add the call-to-action text in post, so t
 
 ```bash
 python3 content/ads/render.py                               # dry run: print prompts and estimated cost
-python3 content/ads/render.py --only hush__indie_dev        # one variant
-python3 content/ads/render.py --submit --draft --only hush__indie_dev   # cheap test render
+python3 content/ads/render.py --only boudin__new_transplant  # one variant
+python3 content/ads/render.py --submit --draft --only boudin__new_transplant   # cheap test render
 python3 content/ads/render.py --submit                      # all 8 variants
 ```
 

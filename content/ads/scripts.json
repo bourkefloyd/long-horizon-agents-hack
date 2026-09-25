@@ -1,5 +1,5 @@
 {
-  "_about": "Sample hyper-personalized video ad scripts for FLUX 3 video (POST /v1/flux-3-video, mode t2v). Products and brands are fictional. render.py compiles product + persona + variant into one prompt. Audio (music, SFX, dialogue) is controlled only through prompt text; dialogue in double quotes is spoken.",
+  "_about": "Spec (unofficial) hyper-personalized video ads for real San Francisco brands, for a public hackathon experiment. Not affiliated with or endorsed by any brand named here. Facts in hero shots and lines come from the linked sources; no offers or prices are invented. render.py compiles product + persona + variant into one FLUX 3 prompt (POST /v1/flux-3-video, mode t2v). Audio (music, SFX, dialogue) is controlled only through prompt text; dialogue in double quotes is spoken.",
 
   "defaults": {
     "mode": "t2v",
@@ -10,186 +10,204 @@
   },
 
   "products": {
-    "nightshift_cold_brew": {
-      "name": "Nightshift Cold Brew",
-      "category": "cold brew coffee concentrate, delivered",
-      "promise": "smooth caffeine that meets you whatever time your day starts",
-      "look": "warm cinematic look, shallow depth of field, amber and teal grade, 35mm film grain",
-      "hero": "a matte black glass bottle labeled NIGHTSHIFT pours dark cold brew over ice in a clear glass, slow motion, condensation beading",
-      "sfx": "ice cracking as the coffee hits it, a soft glass clink",
-      "sonic_logo": "a two-note low marimba sting on the final frame",
-      "cta": "First bottle free"
+    "sightglass": {
+      "name": "Sightglass Coffee",
+      "category": "specialty coffee roaster, flagship roastery and coffee bar at 270 7th St, SoMa",
+      "sources": ["https://sightglasscoffee.com/pages/sightglass-san-francisco-soma"],
+      "look": "bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field",
+      "hero": "inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light",
+      "sfx": "the low rumble of a coffee roaster, beans crackling, a cup set down on a wooden bar",
+      "sonic_logo": "a soft two-note upright bass pluck on the final frame",
+      "cta": "270 7th St, SoMa"
     },
-    "ridgeline_trail": {
-      "name": "Ridgeline Trail Runner",
-      "category": "lightweight trail running shoe",
-      "promise": "grip that keeps up with you on any trail",
-      "look": "bright natural daylight, handheld documentary feel, saturated greens and warm earth tones",
-      "hero": "close-up of a bright orange trail shoe landing on wet rock and gripping, mud flicking off the lugs in slow motion",
-      "sfx": "crunch of gravel, a firm rubber grip squeak on rock, birdsong",
-      "sonic_logo": "a bright rising two-note guitar harmonic on the final frame",
-      "cta": "Free returns on first trail"
+    "tartine": {
+      "name": "Tartine Bakery",
+      "category": "Mission bakery at 600 Guerrero St, known for morning buns, croissants and country bread",
+      "sources": ["https://tartinebakery.com/san-francisco/bakery", "https://en.wikipedia.org/wiki/Tartine"],
+      "look": "warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing",
+      "hero": "a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it",
+      "sfx": "a crackling crust, a paper bag rustling open",
+      "sonic_logo": "a warm three-note acoustic guitar figure on the final frame",
+      "cta": "600 Guerrero St"
     },
-    "pocketwise": {
-      "name": "Pocketwise",
-      "category": "budgeting and invoicing app",
-      "promise": "knowing exactly where your money is, without a spreadsheet",
-      "look": "clean modern look, soft natural window light, pastel mint and cream palette, crisp focus",
-      "hero": "a phone screen showing a simple mint-green dashboard with one big balance number and a green checkmark animation, hand holding it, relaxed",
-      "sfx": "a soft cheerful notification chime, a relieved exhale",
-      "sonic_logo": "a light three-note glockenspiel chime on the final frame",
-      "cta": "Free for your first 90 days"
+    "bi_rite_creamery": {
+      "name": "Bi-Rite Creamery",
+      "category": "small-batch ice cream shop at 3692 18th St by Dolores Park, open since 2006, famous for Salted Caramel",
+      "sources": ["https://www.prnewswire.com/news-releases/bi-rite-creamery-celebrates-20-years-of-creating-community-one-scoop-at-a-time-302843747.html"],
+      "look": "sun-drenched summer look, saturated colors, playful handheld energy, lens flare",
+      "hero": "a scoop of glossy salted caramel ice cream pressed into a cone, a caramel ribbon folding through it, slow motion",
+      "sfx": "a scoop scraping, a cone crunch, distant happy crowd chatter",
+      "sonic_logo": "a bright ukulele strum on the final frame",
+      "cta": "18th St at Dolores Park"
     },
-    "hush_earbuds": {
-      "name": "Hush",
-      "category": "noise-cancelling wireless earbuds",
-      "promise": "your own quiet, anywhere",
-      "look": "moody cinematic look, high contrast, cool blue shadows with warm skin tones, anamorphic lens flares",
-      "hero": "macro shot of a small pearl-white earbud sliding into an ear, a subtle ripple of light around it",
-      "sfx": "chaotic ambient noise that cuts to near silence the instant the earbud is in",
-      "sonic_logo": "a soft airy synth swell on the final frame",
-      "cta": "Try 30 days, free returns"
+    "dandelion": {
+      "name": "Dandelion Chocolate",
+      "category": "bean-to-bar chocolate factory and cafe at 740 Valencia St since 2012",
+      "sources": ["https://www.dandelionchocolate.com/pages/valencia-street"],
+      "look": "rich cocoa-brown and cream palette, cozy evening interior light, macro texture on chocolate",
+      "hero": "a thick single-origin hot chocolate poured into a small cup, cocoa beans and a snapped chocolate bar on the counter, chocolate makers working in the background",
+      "sfx": "a crisp chocolate snap, a thick velvety pour, a quiet cafe murmur",
+      "sonic_logo": "a gentle Rhodes piano chord on the final frame",
+      "cta": "740 Valencia St"
+    },
+    "boudin": {
+      "name": "Boudin Bakery",
+      "category": "San Francisco sourdough bakery founded in 1849, still baking from its original mother dough",
+      "sources": ["https://boudinbakery.com/our-story/"],
+      "look": "moody silver-blue fog look with warm bakery amber highlights, documentary texture",
+      "hero": "a golden sourdough loaf scored and pulled from the oven, crust crackling, then torn open to reveal an airy tangy crumb",
+      "sfx": "foghorns in the distance, an oven door creaking open, crust crackling as it cools",
+      "sonic_logo": "a low foghorn note blending into a warm brass chord on the final frame",
+      "cta": "Since 1849"
     }
   },
 
   "personas": {
-    "night_nurse": {
-      "who": "a tired ICU nurse in her forties wearing navy scrubs and a lanyard",
-      "where": "outside a city hospital staff exit",
-      "when": "7 AM, pale sunrise after a twelve-hour night shift",
-      "voice": "a calm, warm female narrator, American English",
+    "soma_founder": {
+      "who": "a startup founder in her early thirties in a black blazer, holding a laptop",
+      "where": "a SoMa street lined with brick warehouses, the Bay Bridge visible at the end of the block",
+      "when": "7 AM on demo day, cool marine layer burning off",
+      "voice": "a focused, confident female voice, American English",
       "language": "English",
-      "music": "gentle lo-fi piano with soft vinyl crackle, slow tempo"
+      "music": "minimal electronic beat with a steady ticking pulse, building tension"
     },
-    "indie_dev": {
-      "who": "a scrappy indie game developer in his mid-twenties wearing a hoodie",
-      "where": "a cluttered studio apartment lit by two monitors and a desk lamp",
-      "when": "2 AM, city lights outside the window",
-      "voice": "a relaxed, slightly wry young male voice, American English",
+    "n_judah_commuter": {
+      "who": "a software engineer in his late twenties in a rain shell with earbuds and a backpack",
+      "where": "a stop in the Inner Sunset as a light-rail streetcar pulls up, fog rolling down Irving Street",
+      "when": "7:45 AM, thick gray summer fog",
+      "voice": "a dry, easygoing young male voice, American English",
       "language": "English",
-      "music": "driving retro synthwave with a steady pulse, moderate tempo"
+      "music": "mellow lo-fi hip hop beat with muted keys and rain ambience"
     },
-    "trail_parent": {
-      "who": "a dad in his thirties with a small daughter in a hiking backpack carrier",
-      "where": "a forested hillside trail with wet rocks and ferns",
-      "when": "Saturday morning, sun breaking through mist",
-      "voice": "an upbeat, friendly male narrator, American English",
+    "ocean_beach_surfer": {
+      "who": "a surfer in her thirties in a dripping black wetsuit, board under her arm",
+      "where": "Ocean Beach, gray surf and a long empty shoreline, a vintage camper van parked on the Great Highway",
+      "when": "6:30 AM, cold fog, pale light",
+      "voice": "a laid-back, warm female voice, American English",
       "language": "English",
-      "music": "upbeat acoustic folk with hand claps and a stomping kick drum"
+      "music": "reverb-drenched surf rock guitar, slow and dreamy"
     },
-    "freelance_designer_mx": {
-      "who": "a freelance graphic designer in her late twenties with a tote bag and colorful earrings",
-      "where": "a sunlit apartment with plants and a laptop covered in stickers, Mexico City",
-      "when": "late afternoon, golden light",
-      "voice": "a warm, confident female voice speaking Mexican Spanish",
+    "dolores_park_crew": {
+      "who": "a group of four friends in their twenties with a picnic blanket and a speaker",
+      "where": "the sloped lawn of Dolores Park with the downtown skyline behind, palm trees, crowds",
+      "when": "sunny Sunday afternoon",
+      "voice": "an upbeat, playful young female voice, American English",
+      "language": "English",
+      "music": "sunny indie pop with hand claps and bright guitar"
+    },
+    "mission_family_es": {
+      "who": "a mom in her thirties walking with her eight-year-old son in a school uniform and backpack",
+      "where": "a Mission District sidewalk past colorful murals and papel picado",
+      "when": "3:30 PM, after school, golden afternoon sun",
+      "voice": "a warm, affectionate female voice speaking Mexican Spanish",
       "language": "Spanish",
-      "music": "light modern cumbia with electronic percussion, feel-good"
+      "music": "light, joyful cumbia with accordion and soft percussion"
     },
-    "commuter_student": {
-      "who": "a college student in his early twenties with a backpack and a textbook",
-      "where": "a packed, rattling subway car at rush hour",
-      "when": "8 AM, fluorescent light, crowd pressing in",
-      "voice": "a casual, slightly amused young male voice, American English",
+    "new_transplant": {
+      "who": "a woman in her mid-twenties who just moved to San Francisco, underdressed in a thin jacket, arms wrapped around herself",
+      "where": "a waterfront pier with sea lions barking and the Golden Gate Bridge half-hidden in fog",
+      "when": "a cold July afternoon, fog pouring over the hills",
+      "voice": "a wry, amused young female voice, American English",
       "language": "English",
-      "music": "mellow lo-fi hip hop beat with muted keys"
+      "music": "quirky pizzicato strings with a light marching snare"
     }
   },
 
   "variants": [
     {
-      "id": "coldbrew__night_nurse",
-      "product": "nightshift_cold_brew",
-      "persona": "night_nurse",
-      "tension": "she pushes through the staff exit door, squints at the sunrise, rubs her neck; everyone else on the street is starting their morning",
-      "turn": "at home, still in scrubs, she opens the fridge and pulls out the bottle",
-      "payoff": "she sits by the window with the glass, eyes closed, a small smile, the city waking up below",
+      "id": "sightglass__soma_founder",
+      "product": "sightglass",
+      "persona": "soma_founder",
+      "tension": "she mouths her pitch to herself on the sidewalk, checks her phone, eight missed messages, exhales hard",
+      "turn": "she steps into the roastery and waits at the bar",
+      "payoff": "she walks out, cup in hand, shoulders back, striding toward the city with a small smile",
       "lines": [
-        "Your morning starts when your shift ends.",
-        "Nightshift. Smooth cold brew for whenever your day begins."
+        "Demo day. Four minutes to make it count.",
+        "Sightglass. Roasted right here on 7th Street."
       ]
     },
     {
-      "id": "coldbrew__indie_dev",
-      "product": "nightshift_cold_brew",
-      "persona": "indie_dev",
-      "tension": "he stares at a crashed build on screen, red error text, drops his head onto the desk",
-      "turn": "he spins his chair, grabs the bottle from a mini fridge and pours",
-      "payoff": "he takes a sip, cracks his knuckles, the game on screen finally runs, pixel-art character jumping",
+      "id": "sightglass__n_judah_commuter",
+      "product": "sightglass",
+      "persona": "n_judah_commuter",
+      "tension": "the streetcar doors close just as he reaches them, he sighs as fog swirls around him",
+      "turn": "later, downtown, he ducks out of the fog into the bright roastery",
+      "payoff": "he holds the warm cup in both hands by the window, fogged glass, finally awake",
       "lines": [
-        "Two AM. One bug. Zero sleep.",
-        "Nightshift cold brew. Ship it tonight."
+        "Missed the train. Found the fog.",
+        "Sightglass. Worth the walk from the stop."
       ]
     },
     {
-      "id": "trail__trail_parent",
-      "product": "ridgeline_trail",
-      "persona": "trail_parent",
-      "tension": "he hesitates at a slick muddy downhill section, his daughter pointing ahead excitedly",
-      "turn": "he steps down confidently onto the wet rock",
-      "payoff": "they reach a sunny overlook, the daughter laughing and clapping in the carrier",
+      "id": "tartine__ocean_beach_surfer",
+      "product": "tartine",
+      "persona": "ocean_beach_surfer",
+      "tension": "she jogs out of cold gray surf, shivering, peels down her wetsuit hood",
+      "turn": "wrapped in a towel on the back bumper of the van, she opens a warm paper bag",
+      "payoff": "she bites into the morning bun, eyes closed, sugar on her lips, waves rolling behind her",
       "lines": [
-        "She says faster. The trail says careful.",
-        "Ridgeline. Grip for both of you."
+        "Fifty-five degree water. Worth it.",
+        "Tartine morning bun. The real reward."
       ]
     },
     {
-      "id": "trail__freelance_designer_mx",
-      "product": "ridgeline_trail",
-      "persona": "freelance_designer_mx",
-      "tension": "she closes her laptop on a wall of client messages, grabs her shoes by the door",
-      "turn": "cut to her running up a pine-forest trail outside the city, breathing hard, smiling",
-      "payoff": "she stops on a ridge above the clouds, arms out, city far below",
+      "id": "tartine__dolores_park_crew",
+      "product": "tartine",
+      "persona": "dolores_park_crew",
+      "tension": "the friends spread a blanket on the slope and realize nobody brought food, groans and laughs",
+      "turn": "one friend jogs up holding a big round country loaf and a pastry box",
+      "payoff": "they tear the bread and pass it around, skyline behind, everyone talking at once",
       "lines": [
-        "Los clientes pueden esperar.",
-        "Ridgeline. Tu escape empieza aquí."
+        "Who was on bread duty?",
+        "Tartine. Around the corner from the park."
       ]
     },
     {
-      "id": "pocketwise__freelance_designer_mx",
-      "product": "pocketwise",
-      "persona": "freelance_designer_mx",
-      "tension": "she scrolls a messy spreadsheet on her laptop, sticky notes everywhere, sighs and taps her pen",
-      "turn": "she opens the app on her phone and taps once; the invoice sends",
-      "payoff": "a payment notification pops up, she does a little happy dance in her chair",
+      "id": "bi_rite__dolores_park_crew",
+      "product": "bi_rite_creamery",
+      "persona": "dolores_park_crew",
+      "tension": "the sun beats down on the park, the friends fan themselves, one points toward 18th Street",
+      "turn": "they stand in a long cheerful line outside a small ice cream shop",
+      "payoff": "back on the hill, four cones clink together in a toast, the city glittering behind",
       "lines": [
-        "¿Quién me debe? ¿Cuánto tengo?",
-        "Con Pocketwise, lo sabes en un toque."
+        "Hottest Sunday of the year. You know where the line is.",
+        "Bi-Rite Creamery. Twenty years on 18th Street."
       ]
     },
     {
-      "id": "pocketwise__commuter_student",
-      "product": "pocketwise",
-      "persona": "commuter_student",
-      "tension": "squeezed in the subway car, he checks his banking app and winces, a group chat buzzes: who owes rent",
-      "turn": "he opens the app, taps split rent, three friends' avatars light up green",
-      "payoff": "he leans back against the pole, relaxed, bobbing his head to the beat",
+      "id": "bi_rite__mission_family_es",
+      "product": "bi_rite_creamery",
+      "persona": "mission_family_es",
+      "tension": "the boy drags his feet, shows his mom a test paper with a gold star, looks up hopefully",
+      "turn": "she smiles and they turn the corner onto 18th Street",
+      "payoff": "sitting on a bench, the boy with ice cream on his nose, both laughing",
       "lines": [
-        "Rent's due. Three roommates. One of them is always late.",
-        "Pocketwise splits it. You keep the friends."
+        "Una estrella de oro merece algo especial.",
+        "Bi-Rite Creamery. Aquí, en la calle 18."
       ]
     },
     {
-      "id": "hush__commuter_student",
-      "product": "hush_earbuds",
-      "persona": "commuter_student",
-      "tension": "the subway screeches, someone's phone blares, a baby cries, he tries to read his textbook and can't",
-      "turn": "he slips the earbuds in",
-      "payoff": "the car blurs softly around him, he reads calmly, page turning, a faint smile",
+      "id": "dandelion__soma_founder",
+      "product": "dandelion",
+      "persona": "soma_founder",
+      "tension": "evening, she leaves a glass office building, phone buzzing with a message that reads like good news, she stops and laughs in disbelief",
+      "turn": "she steps into a warm chocolate cafe on Valencia Street",
+      "payoff": "she raises the cup in a quiet solo toast, city lights in the window",
       "lines": [
-        "Exam in an hour.",
-        "Hush. Your own quiet, anywhere."
+        "They said yes.",
+        "Dandelion Chocolate. Bean to bar, on Valencia since 2012."
       ]
     },
     {
-      "id": "hush__indie_dev",
-      "product": "hush_earbuds",
-      "persona": "indie_dev",
-      "tension": "a neighbor's party thumps through the wall, sirens outside, his cat knocks a mug off the desk",
-      "turn": "he puts the earbuds in",
-      "payoff": "total focus, code scrolling fast, monitors reflecting in his glasses",
+      "id": "boudin__new_transplant",
+      "product": "boudin",
+      "persona": "new_transplant",
+      "tension": "she shivers in the fog, looks at her phone showing 58 degrees in July, looks at the camera in betrayal",
+      "turn": "she follows the smell of bread through a bakery doorway",
+      "payoff": "she holds a torn sourdough loaf, steam rising, finally grinning at the fog",
       "lines": [
-        "Deadline's tomorrow. The neighbors don't care.",
-        "Hush. Find your flow."
+        "Nobody told me July would be this cold.",
+        "Boudin. San Francisco sourdough since 1849. The fog is part of the recipe."
       ]
     }
   ]
