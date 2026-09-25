@@ -1,0 +1,34 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "FeedBucket",
+      "Effect": "Allow",
+      "Action": ["s3:CreateBucket", "s3:PutBucketPolicy", "s3:PutPublicAccessBlock", "s3:ListBucket",
+                 "s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListAllMyBuckets"],
+      "Resource": ["arn:aws:s3:::fogfeed-*", "arn:aws:s3:::fogfeed-*/*", "arn:aws:s3:::*"]
+    },
+    {
+      "Sid": "FeedCdn",
+      "Effect": "Allow",
+      "Action": ["cloudfront:CreateDistribution", "cloudfront:GetDistribution", "cloudfront:ListDistributions",
+                 "cloudfront:CreateOriginAccessControl", "cloudfront:ListOriginAccessControls",
+                 "cloudfront:CreateInvalidation", "cloudfront:TagResource"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "FeedRenderer",
+      "Effect": "Allow",
+      "Action": ["lambda:CreateFunction", "lambda:UpdateFunctionCode", "lambda:UpdateFunctionConfiguration",
+                 "lambda:GetFunction", "lambda:CreateFunctionUrlConfig", "lambda:GetFunctionUrlConfig",
+                 "lambda:AddPermission"],
+      "Resource": "arn:aws:lambda:us-west-2:915043506157:function:fogfeed-*"
+    },
+    {
+      "Sid": "FeedRendererRole",
+      "Effect": "Allow",
+      "Action": ["iam:CreateRole", "iam:GetRole", "iam:PutRolePolicy", "iam:PassRole"],
+      "Resource": "arn:aws:iam::915043506157:role/fogfeed-*"
+    }
+  ]
+}
