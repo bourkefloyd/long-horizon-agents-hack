@@ -189,6 +189,15 @@ jobs:
           curl https://cursor.com/install -fsS | bash
           echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
 
+      - name: Status milestone (agent started)
+        # Separates setup time (checkout, prompt, CLI install) from the agent's own run time.
+        if: inputs.issue_number != 0 && env.STATUS_COMMENT_ID != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash .lh/bin/issue-status.sh update running "agent started (\`${MODEL}\`, prompt $(wc -l < "$RUNNER_TEMP/prompt.txt") lines)" \
+            || echo "::warning::status update failed"
+
       - name: Run agent (restricted, file edits only)
         id: agent
         # No GH token or git credentials. Nimble's key is target-scoped.
@@ -219,7 +228,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           N=$(git status --short | wc -l | tr -d ' ')
-          bash .lh/bin/issue-status.sh update running "agent finished; ${N} file(s) changed" \
+          # Content milestones: staged ad variants per campaign, then a per-area file count.
+          CONTENT=$(git status --short --porcelain -- cdn/staging 2>/dev/null \
+            | awk '{ print $NF }' | awk -F/ '$1 == "cdn" && $2 == "staging" && NF >= 4 { print $3 "\t" $4 }' \
+            | sort -u | awk -F'\t' '{ n[$1]++ } END { for (c in n) printf "%s%s: %d variant(s)", (out++ ? ", " : ""), c, n[c] }')
+          AREAS=$(git status --short | awk '{ print $NF }' \
+            | awk -F/ '{ a = ($1 == ".lh" || $1 == "cdn") && NF > 2 ? $1 "/" $2 : $1; n[a]++ } END { for (k in n) printf "%s%s %d", (out++ ? ", " : ""), k, n[k] }')
+          LINE="agent finished; ${N} file(s) changed"
+          [ -n "$CONTENT" ] && LINE="${LINE} — generated ${CONTENT}"
+          [ -n "$AREAS" ] && LINE="${LINE} (${AREAS})"
+          bash .lh/bin/issue-status.sh update running "$LINE" \
             || echo "::warning::status update failed"
 
       - name: Capture approval request
@@ -502,4 +520,5 @@ jobs:
             # Start step never ran (early failure): give the fallback comment a header.
             { echo "**LH ${TARGET}** run [${{ github.run_id }}](${RUN_URL}) · model \`${USED_MODEL:-unresolved}\`"; echo; echo "Status: **${STATUS}**"; echo; } > "$STATUS_FILE"
           fi
-          bash .lh/bin/issue-status.sh update "$STATUS" "$LINE" || echo "::warning::final status update failed"
+          # `finish` appends the phase timing line and a collapsed per-step table from the jobs API.
+          bash .lh/bin/issue-status.sh finish "$STATUS" "$LINE" || echo "::warning::final status update failed"
