@@ -4,10 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       brief:
-        description: Campaign brief (brand + product + who it is for)
-        required: true
+        description: Campaign brief (brand + product + who it is for); ignored when from_service is on
+        required: false
         type: string
         default: Sightglass Coffee pour-over for the people who make San Francisco run before 8 AM
+      from_service:
+        description: Load brief, market and audience for `campaign` from the website's campaign service
+        required: false
+        type: boolean
+        default: false
       variants:
         description: Number of ad variants (each gets a 9:16 poster)
         required: true
@@ -60,6 +65,8 @@ jobs:
           VIDEOS: ${{ inputs.videos }}
           MAX_USD: ${{ inputs.max_usd }}
           CAMPAIGN: ${{ inputs.campaign }}
+          FROM_SERVICE: ${{ inputs.from_service }}
+          BRIEF: ${{ inputs.brief }}
         run: |
           set -euo pipefail
           [[ "$VARIANTS" =~ ^[1-8]$ ]] || { echo "::error::variants must be 1-8"; exit 1; }
@@ -67,6 +74,14 @@ jobs:
           [[ "$MAX_USD" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::max_usd must be a number"; exit 1; }
           if [[ -n "$CAMPAIGN" && ! "$CAMPAIGN" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
             echo "::error::campaign must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
+            exit 1
+          fi
+          if [[ "$FROM_SERVICE" == "true" && -z "$CAMPAIGN" ]]; then
+            echo "::error::from_service needs a campaign id"
+            exit 1
+          fi
+          if [[ "$FROM_SERVICE" != "true" && -z "$BRIEF" ]]; then
+            echo "::error::brief is required unless from_service is on"
             exit 1
           fi
           campaign="${CAMPAIGN:-local-news-$(date -u +%Y%m%d)}"
@@ -79,6 +94,8 @@ jobs:
           LIQUID_TEXT_BASE_URL: ${{ vars.LIQUID_TEXT_BASE_URL }}
           LIQUID_VISION_BASE_URL: ${{ vars.LIQUID_VISION_BASE_URL }}
           BRIEF: ${{ inputs.brief }}
+          FROM_SERVICE: ${{ inputs.from_service }}
+          CAMPAIGN_SERVICE_URL: ${{ vars.CAMPAIGN_SERVICE_URL }}
           VARIANTS: ${{ inputs.variants }}
           VIDEOS: ${{ inputs.videos }}
           MAX_USD: ${{ inputs.max_usd }}
@@ -88,8 +105,14 @@ jobs:
             echo "::error::BFL_API_KEY secret is not set"
             exit 1
           fi
+          # An unset repository variable arrives as an empty string; let the script use its default URL.
+          [[ -n "$CAMPAIGN_SERVICE_URL" ]] || unset CAMPAIGN_SERVICE_URL
+          source_args=(--brief "$BRIEF")
+          if [[ "$FROM_SERVICE" == "true" ]]; then
+            source_args=(--from-service)
+          fi
           python scripts/generate-content.py \
-            --brief "$BRIEF" \
+            "${source_args[@]}" \
             --campaign "$CAMPAIGN_ID" \
             --variants "$VARIANTS" \
             --videos "$VIDEOS" \
@@ -115,7 +138,8 @@ jobs:
           {
             echo "## Generated content: \`${CAMPAIGN_ID}\`"
             echo
-            echo "- Brief: ${BRIEF}"
+            echo "- Brief: $(jq -r '.brief' "$run_json")"
+            echo "- Campaign record: $(jq -r '.campaign_name // "none (flags)"' "$run_json"); market $(jq -r '.market' "$run_json")"
             echo "- Discovery: $(jq -r '.discovery.via' "$run_json")"
             echo "- Cost: quoted $(jq -r '.cost.quoted_credits' "$run_json") credits, settled $(jq -r '.cost.settled_credits' "$run_json") credits (~\$$(jq -r '.cost.settled_usd' "$run_json")); balance $(jq -r '.cost.credits_before' "$run_json") -> $(jq -r '.cost.credits_after' "$run_json")"
             echo
