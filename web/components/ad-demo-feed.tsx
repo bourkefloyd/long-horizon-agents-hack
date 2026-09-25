@@ -53,7 +53,7 @@ type AdStyle = (typeof adStyles)[number];
  * lets `aspect-ratio` produce the 9:16 height.
  */
 const adFrameClass =
-  "relative z-10 aspect-[9/16] w-[min(100%,calc((100svh-6rem)*9/16))] overflow-hidden border border-white/20 bg-black shadow-2xl shadow-black/50";
+  "relative z-10 aspect-[9/16] w-[min(100%,calc((100svh-7.5rem)*9/16))] overflow-hidden border border-white/20 bg-black shadow-2xl shadow-black/50";
 const adViewportClass = `${adFrameClass} rounded-[2rem]`;
 /** Rendered video keeps hard edges so the creative is shown exactly as cut. */
 const adVideoViewportClass = `${adFrameClass} rounded-none`;
@@ -458,9 +458,11 @@ export function AdDemoFeed() {
               <div className="relative z-10 flex flex-1 flex-col">
                 <div className="flex flex-1 items-center justify-center px-4 py-3 lg:px-8">
                   <div className="flex w-full max-w-xl flex-col items-center gap-2">
-                    <p className="self-start text-[10px] font-semibold tracking-[0.22em] text-white/45 uppercase lg:hidden">
-                      Ad experience
-                    </p>
+                    <ColumnHeading
+                      title="Ad experience"
+                      detail="What the viewer sees · 9:16"
+                      className="w-[min(100%,calc((100svh-7.5rem)*9/16))]"
+                    />
                     <AdCreativeFrame
                       ad={ad}
                       active={isActive}
@@ -484,6 +486,10 @@ export function AdDemoFeed() {
                 </div>
 
                 <div className="space-y-4 px-4 pb-8 lg:hidden">
+                  <ColumnHeading
+                    title="Info card"
+                    detail="What the system knows"
+                  />
                   <StateCard
                     ad={ad}
                     campaign={campaign}
@@ -535,17 +541,17 @@ export function AdDemoFeed() {
 
       <aside
         className="hidden min-h-0 flex-col gap-4 overflow-y-auto border-l border-white/10 bg-[#050b0a]/90 p-4 lg:flex"
-        aria-label="Ad state and generation"
+        aria-label="Info card"
       >
         <div>
           <p className="text-[10px] font-semibold tracking-[0.22em] text-white/45 uppercase">
-            Ad state
+            Info card
           </p>
           <h2 className="mt-1 text-lg font-semibold tracking-tight">
-            Targeting & tracking
+            What the system knows
           </h2>
           <p className="mt-1 text-xs leading-5 text-white/50">
-            Folded counts and live signal status for the visible creative.
+            Targeting, tracked signals and the tools behind the visible ad.
           </p>
         </div>
         {activeAd ? (
@@ -1072,6 +1078,27 @@ function StateCard({
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+function ColumnHeading({
+  title,
+  detail,
+  className = "",
+}: {
+  title: string;
+  detail: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex items-baseline justify-between gap-3 text-[10px] font-semibold tracking-[0.22em] uppercase ${className}`}
+    >
+      <span className="text-white/70">{title}</span>
+      <span className="truncate text-right tracking-[0.12em] text-white/40">
+        {detail}
+      </span>
+    </div>
   );
 }
 
