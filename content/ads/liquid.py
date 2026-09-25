@@ -26,27 +26,33 @@ from pathlib import Path
 
 LFM_DIR = Path(os.environ.get("LFM_DIR", "/tmp/lfm"))
 LLAMA_BIN = Path(os.environ.get("LLAMA_BIN", "/home/user/ggml-org/llama.cpp/build/bin"))
-TEXT = {"port": 8081, "args": ["-m", str(LFM_DIR / "LFM2-1.2B-Q4_K_M.gguf")]}
-VISION = {"port": 8082, "args": ["-m", str(LFM_DIR / "LFM2-VL-1.6B-Q8_0.gguf"), "--mmproj", str(LFM_DIR / "mmproj-LFM2-VL-1.6B-Q8_0.gguf")]}
+TEXT = {"port": 8081, "base_url_env": "LIQUID_TEXT_BASE_URL", "args": ["-m", str(LFM_DIR / "LFM2-1.2B-Q4_K_M.gguf")]}
+VISION = {"port": 8082, "base_url_env": "LIQUID_VISION_BASE_URL", "args": ["-m", str(LFM_DIR / "LFM2-VL-1.6B-Q8_0.gguf"), "--mmproj", str(LFM_DIR / "mmproj-LFM2-VL-1.6B-Q8_0.gguf")]}
 TEXT_NAME, VISION_NAME = "Liquid LFM2-1.2B", "Liquid LFM2-VL-1.6B"
 
 
-def _up(port):
+def _base_url(srv):
+    return os.environ.get(srv["base_url_env"], f"http://127.0.0.1:{srv['port']}").rstrip("/")
+
+
+def _up(srv):
     try:
-        with urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=2) as r:
+        with urllib.request.urlopen(f"{_base_url(srv)}/health", timeout=2) as r:
             return r.status == 200
     except Exception:
         return False
 
 
 def ensure(srv):
-    if _up(srv["port"]):
+    if _up(srv):
         return
+    if os.environ.get(srv["base_url_env"]):
+        raise RuntimeError(f"llama-server at {_base_url(srv)} did not respond")
     log = open(Path(tempfile.gettempdir()) / f"llama-{srv['port']}.log", "a")
     subprocess.Popen([str(LLAMA_BIN / "llama-server"), *srv["args"], "--port", str(srv["port"]), "-t", "4", "-c", "4096", "--no-webui"],
                      stdout=log, stderr=log, start_new_session=True)
     for _ in range(180):
-        if _up(srv["port"]):
+        if _up(srv):
             return
         time.sleep(1)
     raise RuntimeError(f"llama-server on {srv['port']} did not start")
@@ -57,7 +63,7 @@ def chat(srv, content, schema, max_tokens=300, temperature=0.2):
     ensure(srv)
     body = {"messages": [{"role": "user", "content": content}], "temperature": temperature, "max_tokens": max_tokens,
             "response_format": {"type": "json_schema", "json_schema": {"name": "out", "schema": schema}}}
-    req = urllib.request.Request(f"http://127.0.0.1:{srv['port']}/v1/chat/completions", data=json.dumps(body).encode(),
+    req = urllib.request.Request(f"{_base_url(srv)}/v1/chat/completions", data=json.dumps(body).encode(),
                                  headers={"content-type": "application/json"}, method="POST")
     with urllib.request.urlopen(req, timeout=300) as r:
         return json.loads(json.load(r)["choices"][0]["message"]["content"])
