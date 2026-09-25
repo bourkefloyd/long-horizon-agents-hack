@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import {
-  ArrowDown,
   ArrowLeft,
-  ArrowUp,
   Check,
   ExternalLink,
   RefreshCw,
   Sparkles,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import {
   useCallback,
@@ -52,8 +52,11 @@ type AdStyle = (typeof adStyles)[number];
  * width from the viewport height keeps the box definite in every browser and
  * lets `aspect-ratio` produce the 9:16 height.
  */
-const adViewportClass =
-  "relative z-10 aspect-[9/16] w-[min(100%,calc((100svh-6rem)*9/16))] overflow-hidden rounded-[2rem] border border-white/20 bg-black shadow-2xl shadow-black/50";
+const adFrameClass =
+  "relative z-10 aspect-[9/16] w-[min(100%,calc((100svh-6rem)*9/16))] overflow-hidden border border-white/20 bg-black shadow-2xl shadow-black/50";
+const adViewportClass = `${adFrameClass} rounded-[2rem]`;
+/** Rendered video keeps hard edges so the creative is shown exactly as cut. */
+const adVideoViewportClass = `${adFrameClass} rounded-none`;
 
 const brandByPrefix: Record<string, AdStyle> = {
   sightglass: adStyles[0],
@@ -133,6 +136,9 @@ export function AdDemoFeed() {
   );
   const [manifestLoading, setManifestLoading] = useState(true);
   const [manifestError, setManifestError] = useState<string | null>(null);
+  // Browsers only autoplay muted video; sound stays off until the viewer
+  // opts in, then the choice follows them from ad to ad.
+  const [soundOn, setSoundOn] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -459,7 +465,13 @@ export function AdDemoFeed() {
                       ad={ad}
                       active={isActive}
                       style={style}
-                      shellClassName={adViewportClass}
+                      shellClassName={
+                        ad.media_type === "video"
+                          ? adVideoViewportClass
+                          : adViewportClass
+                      }
+                      soundOn={soundOn}
+                      onSoundChange={setSoundOn}
                       onCta={() =>
                         void emitSignal(
                           ad.campaign_id,
@@ -493,28 +505,32 @@ export function AdDemoFeed() {
         })}
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 right-4 z-30 hidden flex-col gap-2 lg:flex lg:right-[calc(min(26rem,34vw)+1rem)]">
-        <Button
-          size="icon"
-          variant="outline"
-          className="pointer-events-auto rounded-full border-white/15 bg-black/40 text-white backdrop-blur-xl hover:bg-white/15"
-          onClick={() => scrollTo(activeIndex - 1)}
-          disabled={activeIndex === 0}
-          aria-label="Previous ad"
-        >
-          <ArrowUp />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          className="pointer-events-auto rounded-full border-white/15 bg-black/40 text-white backdrop-blur-xl hover:bg-white/15"
-          onClick={() => scrollTo(activeIndex + 1)}
-          disabled={activeIndex === ads.length - 1}
-          aria-label="Next ad"
-        >
-          <ArrowDown />
-        </Button>
-      </div>
+      <nav
+        className="absolute right-2 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-1 rounded-full bg-black/25 px-1.5 py-2 backdrop-blur-md sm:right-3"
+        aria-label="Ad position"
+      >
+        {ads.map((ad, index) => {
+          const isCurrent = index === activeIndex;
+          return (
+            <button
+              key={ad.id}
+              type="button"
+              className="group grid size-4 place-items-center"
+              onClick={() => scrollTo(index)}
+              aria-label={`Go to ad ${index + 1} of ${ads.length}`}
+              aria-current={isCurrent ? "true" : undefined}
+            >
+              <span
+                className={`block rounded-full transition-all duration-300 ${
+                  isCurrent
+                    ? "size-2 bg-white shadow-[0_0_6px_rgba(255,255,255,.6)]"
+                    : "size-1.5 bg-white/35 group-hover:bg-white/70"
+                }`}
+              />
+            </button>
+          );
+        })}
+      </nav>
       </div>
 
       <aside
@@ -558,12 +574,16 @@ function AdCreativeFrame({
   active,
   style,
   shellClassName,
+  soundOn,
+  onSoundChange,
   onCta,
 }: {
   ad: Ad;
   active: boolean;
   style: AdStyle;
   shellClassName: string;
+  soundOn: boolean;
+  onSoundChange: (soundOn: boolean) => void;
   onCta: () => void;
 }) {
   switch (ad.media_type) {
@@ -584,6 +604,8 @@ function AdCreativeFrame({
           active={active}
           style={style}
           shellClassName={shellClassName}
+          soundOn={soundOn}
+          onSoundChange={onSoundChange}
           onCta={onCta}
         />
       );
@@ -667,12 +689,16 @@ function VideoAdFrame({
   active,
   style,
   shellClassName,
+  soundOn,
+  onSoundChange,
   onCta,
 }: {
   ad: Ad;
   active: boolean;
   style: AdStyle;
   shellClassName: string;
+  soundOn: boolean;
+  onSoundChange: (soundOn: boolean) => void;
   onCta: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -681,19 +707,36 @@ function VideoAdFrame({
 
   // `autoPlay` only applies when the element first loads, so drive playback
   // from the active flag: play the visible ad, pause and rewind the others.
-  // A rejected play() (autoplay policy, or interrupted by a quick scroll)
-  // is not a media failure: the paused element keeps showing its poster.
+  // A rejected play() is not a media failure: the paused element keeps
+  // showing its poster. If the browser refuses unmuted playback (no gesture
+  // on this page yet), fall back to muted and report sound as off.
   useEffect(() => {
     const video = videoRef.current;
     if (!video || videoFailed) return;
-    if (active) {
-      video.muted = true;
-      video.play()?.catch(() => undefined);
-    } else {
+    if (!active) {
       video.pause();
       video.currentTime = 0;
+      return;
     }
-  }, [active, videoFailed]);
+    video.muted = !soundOn;
+    video.play()?.catch(() => {
+      if (!soundOn) return;
+      video.muted = true;
+      onSoundChange(false);
+      video.play()?.catch(() => undefined);
+    });
+  }, [active, soundOn, videoFailed, onSoundChange]);
+
+  function toggleSound() {
+    const next = !soundOn;
+    const video = videoRef.current;
+    // Flip the element inside the click handler so the gesture covers it.
+    if (video) {
+      video.muted = !next;
+      if (next && video.paused) video.play()?.catch(() => undefined);
+    }
+    onSoundChange(next);
+  }
 
   return (
     <article className={shellClassName}>
@@ -711,7 +754,7 @@ function VideoAdFrame({
           src={ad.media_url}
           poster={ad.poster_url}
           playsInline
-          muted
+          muted={!soundOn}
           loop
           autoPlay={active}
           preload="metadata"
@@ -725,9 +768,27 @@ function VideoAdFrame({
         <Badge className="border-white/15 bg-black/25 text-white backdrop-blur-lg">
           {style.brand}
         </Badge>
-        <span className="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-white/75 backdrop-blur-lg">
-          VIDEO
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-white/75 backdrop-blur-lg">
+            VIDEO
+          </span>
+          {!videoFailed ? (
+            <Button
+              size="icon"
+              variant="outline"
+              className="size-8 rounded-full border-white/15 bg-black/25 text-white backdrop-blur-lg hover:bg-white/15 hover:text-white"
+              onClick={toggleSound}
+              aria-pressed={soundOn}
+              aria-label={soundOn ? "Mute video" : "Unmute video"}
+            >
+              {soundOn ? (
+                <Volume2 className="size-4" aria-hidden="true" />
+              ) : (
+                <VolumeX className="size-4" aria-hidden="true" />
+              )}
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       <div className="absolute inset-x-0 top-[24%] px-7">
