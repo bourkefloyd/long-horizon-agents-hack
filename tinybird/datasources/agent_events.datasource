@@ -1,0 +1,17 @@
+DESCRIPTION >
+    Append-only event memory for content-generation agents. One row per thing an
+    agent did (run started, external query, variant produced, run finished).
+    `payload` is a JSON string; `cost_usd` is set on events that spent money.
+
+SCHEMA >
+    `ts` DateTime `json:$.ts`,
+    `campaign_id` String `json:$.campaign_id`,
+    `agent` String `json:$.agent`,
+    `run_id` String `json:$.run_id`,
+    `event_type` LowCardinality(String) `json:$.event_type`,
+    `variant_id` Nullable(String) `json:$.variant_id`,
+    `payload` String `json:$.payload`,
+    `cost_usd` Nullable(Float64) `json:$.cost_usd`
+
+ENGINE "MergeTree"
+ENGINE_SORTING_KEY "campaign_id, ts"

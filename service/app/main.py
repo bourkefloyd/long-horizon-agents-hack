@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .events import router as events_router
 from .github import (
     GitHubIssueError,
     create_campaign_issue,
@@ -50,6 +51,7 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+app.include_router(events_router)
 
 
 def _health_payload() -> dict[str, str]:

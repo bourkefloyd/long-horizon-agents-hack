@@ -30,6 +30,13 @@ generate for that campaign: use `brief` as the campaign script, `geo` as the mar
 `cdn/staging/<campaign_id>/<variant>/` with a `meta.json` per variant (see `docs/cdn.md`) so the feed can filter by `campaign_id`.
 Do not invent a different campaign id and do not write outside that folder. Publishing to the CDN still requires human approval.
 
+## Upcoming tooling: Tinybird event memory
+
+When `TINYBIRD_API_KEY` is present in the environment, record what a run did as small events instead of growing state or logs:
+`python3 scripts/tb_events.py emit <campaign_id> campaign-gen <event_type> '<json payload>'` (event types: `run_started`,
+`nimble_query`, `variant_generated`, `run_finished`; pass `cost_usd` via the Python API in `scripts/tb_events.py` when money was spent).
+Read prior runs with `python3 scripts/tb_events.py read <campaign_id>`; see `tinybird/README.md`. Never print the key.
+
 ## Human approval
 
 Do not spend money, change the marketing output schema, or publish content without a human decision. Instead, include the proposed
