@@ -22,6 +22,9 @@ assert 'os.getenv("NIMBLE_API_KEY", "")' in config
 assert '"Authorization": f"Bearer {self.api_key}"' in client
 PY
 
+echo "checks(campaign-gen): run offline unit tests"
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m unittest discover -s tests -q
+
 echo "checks(campaign-gen): run offline mock-news dry run"
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m viral_local_ad_generator.cli run \
   --campaign examples/new-bigmac-test.txt \
