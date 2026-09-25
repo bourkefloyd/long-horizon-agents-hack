@@ -32,6 +32,15 @@ On large screens the feed is split: the left column is the ad experience
 counts, and the generation stack (Nimble discover, BFL FLUX 3 preview/submit,
 Liquid fold via the campaign decide step).
 
+## Campaigns
+
+[`/campaigns`](http://localhost:3000/campaigns) lists campaign briefs and
+[`/campaigns/new`](http://localhost:3000/campaigns/new) creates one (prefilled
+with the SF Coffee Launch example). Saving calls `POST /campaigns` on the
+service; **Generate** on the detail page calls `POST /campaigns/{id}/queue`,
+which opens an `lh:campaign-gen` GitHub issue when the service has a
+`GITHUB_TOKEN`, and otherwise marks the campaign queued with a clear message.
+
 ## Environment
 
 `NEXT_PUBLIC_API_BASE_URL` is the campaign service origin. For local development,
