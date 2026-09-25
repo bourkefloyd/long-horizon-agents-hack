@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.parse
@@ -35,6 +36,10 @@ REGION_HOSTS = (
     "https://api.us-east.aws.tinybird.co",
     "https://api.eu-central-1.aws.tinybird.co",
     "https://api.europe-west2.gcp.tinybird.co",
+    "https://api.northamerica-northeast2.gcp.tinybird.co",
+    "https://api.eu-west-1.aws.tinybird.co",
+    "https://api.ap-east-1.aws.tinybird.co",
+    "https://api.ap-southeast-2.aws.tinybird.co",
 )
 
 
@@ -152,7 +157,20 @@ PROBES = (
     "/v0/datasources",
     "/v0/pipes",
     "/v0/tokens",
+    "/v0/user/workspaces",
+    "/v0/workspaces",
 )
+
+
+def _safe_error(text: str, token: str) -> str:
+    """Short error message with the token (which Tinybird echoes back) removed."""
+    try:
+        message = str(json.loads(text).get("error", text))
+    except (ValueError, AttributeError):
+        message = text
+    message = message.replace(token, "[token]")
+    message = re.sub(r"(?i)invalid token\b.*", "invalid token [redacted]", message, flags=re.DOTALL)
+    return message[:100]
 
 
 def detect_host(token: str | None = None, *, verbose: bool = False) -> str | None:
@@ -171,8 +189,7 @@ def detect_host(token: str | None = None, *, verbose: bool = False) -> str | Non
                     print(f"{host}{probe.split('?')[0]} -> {exc}", file=sys.stderr)
                 continue
             if verbose:
-                # Status only: Tinybird echoes the token inside 403 bodies.
-                print(f"{host}{probe.split('?')[0]} -> {status}", file=sys.stderr)
+                print(f"{host}{probe.split('?')[0]} -> {status} {_safe_error(text, token)}", file=sys.stderr)
             if status == 200:
                 return host
     return None
