@@ -44,9 +44,16 @@ const adStyles = [
 ];
 type AdStyle = (typeof adStyles)[number];
 
-/** Vertical creative fills the viewport below the feed chrome. */
+/**
+ * Vertical creative fills the viewport below the feed chrome. The width is
+ * the only sized axis: every ancestor up to the snap section has an auto
+ * height, so a percentage (or `min(...)` containing one) on the block axis
+ * resolves to `auto` and the frame collapses to its border. Deriving the
+ * width from the viewport height keeps the box definite in every browser and
+ * lets `aspect-ratio` produce the 9:16 height.
+ */
 const adViewportClass =
-  "relative z-10 aspect-[9/16] h-[min(calc(100svh-5.5rem),100%)] w-auto max-h-[calc(100svh-5.5rem)] max-w-[min(100%,calc((100svh-5.5rem)*9/16))] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50";
+  "relative z-10 aspect-[9/16] w-[min(100%,calc((100svh-6rem)*9/16))] overflow-hidden rounded-[2rem] border border-white/20 bg-black shadow-2xl shadow-black/50";
 
 const brandByPrefix: Record<string, AdStyle> = {
   sightglass: adStyles[0],
@@ -418,7 +425,7 @@ export function AdDemoFeed() {
       </header>
 
       <div
-        className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain scroll-smooth pt-[4.25rem]"
+        className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain scroll-smooth pt-[4.25rem] scroll-pt-[4.25rem]"
         aria-label="Ad experience"
       >
         {ads.map((ad, index) => {
@@ -668,18 +675,50 @@ function VideoAdFrame({
   shellClassName: string;
   onCta: () => void;
 }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [failedMediaUrl, setFailedMediaUrl] = useState<string | null>(null);
+  const videoFailed = failedMediaUrl === ad.media_url;
+
+  // `autoPlay` only applies when the element first loads, so drive playback
+  // from the active flag: play the visible ad, pause and rewind the others.
+  // A rejected play() (autoplay policy, or interrupted by a quick scroll)
+  // is not a media failure: the paused element keeps showing its poster.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || videoFailed) return;
+    if (active) {
+      video.muted = true;
+      video.play()?.catch(() => undefined);
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [active, videoFailed]);
+
   return (
-    <article className={`${shellClassName} bg-black`}>
-      <video
-        className="absolute inset-0 h-full w-full object-cover"
-        src={ad.media_url}
-        poster={ad.poster_url}
-        playsInline
-        muted
-        loop
-        autoPlay={active}
-        controls={false}
-      />
+    <article className={shellClassName}>
+      {videoFailed && ad.poster_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={ad.poster_url}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover"
+          src={ad.media_url}
+          poster={ad.poster_url}
+          playsInline
+          muted
+          loop
+          autoPlay={active}
+          preload="metadata"
+          controls={false}
+          onError={() => setFailedMediaUrl(ad.media_url)}
+        />
+      )}
       <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,.05),rgba(0,0,0,.88))]" />
 
       <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5">
