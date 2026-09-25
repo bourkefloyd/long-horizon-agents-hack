@@ -94,6 +94,15 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         product_energy = "Quick-play energy"
         craving = "quick-play craving"
         cta = "Download the game and play on your next break."
+    elif any(term in lower for term in ("morning bun", "pastry", "pastries", "bakery", "croissant")):
+        product = "a warm bakery morning bun" if "morning bun" in lower else "a fresh bakery pastry"
+        product_shot = (
+            "fresh bakery reveal: a warm, flaky pastry pulled from a paper bag, sugar crust catching the light, "
+            "a picnic blanket on grass, and a coffee cup beside it"
+        )
+        product_energy = "Fresh-baked weekend energy"
+        craving = "fresh-baked craving"
+        cta = "Grab one warm before the weekend gets going."
     elif "frappe" in lower:
         product = "a new Frappe"
         product_shot = (
