@@ -80,11 +80,31 @@ def make_script_story_reference(market: str, story: NewsStory) -> str:
     return sanitize_story_for_ad(market, story).sanitized_reference
 
 
+IMPERATIVE_OPENERS = (
+    "book",
+    "bring",
+    "come",
+    "discover",
+    "download",
+    "get",
+    "grab",
+    "join",
+    "order",
+    "stop by",
+    "swing by",
+    "taste",
+    "try",
+    "visit",
+)
+
+PASTRY_TERMS = ("kouign", "pastry", "pastries", "patisserie", "patiserie", "croissant", "bakery", "baked")
+
+
 def make_campaign_info(campaign_script: str) -> dict[str, str]:
     raw_phrase = " ".join(campaign_script.split())[:220] or "the featured offer"
     phrase, requested_cta = split_campaign_and_cta(raw_phrase)
     lower = phrase.lower()
-    cta = f"Try {phrase} today."
+    cta = make_default_cta(phrase)
     if "game" in lower:
         product = "a new casual mobile game"
         product_shot = (
@@ -107,6 +127,14 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         product_shot = "fresh coffee reveal: warm cup, rich pour, gentle steam, and a clean cafe-counter close-up"
         product_energy = "Fresh coffee energy"
         craving = "coffee craving"
+    elif any(term in lower for term in PASTRY_TERMS):
+        product = "a fresh, flaky pastry"
+        product_shot = (
+            "bakery pastry reveal: caramelized, layered pastry on a marble bakery counter, buttery sheen, "
+            "a light dusting of sugar, and an espresso cup resting beside it"
+        )
+        product_energy = "Fresh-from-the-oven energy"
+        craving = "buttery pastry craving"
     elif any(term in lower for term in ("pottery", "ceramic", "clay")):
         product = "a date night pottery class"
         product_shot = (
@@ -128,6 +156,14 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         "craving": craving,
     "cta": requested_cta or cta,
     }
+
+
+def make_default_cta(phrase: str) -> str:
+    """Briefs written as an invitation ("Come try ...") are already a CTA; do not wrap them in "Try ... today"."""
+    lower = phrase.lower()
+    if any(lower == opener or lower.startswith(f"{opener} ") for opener in IMPERATIVE_OPENERS):
+        return f"{phrase.rstrip(' .!')}."
+    return f"Try {phrase} today."
 
 
 def split_campaign_and_cta(phrase: str) -> tuple[str, str]:

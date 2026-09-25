@@ -142,6 +142,10 @@ issue body, uses `brief` as the campaign script and `geo` as the market, and wri
 `cdn/staging/<campaign_id>/<variant>/` with `script.txt` and a `meta.json` in the layout described in `docs/cdn.md`.
 Only `dims: "9:16"` is accepted. Nothing is published until the staged folder is reviewed and merged to `main`.
 
+The brief doubles as the CTA when it is already an invitation ("Come try our famous kouign Amann" ends the ad as-is);
+otherwise the CTA is `Try <brief> today.` unless the brief contains an explicit `CTA:` marker. Generic headlines are
+quoted in hooks and voiceover (`the headline "<title>"`) rather than spliced into a sentence.
+
 ```bash
 viral-local-ads \
   stage-cdn \
