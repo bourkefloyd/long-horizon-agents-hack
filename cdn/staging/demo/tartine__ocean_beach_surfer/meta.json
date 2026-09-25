@@ -1,0 +1,25 @@
+{
+  "id": "ad-tartine-surfer",
+  "hook": "Fifty-five degree water. Worth it.",
+  "cta": "Find your morning bun",
+  "media_type": "script",
+  "media_file": "script.txt",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "Ocean Beach surfers"
+    ],
+    "geo": [
+      "US"
+    ],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "complide/wonderful-faraday-eoinzh",
+    "generated_at": "2026-09-25T00:00:00Z",
+    "brief_ref": "content/ads/scripts.json"
+  }
+}
