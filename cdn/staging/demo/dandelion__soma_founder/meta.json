@@ -1,0 +1,25 @@
+{
+  "id": "ad-dandelion-founder",
+  "hook": "They said yes.",
+  "cta": "Make the win sweeter",
+  "media_type": "script",
+  "media_file": "script.txt",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "SoMa startup founders"
+    ],
+    "geo": [
+      "US"
+    ],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "complide/wonderful-faraday-eoinzh",
+    "generated_at": "2026-09-25T00:00:00Z",
+    "brief_ref": "content/ads/scripts.json"
+  }
+}

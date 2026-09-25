@@ -26,10 +26,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { localAdManifest, type AdManifestItem } from "@/content/ads";
+import { localAdManifest } from "@/content/ads";
+import {
+  activeFeedAds,
+  fetchAdManifest,
+  type Ad,
+} from "@/lib/ads";
 import type { CampaignState, EventType, VariantCounts } from "@/lib/types";
 
-const ads = localAdManifest.filter((ad) => ad.targeting.active);
 const adStyles = [
   { brand: "Sightglass Coffee", from: "#071b2b", via: "#31515a", to: "#d5b887" },
   { brand: "Tartine Bakery", from: "#15354a", via: "#df8d55", to: "#f6d991" },
@@ -39,7 +43,28 @@ const adStyles = [
 ];
 type AdStyle = (typeof adStyles)[number];
 
-function dwellEventsFor(ad: AdManifestItem) {
+const brandByPrefix: Record<string, AdStyle> = {
+  sightglass: adStyles[0],
+  tartine: adStyles[1],
+  bi_rite: adStyles[2],
+  dandelion: adStyles[3],
+  boudin: adStyles[4],
+};
+
+function brandForAd(ad: Ad, index: number): AdStyle {
+  const prefix = ad.variant_id.split("__")[0] ?? "";
+  return brandByPrefix[prefix] ?? adStyles[index % adStyles.length];
+}
+
+function localFallbackAds(): Ad[] {
+  return activeFeedAds({
+    version: 1,
+    updated_at: new Date().toISOString(),
+    ads: localAdManifest as Ad[],
+  });
+}
+
+function dwellEventsFor(ad: Ad) {
   const durationMs = (ad.duration_s ?? 10) * 1_000;
   return [
     { delay: durationMs * 0.25, event: "q25" as const },
@@ -90,6 +115,50 @@ export function AdDemoFeed() {
   const [signalStatuses, setSignalStatuses] = useState<
     Record<string, SignalStatus>
   >({});
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [manifestSource, setManifestSource] = useState<"cdn" | "local">(
+    "local",
+  );
+  const [manifestLoading, setManifestLoading] = useState(true);
+  const [manifestError, setManifestError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadManifest() {
+      setManifestLoading(true);
+      setManifestError(null);
+      try {
+        const manifest = await fetchAdManifest();
+        const active = activeFeedAds(manifest);
+        if (active.length === 0) {
+          throw new Error("CDN manifest returned zero active ads.");
+        }
+        if (!cancelled) {
+          setAds(active);
+          setManifestSource("cdn");
+        }
+      } catch (caught) {
+        const fallback = localFallbackAds();
+        if (!cancelled) {
+          setAds(fallback);
+          setManifestSource("local");
+          setManifestError(
+            caught instanceof Error
+              ? caught.message
+              : "Could not load the CDN manifest.",
+          );
+        }
+      } finally {
+        if (!cancelled) setManifestLoading(false);
+      }
+    }
+
+    void loadManifest();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const loadState = useCallback(async () => {
     setStateLoading(true);
@@ -166,6 +235,8 @@ export function AdDemoFeed() {
   );
 
   useEffect(() => {
+    if (ads.length === 0) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -193,10 +264,11 @@ export function AdDemoFeed() {
       if (item) observer.observe(item);
     }
     return () => observer.disconnect();
-  }, [activeIndex]);
+  }, [activeIndex, ads.length]);
 
   useEffect(() => {
     const ad = ads[activeIndex];
+    if (!ad) return;
     const previous = activeSession.current;
     if (previous && previous.variant !== ad.variant_id) {
       const elapsed = performance.now() - previous.startedAt;
@@ -231,15 +303,18 @@ export function AdDemoFeed() {
       for (const timer of dwellTimers.current) window.clearTimeout(timer);
       dwellTimers.current = [];
     };
-  }, [activeIndex, emitSignal]);
+  }, [activeIndex, ads, emitSignal]);
 
-  const scrollTo = useCallback((index: number) => {
-    const bounded = Math.max(0, Math.min(ads.length - 1, index));
-    itemRefs.current[bounded]?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }, []);
+  const scrollTo = useCallback(
+    (index: number) => {
+      const bounded = Math.max(0, Math.min(ads.length - 1, index));
+      itemRefs.current[bounded]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    },
+    [ads.length],
+  );
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -263,6 +338,24 @@ export function AdDemoFeed() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [activeIndex, scrollTo]);
 
+  if (manifestLoading) {
+    return (
+      <main className="grid h-svh place-items-center bg-[#071311] text-white">
+        <p className="text-sm text-white/70">Loading ad manifest…</p>
+      </main>
+    );
+  }
+
+  if (ads.length === 0) {
+    return (
+      <main className="grid h-svh place-items-center bg-[#071311] px-6 text-center text-white">
+        <p className="text-sm text-white/70">
+          {manifestError ?? "No active ads are available."}
+        </p>
+      </main>
+    );
+  }
+
   return (
     <main className="relative h-svh overflow-hidden bg-[#071311] text-white">
       <header className="pointer-events-none fixed inset-x-0 top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
@@ -285,6 +378,21 @@ export function AdDemoFeed() {
               {activeIndex + 1} / {ads.length}
             </p>
           </div>
+          <Badge
+            className={
+              manifestSource === "cdn"
+                ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100"
+                : "border-amber-300/30 bg-amber-400/15 text-amber-100"
+            }
+            title={
+              manifestError ??
+              (manifestSource === "cdn"
+                ? "Loaded from the public CDN manifest"
+                : "Using bundled local manifest")
+            }
+          >
+            {manifestSource === "cdn" ? "CDN" : "Local"}
+          </Badge>
         </div>
 
         <Button
@@ -306,7 +414,7 @@ export function AdDemoFeed() {
         aria-label="Ad demo feed"
       >
         {ads.map((ad, index) => {
-          const style = adStyles[index % adStyles.length];
+          const style = brandForAd(ad, index);
           return (
             <section
               key={ad.id}
@@ -325,7 +433,7 @@ export function AdDemoFeed() {
                 aria-hidden="true"
               />
 
-              <ScriptAdFrame
+              <AdCreativeFrame
                 ad={ad}
                 active={index === activeIndex}
                 style={style}
@@ -373,13 +481,164 @@ export function AdDemoFeed() {
   );
 }
 
+function AdCreativeFrame({
+  ad,
+  active,
+  style,
+  onCta,
+}: {
+  ad: Ad;
+  active: boolean;
+  style: AdStyle;
+  onCta: () => void;
+}) {
+  switch (ad.media_type) {
+    case "image":
+      return (
+        <ImageAdFrame ad={ad} active={active} style={style} onCta={onCta} />
+      );
+    case "video":
+      return (
+        <VideoAdFrame ad={ad} active={active} style={style} onCta={onCta} />
+      );
+    case "script":
+    default:
+      return (
+        <ScriptAdFrame ad={ad} active={active} style={style} onCta={onCta} />
+      );
+  }
+}
+
+function ImageAdFrame({
+  ad,
+  active,
+  style,
+  onCta,
+}: {
+  ad: Ad;
+  active: boolean;
+  style: AdStyle;
+  onCta: () => void;
+}) {
+  const imageUrl = ad.poster_url ?? ad.media_url;
+  return (
+    <article
+      className="relative z-10 aspect-[9/16] h-[min(72svh,46rem)] max-w-[88vw] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={imageUrl}
+        alt=""
+        className={`absolute inset-0 h-full w-full object-cover transition-transform duration-[2500ms] ${
+          active ? "scale-100" : "scale-105"
+        }`}
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,.08),rgba(0,0,0,.88))]" />
+
+      <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5">
+        <Badge className="border-white/15 bg-black/25 text-white backdrop-blur-lg">
+          {style.brand}
+        </Badge>
+        <span className="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-white/75 backdrop-blur-lg">
+          POSTER
+        </span>
+      </div>
+
+      <div className="absolute inset-x-0 top-[24%] px-7">
+        <p className="text-[11px] font-semibold tracking-[0.2em] text-white/60 uppercase">
+          The hook
+        </p>
+        <h1 className="mt-3 text-balance text-4xl font-semibold leading-[0.95] tracking-[-0.055em] drop-shadow-lg">
+          {ad.hook}
+        </h1>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 p-5">
+        <p className="mb-3 font-mono text-[10px] tracking-wide text-white/55">
+          {ad.variant_id}
+        </p>
+        <Button
+          size="lg"
+          className="h-11 w-full rounded-full bg-white text-zinc-950 shadow-lg hover:bg-white/90"
+          onClick={onCta}
+        >
+          {ad.cta}
+          <ExternalLink aria-hidden="true" />
+        </Button>
+      </div>
+    </article>
+  );
+}
+
+function VideoAdFrame({
+  ad,
+  active,
+  style,
+  onCta,
+}: {
+  ad: Ad;
+  active: boolean;
+  style: AdStyle;
+  onCta: () => void;
+}) {
+  return (
+    <article
+      className="relative z-10 aspect-[9/16] h-[min(72svh,46rem)] max-w-[88vw] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50 bg-black"
+    >
+      <video
+        className="absolute inset-0 h-full w-full object-cover"
+        src={ad.media_url}
+        poster={ad.poster_url}
+        playsInline
+        muted
+        loop
+        autoPlay={active}
+        controls={false}
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,.05),rgba(0,0,0,.88))]" />
+
+      <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5">
+        <Badge className="border-white/15 bg-black/25 text-white backdrop-blur-lg">
+          {style.brand}
+        </Badge>
+        <span className="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-white/75 backdrop-blur-lg">
+          VIDEO
+        </span>
+      </div>
+
+      <div className="absolute inset-x-0 top-[24%] px-7">
+        <p className="text-[11px] font-semibold tracking-[0.2em] text-white/60 uppercase">
+          The hook
+        </p>
+        <h1 className="mt-3 text-balance text-4xl font-semibold leading-[0.95] tracking-[-0.055em] drop-shadow-lg">
+          {ad.hook}
+        </h1>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 p-5">
+        <p className="mb-3 font-mono text-[10px] tracking-wide text-white/55">
+          {ad.variant_id}
+        </p>
+        <Button
+          size="lg"
+          className="h-11 w-full rounded-full bg-white text-zinc-950 shadow-lg hover:bg-white/90"
+          onClick={onCta}
+        >
+          {ad.cta}
+          <ExternalLink aria-hidden="true" />
+        </Button>
+      </div>
+    </article>
+  );
+}
+
 function ScriptAdFrame({
   ad,
   active,
   style,
   onCta,
 }: {
-  ad: AdManifestItem;
+  ad: Ad;
   active: boolean;
   style: AdStyle;
   onCta: () => void;
@@ -453,7 +712,7 @@ function StateCard({
   signalStatus,
   onRetry,
 }: {
-  ad: AdManifestItem;
+  ad: Ad;
   campaign: CampaignState | null;
   loading: boolean;
   error: string | null;

@@ -110,3 +110,12 @@ export function pickAd(
 function normalize(value: string): string {
   return value.trim().toLowerCase();
 }
+
+/** Active ads for the vertical feed, highest weight first. */
+export function activeFeedAds(manifest: AdManifest): Ad[] {
+  return [...manifest.ads]
+    .filter((ad) => ad.targeting.active && ad.targeting.weight > 0)
+    .sort(
+      (left, right) => right.targeting.weight - left.targeting.weight,
+    );
+}
