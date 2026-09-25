@@ -40,9 +40,6 @@ jobs:
   guard:
     name: Route task
     runs-on: ubuntu-latest
-    concurrency:
-      group: lh-route-${{ inputs.target }}-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
-      cancel-in-progress: false
     outputs:
       run: ${{ steps.decide.outputs.run }}
       issue_number: ${{ steps.decide.outputs.issue_number }}

@@ -25,7 +25,7 @@ Working memory and instructions for the GitHub Actions agent runs. Design note: 
 The target is selected by one label: `lh:web` or `lh:nimble` (later, `lh:bfl`).
 
 1. Open an issue describing one reviewable task and add its `lh:<target>` label, or add the label to an existing issue.
-2. The target workflow starts when `lh:<target>` is applied (`issues.labeled`); creating an issue with that label already attached fires once (not on `opened`). To continue the same task, comment `/lh <instruction>` on that issue
+2. The target workflow starts on `issues.labeled` (including when you create an issue with `lh:<target>` already attached). To continue the same task, comment `/lh <instruction>` on that issue
    (owner, member, or collaborator only); the text after `/lh` applies to that run.
 3. Manual fallback: Actions > "LH <target>" > Run workflow. `issue_number` 0 opens a PR without commenting on an issue.
 
