@@ -1,8 +1,7 @@
 name: LH web
 
-# Thin caller for the web playable target. Fires on issues labeled lh:web,
-# on issue comments starting with /lh (issues only, not PR threads), and on
-# manual dispatch. All logic lives in lh-run.yml.
+# Thin target caller. Shared routing and execution live in lh-target.yml and
+# lh-run.yml; this file only declares triggers, manual inputs, and the target.
 
 on:
   issues:
@@ -14,8 +13,8 @@ on:
       issue_number:
         description: "Issue to work on (0 = manual run, no issue comment)"
         required: false
-        type: number
-        default: 0
+        type: string
+        default: "0"
       instruction:
         description: "One-shot instruction for this run"
         required: false
@@ -33,74 +32,11 @@ permissions:
   issues: write
 
 jobs:
-  guard:
-    name: Should run?
-    runs-on: ubuntu-latest
-    outputs:
-      run: ${{ steps.decide.outputs.run }}
-      issue_number: ${{ steps.decide.outputs.issue_number }}
-      instruction: ${{ steps.decide.outputs.instruction }}
-      model: ${{ steps.decide.outputs.model }}
-    steps:
-      - name: Decide
-        id: decide
-        env:
-          EVENT: ${{ github.event_name }}
-          ACTION: ${{ github.event.action }}
-          IS_PR: ${{ github.event.issue.pull_request != null }}
-          HAS_LABEL: ${{ contains(github.event.issue.labels.*.name, 'lh:web') }}
-          LABEL_ADDED: ${{ github.event.label.name }}
-          COMMENT: ${{ github.event.comment.body }}
-          COMMENT_AUTHOR_ASSOC: ${{ github.event.comment.author_association }}
-          EVENT_ISSUE: ${{ github.event.issue.number }}
-          IN_ISSUE: ${{ inputs.issue_number }}
-          IN_INSTRUCTION: ${{ inputs.instruction }}
-          IN_MODEL: ${{ inputs.model }}
-        run: |
-          RUN=false; ISSUE=0; INSTRUCTION=""; MODEL="composer-2.5"
-          case "$EVENT" in
-            workflow_dispatch)
-              RUN=true; ISSUE="${IN_ISSUE:-0}"; INSTRUCTION="$IN_INSTRUCTION"; MODEL="${IN_MODEL:-$MODEL}" ;;
-            issues)
-              if [ "$IS_PR" = "false" ]; then
-                if [ "$ACTION" = "labeled" ] && [ "$LABEL_ADDED" = "lh:web" ]; then RUN=true; fi
-                if [ "$ACTION" = "opened" ] && [ "$HAS_LABEL" = "true" ]; then RUN=true; fi
-                ISSUE="$EVENT_ISSUE"
-              fi ;;
-            issue_comment)
-              if [ "$IS_PR" = "false" ] && [ "$HAS_LABEL" = "true" ]; then
-                case "$COMMENT" in
-                  /lh|/lh\ *|/lh$'\n'*|/lh$'\r'*)
-                    case "$COMMENT_AUTHOR_ASSOC" in
-                      OWNER|MEMBER|COLLABORATOR) RUN=true ;;
-                      *) echo "::notice::/lh ignored: author is $COMMENT_AUTHOR_ASSOC" ;;
-                    esac
-                    ISSUE="$EVENT_ISSUE"
-                    INSTRUCTION="$(printf '%s' "$COMMENT" | sed '1s#^/lh[[:space:]]*##')" ;;
-                esac
-              fi ;;
-          esac
-          {
-            echo "run=$RUN"
-            echo "issue_number=$ISSUE"
-            echo "model=$MODEL"
-            echo "instruction<<LH_EOF"
-            printf '%s\n' "$INSTRUCTION" | head -c 4000
-            echo "LH_EOF"
-          } >> "$GITHUB_OUTPUT"
-          echo "run=$RUN issue=$ISSUE model=$MODEL"
-
-  run:
-    needs: guard
-    if: needs.guard.outputs.run == 'true'
-    uses: ./.github/workflows/lh-run.yml
-    # Concurrency (one run per target and issue) lives in lh-run.yml only.
-    # A matching group here deadlocks: the caller holds the slot until the
-    # reusable workflow finishes, which cannot start while the slot is taken.
+  route:
+    uses: ./.github/workflows/lh-target.yml
     with:
       target: web
-      issue_number: ${{ fromJSON(needs.guard.outputs.issue_number) }}
-      instruction: ${{ needs.guard.outputs.instruction }}
-      model: ${{ needs.guard.outputs.model }}
-    secrets:
-      CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+      issue_number: ${{ inputs.issue_number }}
+      instruction: ${{ inputs.instruction || '' }}
+      model: ${{ inputs.model || 'composer-2.5' }}
+    secrets: inherit

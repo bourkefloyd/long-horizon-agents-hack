@@ -1,6 +1,6 @@
 name: LH run (reusable)
 
-# One long-horizon run of the Cursor CLI against a target (web | agents).
+# One long-horizon run of the Cursor CLI against a target under .lh/.
 # The agent step only edits files. Branching, committing, pushing, PR
 # open/update, and the issue comment are deterministic steps below.
 # Design note: docs/lh-workflow.md. State layout: .lh/README.md.
@@ -9,7 +9,7 @@ on:
   workflow_call:
     inputs:
       target:
-        description: "Target directory under .lh/ (web | agents)"
+        description: "Target directory under .lh/"
         required: true
         type: string
       issue_number:
@@ -40,6 +40,8 @@ on:
     secrets:
       CURSOR_API_KEY:
         required: true
+      NIMBLE_API_KEY:
+        required: false
 
 permissions:
   contents: write
@@ -65,8 +67,9 @@ jobs:
       - name: Validate inputs
         run: |
           case "$TARGET" in
-            web|agents) ;;
-            *) echo "::error::target must be web or agents, got '$TARGET'"; exit 1 ;;
+            ""|*[!a-z0-9-]*|-*|*-)
+              echo "::error::target must contain only lowercase letters, numbers, and internal hyphens: '$TARGET'"
+              exit 1 ;;
           esac
           if [ "$BASE_REF" != "${{ github.event.repository.default_branch }}" ]; then
             echo "::notice::Running on non-default ref '$BASE_REF' (smoke or test run). PR base will be '$BASE_REF'."
@@ -108,6 +111,7 @@ jobs:
 
       - name: Check target files
         run: |
+          [ -d ".lh/$TARGET" ] || { echo "::error::unknown target '$TARGET'"; exit 1; }
           for f in ".lh/$TARGET/prompt.md" ".lh/$TARGET/state.md" ".lh/$TARGET/checks.sh" ".cursor/cli.json"; do
             [ -f "$f" ] || { echo "::error::missing $f"; exit 1; }
           done
@@ -141,9 +145,10 @@ jobs:
 
       - name: Run agent (restricted, file edits only)
         id: agent
-        # Only CURSOR_API_KEY here. No GH token, no git credentials.
+        # No GH token or git credentials. Nimble's key is target-scoped.
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          NIMBLE_API_KEY: ${{ inputs.target == 'nimble' && secrets.NIMBLE_API_KEY || '' }}
         run: |
           set -o pipefail
           agent --version
@@ -170,6 +175,19 @@ jobs:
           rm -rf .lh/log/*.tmp 2>/dev/null || true
           echo "Changed files:"; git status --short
 
+      - name: Capture approval request
+        id: approval
+        run: |
+          REQUEST=".lh/$TARGET/approval-request.md"
+          if [ -f "$REQUEST" ]; then
+            cp "$REQUEST" "$RUNNER_TEMP/approval-request.md"
+            rm -f "$REQUEST"
+            echo "requested=true" >> "$GITHUB_OUTPUT"
+            echo "Approval requested; the request file will not be committed."
+          else
+            echo "requested=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Enforce state file contract
         id: state
         run: |
@@ -189,6 +207,8 @@ jobs:
       - name: Run target checks
         id: checks
         continue-on-error: true
+        env:
+          NIMBLE_API_KEY: ${{ inputs.target == 'nimble' && secrets.NIMBLE_API_KEY || '' }}
         run: |
           set -o pipefail
           bash ".lh/$TARGET/checks.sh" 2>&1 | tee "$RUNNER_TEMP/checks-output.txt"
@@ -308,6 +328,54 @@ jobs:
           fi
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
           echo "PR: $PR_URL"
+
+      - name: Open approval issue
+        if: steps.approval.outputs.requested == 'true' && steps.publish.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.publish.outputs.pr_url }}
+        run: |
+          case "$PR_URL" in
+            "https://github.com/${GITHUB_REPOSITORY}/pull/"*) ;;
+            *) echo "::error::approval requires a GitHub pull request, got '$PR_URL'"; exit 1 ;;
+          esac
+
+          SUMMARY=$(awk 'NF {print; exit}' "$RUNNER_TEMP/approval-request.md" \
+            | sed -E 's/^#+[[:space:]]*//; s/[[:cntrl:]]//g' | cut -c1-100)
+          [ -n "$SUMMARY" ] || SUMMARY="review ${TARGET} changes"
+          if grep -Eqi '(authorization:|bearer[[:space:]]|api[_ -]?key[[:space:]]*[:=]|secret[[:space:]]*[:=]|token[[:space:]]*[:=])' \
+            "$RUNNER_TEMP/approval-request.md"; then
+            echo "::warning::approval request looked sensitive; using a generic summary"
+            SUMMARY="review ${TARGET} changes"
+          fi
+
+          ASSIGNEE=$(jq -r --arg target "$TARGET" '.[$target] // .default // empty' .lh/owners.json)
+          case "$ASSIGNEE" in
+            ""|REPLACE_*|TODO*|UNKNOWN*) ASSIGNEE=$(jq -r '.default' .lh/owners.json) ;;
+          esac
+
+          APPROVAL_URL=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --label "lh:approval" --label "lh:${TARGET}" --limit 100 --json url,body \
+            --jq "map(select((.body // \"\") | contains(\"PR: ${PR_URL}\")))[0].url // empty")
+          if [ -z "$APPROVAL_URL" ]; then
+            {
+              echo "A human decision is required before this pull request may merge."
+              echo
+              echo "Target: \`${TARGET}\`"
+              echo "PR: ${PR_URL}"
+              echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              echo
+              echo "Review the pull request, then an assignee may comment \`/approve\` on this issue to squash-merge it."
+              echo "The approval request content is intentionally omitted so secrets cannot be copied into an issue."
+            } > "$RUNNER_TEMP/approval-issue.md"
+            APPROVAL_URL=$(gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "Approval needed: ${SUMMARY}" \
+              --label "lh:approval" --label "lh:${TARGET}" --assignee "$ASSIGNEE" \
+              --body-file "$RUNNER_TEMP/approval-issue.md")
+          fi
+          gh pr comment "$PR_URL" --repo "$GITHUB_REPOSITORY" \
+            --body "Human approval is required: ${APPROVAL_URL}. An assignee must comment \`/approve\` there."
+          echo "Approval: $APPROVAL_URL"
 
       - name: Comment on issue (deterministic)
         if: inputs.issue_number != 0

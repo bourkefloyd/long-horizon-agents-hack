@@ -1,0 +1,7 @@
+Product: McDonald's Big Mac
+Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite.
+Core message: the Big Mac is familiar, craveable, fast, and satisfying.
+Tone: upbeat, playful, local, never mean-spirited.
+CTA: Grab a Big Mac today.
+Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship.
+

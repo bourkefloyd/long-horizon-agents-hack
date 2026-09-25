@@ -1,0 +1,13 @@
+[
+  {
+    "title": "San Francisco food festival draws huge weekend crowds",
+    "url": "https://example.com/local-food-festival",
+    "source": "Mock Local News",
+    "published_at": "2026-09-25",
+    "snippet": "A lively neighborhood food event became one of the area's most shared local stories.",
+    "relevance_score": 0.9,
+    "virality_score": 0.8,
+    "brand_safe": true,
+    "raw": {}
+  }
+]

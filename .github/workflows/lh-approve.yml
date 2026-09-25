@@ -1,0 +1,56 @@
+name: LH approval
+
+# An approval issue is the auditable human gate. Only an issue assignee may
+# approve, and only the same-repository PR linked by the deterministic runner
+# can be merged.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  approve:
+    if: >-
+      github.event.issue.pull_request == null &&
+      (github.event.comment.body == '/approve' || startsWith(github.event.comment.body, '/approve '))
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      COMMENTER: ${{ github.event.comment.user.login }}
+    steps:
+      - name: Verify assignee and merge linked PR
+        run: |
+          gh api "repos/${REPO}/issues/${ISSUE_NUMBER}" > "$RUNNER_TEMP/issue.json"
+
+          if ! jq -e '.labels | map(.name) | index("lh:approval") != null' "$RUNNER_TEMP/issue.json" >/dev/null; then
+            echo "::error::issue is not labeled lh:approval"
+            exit 1
+          fi
+          if ! jq -e --arg login "$COMMENTER" '.assignees | map(.login) | index($login) != null' \
+            "$RUNNER_TEMP/issue.json" >/dev/null; then
+            echo "::error::@${COMMENTER} is not an assignee of approval issue #${ISSUE_NUMBER}"
+            exit 1
+          fi
+
+          PR_URL=$(jq -r '.body // ""' "$RUNNER_TEMP/issue.json" \
+            | awk '/^PR: https:\/\/github.com\// {print $2; exit}')
+          case "$PR_URL" in
+            "https://github.com/${REPO}/pull/"[0-9]*) ;;
+            *) echo "::error::approval issue does not link a valid ${REPO} pull request"; exit 1 ;;
+          esac
+
+          STATE=$(gh pr view "$PR_URL" --repo "$REPO" --json state --jq .state)
+          [ "$STATE" = "OPEN" ] || { echo "::error::linked PR is $STATE, not OPEN"; exit 1; }
+
+          gh pr merge "$PR_URL" --repo "$REPO" --squash --delete-branch
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" \
+            --body "Approved by @${COMMENTER} and squash-merged ${PR_URL}."
+          gh issue close "$ISSUE_NUMBER" --repo "$REPO" \
+            --comment "Approval completed."

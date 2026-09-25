@@ -1,0 +1,42 @@
+name: LH nimble
+
+# Thin target caller. Shared routing and execution live in lh-target.yml and
+# lh-run.yml; this file only declares triggers, manual inputs, and the target.
+
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue to work on (0 = manual run, no issue comment)"
+        required: false
+        type: string
+        default: "0"
+      instruction:
+        description: "One-shot instruction for this run"
+        required: false
+        type: string
+        default: ""
+      model:
+        description: "Cursor CLI model slug"
+        required: false
+        type: string
+        default: composer-2.5
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  route:
+    uses: ./.github/workflows/lh-target.yml
+    with:
+      target: nimble
+      issue_number: ${{ inputs.issue_number }}
+      instruction: ${{ inputs.instruction || '' }}
+      model: ${{ inputs.model || 'composer-2.5' }}
+    secrets: inherit

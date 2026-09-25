@@ -1,0 +1,21 @@
+{
+  "id": "demo-launch-script-concept",
+  "hook": "What if your campaign woke up smarter?",
+  "cta": "Build the next variant",
+  "media_type": "script",
+  "media_file": "script.txt",
+  "script_file": "script.txt",
+  "poster_file": "poster.svg",
+  "duration_s": 15,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": ["creative", "marketers"],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "seed-demo",
+    "generated_at": "2026-09-25T20:00:00Z",
+    "brief_ref": "HACK_PLAN.md"
+  }
+}

@@ -1,0 +1,108 @@
+name: LH target router (reusable)
+
+# Shared issue-label and /lh routing for every long-horizon target. A new
+# target only needs a small caller plus .lh/<target>/{prompt,state,checks}.
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: "Target directory and lh:<target> issue label"
+        required: true
+        type: string
+      issue_number:
+        description: "Manual issue number (0 = no issue)"
+        required: false
+        type: string
+        default: "0"
+      instruction:
+        description: "Manual one-shot instruction"
+        required: false
+        type: string
+        default: ""
+      model:
+        description: "Cursor CLI model slug"
+        required: false
+        type: string
+        default: composer-2.5
+    secrets:
+      CURSOR_API_KEY:
+        required: true
+      NIMBLE_API_KEY:
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  guard:
+    name: Route task
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+      issue_number: ${{ steps.decide.outputs.issue_number }}
+      instruction: ${{ steps.decide.outputs.instruction }}
+      model: ${{ steps.decide.outputs.model }}
+    steps:
+      - name: Decide
+        id: decide
+        env:
+          TARGET: ${{ inputs.target }}
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          IS_PR: ${{ github.event.issue.pull_request != null }}
+          HAS_LABEL: ${{ contains(github.event.issue.labels.*.name, format('lh:{0}', inputs.target)) }}
+          LABEL_ADDED: ${{ github.event.label.name }}
+          COMMENT: ${{ github.event.comment.body }}
+          COMMENT_AUTHOR_ASSOC: ${{ github.event.comment.author_association }}
+          EVENT_ISSUE: ${{ github.event.issue.number }}
+          IN_ISSUE: ${{ inputs.issue_number }}
+          IN_INSTRUCTION: ${{ inputs.instruction }}
+          IN_MODEL: ${{ inputs.model }}
+        run: |
+          RUN=false; ISSUE=0; INSTRUCTION=""; MODEL="composer-2.5"
+          TARGET_LABEL="lh:${TARGET}"
+          case "$EVENT" in
+            workflow_dispatch)
+              RUN=true; ISSUE="${IN_ISSUE:-0}"; INSTRUCTION="$IN_INSTRUCTION"; MODEL="${IN_MODEL:-$MODEL}" ;;
+            issues)
+              if [ "$IS_PR" = "false" ]; then
+                if [ "$ACTION" = "labeled" ] && [ "$LABEL_ADDED" = "$TARGET_LABEL" ]; then RUN=true; fi
+                if [ "$ACTION" = "opened" ] && [ "$HAS_LABEL" = "true" ]; then RUN=true; fi
+                ISSUE="$EVENT_ISSUE"
+              fi ;;
+            issue_comment)
+              if [ "$IS_PR" = "false" ] && [ "$HAS_LABEL" = "true" ]; then
+                case "$COMMENT" in
+                  /lh|/lh\ *|/lh$'\n'*|/lh$'\r'*)
+                    case "$COMMENT_AUTHOR_ASSOC" in
+                      OWNER|MEMBER|COLLABORATOR) RUN=true ;;
+                      *) echo "::notice::/lh ignored: author is $COMMENT_AUTHOR_ASSOC" ;;
+                    esac
+                    ISSUE="$EVENT_ISSUE"
+                    INSTRUCTION="$(printf '%s' "$COMMENT" | sed '1s#^/lh[[:space:]]*##')" ;;
+                esac
+              fi ;;
+          esac
+          {
+            echo "run=$RUN"
+            echo "issue_number=$ISSUE"
+            echo "model=$MODEL"
+            echo "instruction<<LH_EOF"
+            printf '%s\n' "$INSTRUCTION" | head -c 4000
+            echo "LH_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "target=$TARGET run=$RUN issue=$ISSUE model=$MODEL"
+
+  run:
+    needs: guard
+    if: needs.guard.outputs.run == 'true'
+    uses: ./.github/workflows/lh-run.yml
+    with:
+      target: ${{ inputs.target }}
+      issue_number: ${{ fromJSON(needs.guard.outputs.issue_number) }}
+      instruction: ${{ needs.guard.outputs.instruction }}
+      model: ${{ needs.guard.outputs.model }}
+    secrets: inherit

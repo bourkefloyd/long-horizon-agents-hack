@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Deterministic checks for the web target. The agent cannot skip these; the
 # workflow runs them after the agent step and records the result.
-# Stub until web/ exists: then it must install, lint, and build.
+# Once web/ exists, install from lockfile, lint, and build.
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
@@ -13,11 +13,9 @@ fi
 
 cd web
 echo "checks(web): npm ci"
-npm ci --no-audit --no-fund
-if node -e "process.exit(require('./package.json').scripts?.lint ? 0 : 1)"; then
-  echo "checks(web): npm run lint"
-  npm run lint
-fi
+npm ci --prefer-offline --no-audit --no-fund
+echo "checks(web): npm run lint"
+npm run lint
 echo "checks(web): npm run build"
 npm run build
 echo "checks(web): ok"
