@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 from .bfl_client import BFLClient, find_media_url
 from .brand_guard import validate_no_famous_brands
-from .models import NewsOutlet, NewsStory, VideoAdConcept
+from .event_logger import PipelineLogger
 from .models import NewsOutlet, NewsStory, SanitizedStory, VideoAdConcept
 from .nimble_client import NimbleClient, mock_stories
-from .prompts import generate_video_concepts
+from .prompts import generate_video_concepts, make_campaign_info
 from .sanitizer import sanitize_stories_for_ad
 
 
@@ -31,8 +32,34 @@ def run_pipeline(
     story_source: str = "",
     story_published_at: str = "",
     story_snippet: str = "",
+    logger: PipelineLogger | None = None,
 ) -> dict[str, object]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    emit_log(
+        logger,
+        "pipeline.run",
+        "input",
+        {
+            "campaign_script": campaign_script,
+            "market": market,
+            "output_dir": str(output_dir),
+            "use_mock_news": use_mock_news,
+            "dry_run": dry_run,
+            "generate": generate,
+            "poll": poll,
+            "download_media": download_media,
+            "max_stories": max_stories,
+            "max_outlets": max_outlets,
+            "max_videos": max_videos,
+            "story_override": {
+                "title": story_title,
+                "url": story_url,
+                "source": story_source,
+                "published_at": story_published_at,
+                "snippet": story_snippet,
+            },
+        },
+    )
 
     stories = discover_stories(
         market=market,
@@ -46,6 +73,7 @@ def run_pipeline(
         story_source=story_source,
         story_published_at=story_published_at,
         story_snippet=story_snippet,
+        logger=logger,
     )
     concepts = generate_ads_from_stories(
         campaign_script=campaign_script,
@@ -53,6 +81,7 @@ def run_pipeline(
         stories=stories,
         output_dir=output_dir,
         max_videos=max_videos,
+        logger=logger,
     )
     if generate and not dry_run:
         generate_videos(
@@ -61,8 +90,11 @@ def run_pipeline(
             bfl_client=bfl_client,
             poll=poll,
             download_media=download_media,
+            logger=logger,
         )
-    return write_run_artifacts(output_dir, market, stories, concepts)
+    result = write_run_artifacts(output_dir, market, stories, concepts, logger=logger)
+    emit_log(logger, "pipeline.run", "output", result)
+    return result
 
 
 def discover_stories(
@@ -78,8 +110,28 @@ def discover_stories(
     story_source: str = "",
     story_published_at: str = "",
     story_snippet: str = "",
+    logger: PipelineLogger | None = None,
 ) -> list[NewsStory]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    emit_log(
+        logger,
+        "news.discovery",
+        "input",
+        {
+            "market": market,
+            "use_mock_news": use_mock_news,
+            "max_stories": max_stories,
+            "max_outlets": max_outlets,
+            "provided_outlets": [outlet.to_dict() for outlet in outlets] if outlets else [],
+            "story_override": {
+                "title": story_title,
+                "url": story_url,
+                "source": story_source,
+                "published_at": story_published_at,
+                "snippet": story_snippet,
+            },
+        },
+    )
     if story_title:
         stories = [
             NewsStory(
@@ -102,11 +154,31 @@ def discover_stories(
                 output_dir=output_dir,
                 nimble_client=nimble_client,
                 max_outlets=max_outlets,
+                logger=logger,
             )
         stories = nimble_client.search_recent_local_news(market, limit=12, outlets=outlets)
+    emit_log(
+        logger,
+        "news.discovery",
+        "candidate_stories",
+        {
+            "candidate_count": len(stories),
+            "stories": [story.to_dict() for story in stories],
+        },
+    )
     selected_stories = select_stories(stories, count=max_stories)
     write_json(output_dir / "stories.json", [story.to_dict() for story in selected_stories])
     write_news_summary(output_dir / "news.md", market, selected_stories)
+    emit_log(
+        logger,
+        "news.discovery",
+        "selected_stories",
+        {
+            "selected_count": len(selected_stories),
+            "stories": [story.to_dict() for story in selected_stories],
+            "artifacts": ["stories.json", "news.md"],
+        },
+    )
     return selected_stories
 
 
@@ -115,11 +187,28 @@ def discover_outlets(
     output_dir: Path,
     nimble_client: NimbleClient,
     max_outlets: int = 8,
+    logger: PipelineLogger | None = None,
 ) -> list[NewsOutlet]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    emit_log(
+        logger,
+        "outlets.discovery",
+        "input",
+        {"market": market, "max_outlets": max_outlets},
+    )
     outlets = nimble_client.search_local_news_outlets(market, limit=max_outlets)
     write_json(output_dir / "outlets.json", [outlet.to_dict() for outlet in outlets])
     write_outlets_summary(output_dir / "outlets.md", market, outlets)
+    emit_log(
+        logger,
+        "outlets.discovery",
+        "output",
+        {
+            "outlet_count": len(outlets),
+            "outlets": [outlet.to_dict() for outlet in outlets],
+            "artifacts": ["outlets.json", "outlets.md"],
+        },
+    )
     return outlets
 
 
@@ -129,21 +218,75 @@ def generate_ads_from_stories(
     stories: list[NewsStory],
     output_dir: Path,
     max_videos: int | None = None,
+    logger: PipelineLogger | None = None,
 ) -> list[VideoAdConcept]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    campaign = make_campaign_info(campaign_script)
+    emit_log(
+        logger,
+        "ad_generation",
+        "input",
+        {
+            "campaign_script": campaign_script,
+            "campaign_info": campaign,
+            "market": market,
+            "story_count": len(stories),
+            "stories": [story.to_dict() for story in stories],
+            "max_videos": max_videos,
+        },
+    )
     sanitized_stories = sanitize_stories_for_ad(market, stories)
     write_sanitized_stories(output_dir, market, sanitized_stories)
+    emit_log(
+        logger,
+        "sanitization",
+        "output",
+        {
+            "sanitized_count": len(sanitized_stories),
+            "sanitized_stories": [story.to_dict() for story in sanitized_stories],
+            "artifacts": ["sanitized_stories.json", "sanitized_stories.md"],
+        },
+    )
     concepts = [
         concept
         for story, sanitized_story in zip(stories, sanitized_stories, strict=True)
         for concept in generate_video_concepts(campaign_script, market, story, sanitized_story)
     ]
+    emit_log(
+        logger,
+        "ad_generation",
+        "concepts_before_limit",
+        {
+            "concept_count": len(concepts),
+            "concepts": [concept.to_dict() for concept in concepts],
+        },
+    )
     if max_videos is not None:
         concepts = concepts[:max_videos]
-    validate_no_famous_brands(concepts)
+    try:
+        validate_no_famous_brands(concepts)
+    except Exception as error:
+        emit_log(logger, "brand_guard", "validation", {"error": str(error)}, status="error")
+        raise
+    emit_log(
+        logger,
+        "brand_guard",
+        "validation",
+        {"concept_count": len(concepts), "result": "passed"},
+    )
     write_input_webpages(output_dir, stories)
     write_json(output_dir / "concepts.json", [concept.to_dict() for concept in concepts])
     write_markdown_summary(output_dir / "summary.md", market, stories, concepts)
+    emit_log(
+        logger,
+        "ad_generation",
+        "output",
+        {
+            "concept_count": len(concepts),
+            "concepts": [concept.to_dict() for concept in concepts],
+            "artifacts": ["input_webpages.json", "input_webpages.md", "concepts.json", "summary.md"],
+        },
+    )
     return concepts
 
 
@@ -153,25 +296,57 @@ def generate_videos(
     bfl_client: BFLClient,
     poll: bool,
     download_media: bool,
+    logger: PipelineLogger | None = None,
 ) -> list[VideoAdConcept]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    emit_log(
+        logger,
+        "video_generation",
+        "input",
+        {
+            "concept_count": len(concepts),
+            "poll": poll,
+            "download_media": download_media,
+            "concepts": [concept.to_dict() for concept in concepts],
+        },
+    )
     validate_no_famous_brands(concepts)
     for index, concept in enumerate(concepts, start=1):
+        emit_log(
+            logger,
+            "video_generation",
+            "submit_concept",
+            {"index": index, "concept": concept.to_dict()},
+        )
         job = bfl_client.submit_flux3_video(concept.bfl_payload)
         if poll and job.get("polling_url"):
             job["poll_result"] = bfl_client.poll(str(job["polling_url"]))
-            if download_media and job["poll_result"].get("status") == "Ready":
+            poll_status = job["poll_result"].get("status")
+            if poll_status != "Ready":
+                concept.bfl_job = job
+                write_json(output_dir / "concepts.json", [item.to_dict() for item in concepts])
+                raise RuntimeError(f"BFL job ended with status {poll_status}")
+            if download_media:
                 media_path = output_dir / "videos" / f"video_{index:02d}.mp4"
                 job["local_video_path"] = bfl_client.download_video_result(job["poll_result"], media_path)
-            if job["poll_result"].get("status") == "Ready":
-                video_url = find_media_url(job["poll_result"])
-                if video_url:
-                    job["video_url"] = video_url
-                    link_path = output_dir / "video_links" / f"video_{index:02d}.url"
-                    write_text(link_path, video_url + "\n")
+            video_url = find_media_url(job["poll_result"])
+            if video_url:
+                job["video_url"] = video_url
+                link_path = output_dir / "video_links" / f"video_{index:02d}.url"
+                write_text(link_path, video_url + "\n")
         concept.bfl_job = job
     write_json(output_dir / "concepts.json", [concept.to_dict() for concept in concepts])
     write_video_link_index(output_dir, concepts)
+    emit_log(
+        logger,
+        "video_generation",
+        "output",
+        {
+            "concept_count": len(concepts),
+            "concepts": [concept.to_dict() for concept in concepts],
+            "artifacts": ["concepts.json", "video_links/index.json"],
+        },
+    )
     return concepts
 
 
@@ -180,6 +355,7 @@ def write_run_artifacts(
     market: str,
     stories: list[NewsStory],
     concepts: list[VideoAdConcept],
+    logger: PipelineLogger | None = None,
 ) -> dict[str, object]:
     sanitized_stories = sanitize_stories_for_ad(market, stories)
     result = {
@@ -197,6 +373,15 @@ def write_run_artifacts(
     write_json(output_dir / "concepts.json", result["concepts"])
     write_video_link_index(output_dir, concepts)
     write_markdown_summary(output_dir / "summary.md", market, stories, concepts)
+    emit_log(
+        logger,
+        "artifacts",
+        "output",
+        {
+            "run": result,
+            "artifacts": ["run.json", "stories.json", "sanitized_stories.json", "concepts.json", "summary.md"],
+        },
+    )
     return result
 
 
@@ -228,6 +413,17 @@ def select_stories(stories: list[NewsStory], count: int) -> list[NewsStory]:
         reverse=True,
     )
     return ranked[:count]
+
+
+def emit_log(
+    logger: PipelineLogger | None,
+    stage: str,
+    event_type: str,
+    payload: dict[str, Any],
+    status: str = "ok",
+) -> None:
+    if logger:
+        logger.emit(stage, event_type, payload, status=status)
 
 
 def write_json(path: Path, payload: object) -> None:
