@@ -1,6 +1,6 @@
 # .lh: long-horizon agent state
 
-Working memory and instructions for the GitHub Actions agent runs. Design note: [docs/lh-workflow.md](../docs/lh-workflow.md).
+Working memory and instructions for the GitHub Actions agent runs. Full guide: [docs/LH_WORKFLOWS.md](../docs/LH_WORKFLOWS.md).
 
 ## Layout
 
@@ -13,16 +13,18 @@ Working memory and instructions for the GitHub Actions agent runs. Design note: 
     prune-logs.sh      keep the newest K run logs
   log/                 one short summary per run, <run-id>.md, pruned to K (default 5)
   web/                 target: web surface of the campaign automation
+    config.json        target model override (Grok 4.7 High)
     prompt.md          what "improve" means for this target; the agent may edit it
     state.md           the agent's only memory across runs; rewritten every run
     checks.sh          deterministic checks the agent cannot skip
-  nimble/              target: Thomas's local-news ad concept and script generator
+  campaign-gen/        target: Thomas's campaign generator
+    config.json        target model override (Fable 5.1 Thinking High)
   owners.json          target -> GitHub owner for approval issues
 ```
 
 ## Give an agent a task
 
-The target is selected by one label: `lh:web` or `lh:nimble` (later, `lh:bfl`).
+The target is selected by one label: `lh:web` or `lh:campaign-gen`.
 
 1. Open an issue describing one reviewable task and add its `lh:<target>` label, or add the label to an existing issue.
 2. The target workflow starts on `issues.labeled` (including when you create an issue with `lh:<target>` already attached). To continue the same task, comment `/lh <instruction>` on that issue
@@ -45,9 +47,10 @@ The agent may edit `prompt.md` and `state.md`. Those edits ride in the same PR a
 ## Add a target
 
 1. Create `.lh/<target>/{prompt.md,state.md,checks.sh}`; keep the six state sections and make checks deterministic.
-2. Copy a small caller such as `.github/workflows/lh-nimble.yml`, change its name and `target`, and keep `secrets: inherit`.
+2. Copy a small caller such as `.github/workflows/lh-campaign-gen.yml`, change its name and `target`, and keep `secrets: inherit`.
    Shared label/comment routing is in `lh-target.yml`; execution is in `lh-run.yml`, which accepts any safe target directory name.
-3. Add the owner to `.lh/owners.json` and create the `lh:<target>` label.
+3. Add `.lh/<target>/config.json` when the target should override the default Grok 4.7 High model.
+4. Add the owner to `.lh/owners.json` and create the `lh:<target>` label.
 
 ## Human approvals
 

@@ -21,10 +21,10 @@ on:
         type: string
         default: ""
       model:
-        description: "Cursor CLI model slug"
+        description: "Cursor CLI model override (blank uses target config)"
         required: false
         type: string
-        default: composer-2.5
+        default: ""
 
 permissions:
   contents: write
@@ -38,5 +38,5 @@ jobs:
       target: web
       issue_number: ${{ inputs.issue_number }}
       instruction: ${{ inputs.instruction || '' }}
-      model: ${{ inputs.model || 'composer-2.5' }}
+      model: ${{ inputs.model || '' }}
     secrets: inherit

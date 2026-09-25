@@ -23,10 +23,10 @@ on:
         type: string
         default: ""
       model:
-        description: "Cursor CLI model slug"
+        description: "Workflow override for the Cursor CLI model slug"
         required: false
         type: string
-        default: composer-2.5
+        default: ""
       state_max_lines:
         description: "Hard cap on .lh/<target>/state.md line count"
         required: false
@@ -59,7 +59,8 @@ jobs:
     env:
       TARGET: ${{ inputs.target }}
       ISSUE_NUMBER: ${{ inputs.issue_number }}
-      MODEL: ${{ inputs.model }}
+      MODEL_OVERRIDE: ${{ inputs.model }}
+      DEFAULT_MODEL: grok-4.7-high
       STATE_MAX_LINES: ${{ inputs.state_max_lines }}
       KEEP_LOGS: ${{ inputs.keep_logs }}
       BASE_REF: ${{ github.ref_name }}
@@ -119,6 +120,28 @@ jobs:
             || { echo "::error::state.md on the branch is already invalid; fix it by hand"; exit 1; }
           cp ".lh/$TARGET/state.md" "$RUNNER_TEMP/state.before.md"
 
+      - name: Resolve model
+        id: model
+        run: |
+          CONFIG_MODEL=""
+          if [ -f ".lh/$TARGET/config.json" ]; then
+            CONFIG_MODEL=$(jq -er '
+              (.model // "") as $model |
+              if ($model | type) == "string" then $model
+              else error("model must be a string")
+              end
+            ' ".lh/$TARGET/config.json")
+          fi
+          MODEL="${MODEL_OVERRIDE:-${CONFIG_MODEL:-$DEFAULT_MODEL}}"
+          case "$MODEL" in
+            ""|*[!A-Za-z0-9._-]*)
+              echo "::error::invalid Cursor CLI model slug '$MODEL'"
+              exit 1 ;;
+          esac
+          echo "MODEL=$MODEL" >> "$GITHUB_ENV"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "Chosen model: $MODEL"
+
       - name: Fetch issue text
         if: inputs.issue_number != 0
         env:
@@ -148,22 +171,14 @@ jobs:
         # No GH token or git credentials. Nimble's key is target-scoped.
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-          NIMBLE_API_KEY: ${{ inputs.target == 'nimble' && secrets.NIMBLE_API_KEY || '' }}
+          NIMBLE_API_KEY: ${{ inputs.target == 'campaign-gen' && secrets.NIMBLE_API_KEY || '' }}
         run: |
           set -o pipefail
           agent --version
-          # Fall back to auto if the requested slug is not available to this key.
-          USE_MODEL="$MODEL"
-          if agent models > "$RUNNER_TEMP/models.txt" 2>/dev/null; then
-            if ! grep -qi -- "$MODEL" "$RUNNER_TEMP/models.txt"; then
-              echo "::warning::model '$MODEL' not in 'agent models' output; using 'auto'"
-              USE_MODEL="auto"
-            fi
-          else
-            echo "::warning::'agent models' failed; passing '$MODEL' through untested"
-          fi
-          echo "model=$USE_MODEL" >> "$GITHUB_OUTPUT"
-          agent -p --force --trust --output-format text --model "$USE_MODEL" "$(cat "$RUNNER_TEMP/prompt.txt")" \
+          agent models | tee "$RUNNER_TEMP/models.txt"
+          echo "Cursor agent init: target=$TARGET model=$MODEL"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          agent -p --force --trust --output-format text --model "$MODEL" "$(cat "$RUNNER_TEMP/prompt.txt")" \
             2>&1 | tee "$RUNNER_TEMP/agent-output.txt"
 
       - name: Discard edits outside the allowed surface
@@ -208,7 +223,7 @@ jobs:
         id: checks
         continue-on-error: true
         env:
-          NIMBLE_API_KEY: ${{ inputs.target == 'nimble' && secrets.NIMBLE_API_KEY || '' }}
+          NIMBLE_API_KEY: ${{ inputs.target == 'campaign-gen' && secrets.NIMBLE_API_KEY || '' }}
         run: |
           set -o pipefail
           bash ".lh/$TARGET/checks.sh" 2>&1 | tee "$RUNNER_TEMP/checks-output.txt"

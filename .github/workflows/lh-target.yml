@@ -21,10 +21,10 @@ on:
         type: string
         default: ""
       model:
-        description: "Cursor CLI model slug"
+        description: "Workflow override for the Cursor CLI model slug"
         required: false
         type: string
-        default: composer-2.5
+        default: ""
     secrets:
       CURSOR_API_KEY:
         required: true
@@ -62,11 +62,11 @@ jobs:
           IN_INSTRUCTION: ${{ inputs.instruction }}
           IN_MODEL: ${{ inputs.model }}
         run: |
-          RUN=false; ISSUE=0; INSTRUCTION=""; MODEL="composer-2.5"
+          RUN=false; ISSUE=0; INSTRUCTION=""; MODEL="$IN_MODEL"
           TARGET_LABEL="lh:${TARGET}"
           case "$EVENT" in
             workflow_dispatch)
-              RUN=true; ISSUE="${IN_ISSUE:-0}"; INSTRUCTION="$IN_INSTRUCTION"; MODEL="${IN_MODEL:-$MODEL}" ;;
+              RUN=true; ISSUE="${IN_ISSUE:-0}"; INSTRUCTION="$IN_INSTRUCTION" ;;
             issues)
               if [ "$IS_PR" = "false" ]; then
                 if [ "$ACTION" = "labeled" ] && [ "$LABEL_ADDED" = "$TARGET_LABEL" ]; then RUN=true; fi
