@@ -114,6 +114,16 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         product_energy = "Quick-play energy"
         craving = "quick-play craving"
         cta = "Download the game and play on your next break."
+    elif "sandwi" in lower:
+        # Matches "sandwich" and the common "sandwitch" misspelling seen in website briefs.
+        product = "a fresh made-to-order sandwich"
+        product_shot = (
+            "sandwich reveal: crusty bread sliced clean, layered fillings, crisp greens, a melty pull, "
+            "wrapped in paper on a bright deli counter"
+        )
+        product_energy = "Fresh sandwich energy"
+        craving = "lunch craving"
+        cta = "Tap the link and order your sandwich now." if "link" in lower else "Grab your sandwich today."
     elif "frappe" in lower:
         product = "a new Frappe"
         product_shot = (
