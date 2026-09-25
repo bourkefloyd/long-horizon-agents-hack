@@ -24,7 +24,7 @@ Each target has `.lh/<target>/prompt.md`, `state.md`, `checks.sh`, and an option
 
 Nimble is a tool used by `campaign-gen`, not a target name. The application directory remains `viral-local-ad-generator/`.
 
-The thin caller declares `issues.labeled`, `issue_comment`, and `workflow_dispatch`, then delegates to `.github/workflows/lh-target.yml`.
+The thin caller declares `issues.labeled`, `issue_comment`, and `workflow_dispatch`, then delegates to `.github/workflows/lh-target.yml`. GitHub cannot filter `issues.labeled` by label name, so every `lh:*` label wakes every caller; each caller therefore carries a job-level `if` that skips the entire run unless `github.event.label.name` is its own `lh:<target>` (or, for `/lh` comments, that label is on the issue). Non-matching events show as a skipped run with no jobs executed.
 
 ### Router and reusable runner
 
@@ -203,6 +203,7 @@ Issue and comment triggers use workflow definitions from the default branch. Man
 
 - **Run never reaches the agent:** nested concurrency previously blocked the reusable job. Keep the concurrency group only in `lh-run.yml`.
 - **Two runs for one new issue:** listening to both `issues.opened` and `issues.labeled` double-triggered labeled-at-create issues. Keep callers labeled-only.
+- **Every target shows a run for one label:** `issues.labeled` has no label filter, so without the caller-level `if` each target ran its guard job (and skipped the agent) for every `lh:*` label. Keep the `if` on the caller's `route` job so other targets' runs are skipped outright.
 - **Cursor exits before the prompt:** a top-level `version` key in `.cursor/cli.json` failed schema validation. The current file intentionally has only `permissions`.
 - **Model rejected:** inspect the authenticated `agent models` output, update the exact slug in target config or dispatch input, and rerun. Do not use `auto` to hide the mismatch.
 - **Cloud Run returns 403:** the demo API originally required authentication. The deploy now adds `--allow-unauthenticated` unless `CLOUD_RUN_PUBLIC=false`; the service also enables browser CORS. Redeploy after correcting that variable.

@@ -33,6 +33,16 @@ permissions:
 
 jobs:
   route:
+    # GitHub cannot filter issues.labeled by label name, so every lh:* label
+    # wakes every caller. Skip the whole run here unless the event is for this
+    # target; lh-target.yml re-checks author/PR rules on the events that pass.
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'issues'
+          && github.event.label.name == 'lh:campaign-gen')
+      || (github.event_name == 'issue_comment'
+          && !github.event.issue.pull_request
+          && contains(github.event.issue.labels.*.name, 'lh:campaign-gen'))
     uses: ./.github/workflows/lh-target.yml
     with:
       target: campaign-gen
