@@ -18,6 +18,8 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 - Long-horizon workflow, state contract, and this target's prompt exist.
 - workflow_dispatch reached the agent step (concurrency smoke test).
 - Issue #42 router single-target test: this run updated state only; no campaign-gen work from this agent.
+- Document title is LH Marketing; the feed route uses the root title template so its tab reads Ad Demo Feed · LH Marketing.
+- Long-horizon workflow, state contract, and this target's prompt exist; workflow_dispatch reached the agent step.
 
 ## Open
 
@@ -35,3 +37,5 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 - The scaffold decision and stub-check plan are complete and no longer need tracking.
 - Done line "first run has not happened"; superseded by successful agent run.
 - Other-target logs (campaign-gen #33, nimble #26, #19, and dispatch smoke) do not change web work.
+- Nimble and campaign-gen run logs do not change the web console and are safe to forget here.
+- The scaffold decision, stub-check plan, and "first run has not happened" note are complete.
