@@ -1,8 +1,13 @@
+import json
+import os
+import urllib.error
+import urllib.request
 from datetime import timedelta
 from threading import Lock
 
 from fastapi import FastAPI, Query, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .logic import fold_events, utc_now
 from .models import CampaignState, DecisionResult, SignalEvent
@@ -34,6 +39,28 @@ def health() -> dict[str, str]:
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
     return _health_payload()
+
+
+@app.get("/liquid/health", response_model=None)
+def liquid_health() -> JSONResponse:
+    base_url = os.environ.get("LIQUID_TEXT_BASE_URL", "").rstrip("/")
+    if not base_url:
+        return JSONResponse(content={"status": "not configured", "models": []})
+
+    try:
+        with urllib.request.urlopen(f"{base_url}/v1/models", timeout=10) as response:
+            payload = json.load(response)
+        models = [
+            model["id"]
+            for model in payload.get("data", [])
+            if isinstance(model, dict) and isinstance(model.get("id"), str)
+        ]
+        return JSONResponse(content={"status": "ok", "models": models})
+    except (OSError, ValueError, urllib.error.URLError) as exc:
+        return JSONResponse(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            content={"status": "unavailable", "models": [], "error": str(exc)},
+        )
 
 
 @app.post("/signals", status_code=status.HTTP_202_ACCEPTED)

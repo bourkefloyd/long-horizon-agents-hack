@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from .models import NewsStory, VideoAdConcept
+from .models import NewsStory, SanitizedStory, VideoAdConcept
+from .sanitizer import sanitize_story_for_ad
 
 
 ANGLES = [
@@ -12,10 +13,16 @@ ANGLES = [
 ]
 
 
-def generate_video_concepts(campaign_script: str, market: str, story: NewsStory) -> list[VideoAdConcept]:
+def generate_video_concepts(
+    campaign_script: str,
+    market: str,
+    story: NewsStory,
+    sanitized_story: SanitizedStory | None = None,
+) -> list[VideoAdConcept]:
     concepts: list[VideoAdConcept] = []
-    story_frame = make_ad_safe_story_frame(market, story)
-    story_reference = make_script_story_reference(market, story)
+    clean_story = sanitized_story or sanitize_story_for_ad(market, story)
+    story_frame = clean_story.sanitized_frame
+    story_reference = clean_story.sanitized_reference
     campaign = make_campaign_info(campaign_script)
     for index, angle in enumerate(ANGLES, start=1):
         hook = make_hook(market, story_reference, campaign, angle)
@@ -46,7 +53,7 @@ def generate_video_concepts(campaign_script: str, market: str, story: NewsStory)
         }
         concepts.append(
             VideoAdConcept(
-                story_title=story.title,
+                story_title=story_reference,
                 story_url=story.url,
                 variant_index=index,
                 angle=angle,
@@ -63,21 +70,11 @@ def generate_video_concepts(campaign_script: str, market: str, story: NewsStory)
 
 
 def make_ad_safe_story_frame(market: str, story: NewsStory) -> str:
-    text = f"{story.title} {story.snippet}".lower()
-    if any(term in text for term in ("ftx", "bankman-fried", "ellison", "crypto", "fraud")):
-        return f"a {market} tech-world story about disputed FTX money and an unexpected new hire"
-    if any(term in text for term in ("lawsuit", "foreclosure", "scandal", "detained", "ice")):
-        return f"a {market} local news story about {story.title}"
-    return story.title
+    return sanitize_story_for_ad(market, story).sanitized_frame
 
 
 def make_script_story_reference(market: str, story: NewsStory) -> str:
-    text = f"{story.title} {story.snippet}".lower()
-    if any(term in text for term in ("ftx", "bankman-fried", "ellison", "crypto", "fraud")):
-        return f"{market}'s FTX-money dispute and unexpected-hire story"
-    if any(term in text for term in ("lawsuit", "foreclosure", "scandal", "detained", "ice")):
-        return f"{market}'s local story about {story.title}"
-    return f"{market}'s local story about {story.title}"
+    return sanitize_story_for_ad(market, story).sanitized_reference
 
 
 def make_campaign_info(campaign_script: str) -> dict[str, str]:
@@ -148,8 +145,8 @@ def make_10_second_video_script(
             f"Story content reference to use in the ad: {story_reference}",
             f"Campaign message: {campaign['phrase']}",
             "",
-            f"0.0-2.0s | Shot: Fast social-feed style montage of recognizable {market} street energy, phones lighting up, and abstract finance/startup news-card visuals. | On-screen text: {market} is talking. | Voiceover: \"{market}'s tech crowd is talking about money, second chances, and an unexpected hire.\"",
-            f"2.0-4.0s | Shot: Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: {story_reference}. | On-screen text: Unexpected hire. Fresh twist. | Voiceover: \"When the story is all about a surprising new twist...\"",
+            f"0.0-2.0s | Shot: Fast social-feed style montage of recognizable {market} street energy, phones lighting up, and abstract local-news card visuals tied to the story topic. | On-screen text: {market} is talking. | Voiceover: \"{market} is talking about {story_reference}.\"",
+            f"2.0-4.0s | Shot: Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: {story_reference}. | On-screen text: Local story. Fresh twist. | Voiceover: \"When the local story has everyone paying attention...\"",
             f"4.0-7.0s | Shot: Smash cut to a craveable {campaign['product_shot']}. | On-screen text: {campaign['product_energy']}. | Voiceover: \"...make your next twist {campaign['product']}.\"",
             f"7.0-10.0s | Shot: Hero product shot against a bright {market}-inspired backdrop, then quick end-card with a simple CTA. | On-screen text: {campaign['cta']} | Voiceover: \"{campaign['cta']}\"",
             "",

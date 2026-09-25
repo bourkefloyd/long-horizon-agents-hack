@@ -1,15 +1,15 @@
-# state: nimble
+# state: campaign-gen
 
 ## Goal
 
-Document and harden Thomas's viral local ad CLI: campaign text plus a media market drive Nimble discovery (or mock news), then bounded JSON artifacts for review—stories with trusted URLs, brand-safe
-VideoAdConcept rows (hooks, scripts, FLUX/BFL payloads)—without credentials in output.
+Build and harden Thomas's campaign generation agent: turn Nimble research into brand-safe hooks and scripts, then produce bounded
+BFL briefs and reviewable campaign artifacts without leaking credentials.
 
 ## Current plan
 
 1. After `/approve` on the live-search request, run `discover-news` once for San Francisco with `--max-stories 1`; key only from env; check `stories.json` URLs and `brand_safe`.
 2. Before edits under `viral-local-ad-generator/`, mirror checks offline: compileall, mock `run --dry-run`, validate `run.json` story/concept fields and duration caps.
-3. Set `.lh/owners.json` `nimble` to Thomas's GitHub login when known so approval issues assign to him directly.
+3. Set `.lh/owners.json` `campaign-gen` to Thomas's GitHub login when known so approval issues assign to him directly.
 
 ## Done
 
@@ -21,15 +21,18 @@ VideoAdConcept rows (hooks, scripts, FLUX/BFL payloads)—without credentials in
 
 ## Open
 
-- LH router guard test (issue #26): confirm issue-driven nimble routing limits edits to scoped state updates.
+- LH router guard test (issue #26): predecessor target routing limited edits to scoped state updates.
+- Model smoke (issue #33): agent step ran on Claude Fable 5.1; model name reported in run summary; state-only change.
 - Live Nimble path is not run in deterministic checks (quota/network); needs human-approved one-shot discovery.
-- `nimble` owner in `.lh/owners.json` is still a placeholder.
+- `campaign-gen` owner in `.lh/owners.json` is still a placeholder.
 
 ## Decisions
 
 - LH agent runs must not use git/gh/bash; CI runs `checks.sh`; agents validate with allowed Python commands when fixing code.
+- Target renamed from `nimble` to `campaign-gen`; Nimble remains one research tool in the research → scripts → BFL briefs pipeline.
 - One live Nimble search per approval: discover only, no BFL spend, no schema change, no publishing; secrets never in state, logs, or PR artifacts.
 - Approval-request file is stripped before commit; issue title comes from its first line.
+- Prior runs under the `nimble` target name (issues #19, #26) ran on composer-2.5; this run's model differs, so smoke results are not model-comparable.
 
 ## Dropped
 

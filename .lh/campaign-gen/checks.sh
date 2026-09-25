@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deterministic, offline checks for Thomas's Nimble-backed ad generator.
+# Deterministic, offline checks for Thomas's campaign generator.
 set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
@@ -9,10 +9,10 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 
 cd "$APP"
 
-echo "checks(nimble): compile Python sources"
+echo "checks(campaign-gen): compile Python sources"
 PYTHONPYCACHEPREFIX="$TMP_DIR/pycache" python3 -m compileall -q src
 
-echo "checks(nimble): verify environment-only Nimble credentials"
+echo "checks(campaign-gen): verify environment-only Nimble credentials"
 python3 - <<'PY'
 from pathlib import Path
 
@@ -22,7 +22,7 @@ assert 'os.getenv("NIMBLE_API_KEY", "")' in config
 assert '"Authorization": f"Bearer {self.api_key}"' in client
 PY
 
-echo "checks(nimble): run offline mock-news dry run"
+echo "checks(campaign-gen): run offline mock-news dry run"
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m viral_local_ad_generator.cli run \
   --campaign examples/new-bigmac-test.txt \
   --market "San Francisco" \
@@ -32,7 +32,7 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m viral_local_ad_generator.cli
   --max-videos 1 \
   --output "$TMP_DIR/run"
 
-echo "checks(nimble): validate bounded marketing concept output"
+echo "checks(campaign-gen): validate bounded marketing concept output"
 python3 - "$TMP_DIR/run/run.json" <<'PY'
 import json
 import os
@@ -72,4 +72,4 @@ key = os.environ.get("NIMBLE_API_KEY", "")
 assert not key or key not in serialized
 PY
 
-echo "checks(nimble): ok"
+echo "checks(campaign-gen): ok"

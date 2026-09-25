@@ -11,15 +11,18 @@ An agent that creates video ad campaigns at X by Y (9:16 mobile vertical by defa
 ## Team
 
 - **Thomas:** marketing schema, Nimble process producing video scripts and hooks; later maybe campaign generation with Meta.
-- **Bourke:** Long Horizon infrastructure in GitHub: web, agents, RSI (to define). Workflow: [docs/lh-workflow.md](docs/lh-workflow.md). [Cloud Run service](docs/cloud-run.md). [Web console](web/README.md).
+- **Bourke:** Long Horizon infrastructure in GitHub: web, agents, RSI (to define). Workflow: [docs/LH_WORKFLOWS.md](docs/LH_WORKFLOWS.md). [Cloud Run service](docs/cloud-run.md). [Web console](web/README.md).
 - **Aayush:** content generation: video variants and end cards.
 
 ## Workstreams
 
 - **Black Forest Labs (Aayush):** video and image variant generation via the BFL API from GitHub Actions. Status: researched, ready to build — [docs/research/bfl-workstream.md](docs/research/bfl-workstream.md).
-- **Nimble (Thomas):** web data for marketing schema, hooks, and competitor research from GitHub Actions. Status: researched, ready to build — [docs/research/nimble-workstream.md](docs/research/nimble-workstream.md).
+- **Campaign generation (Thomas):** Nimble research → scripts → BFL briefs from GitHub Actions; BFL video generation and Liquid model calls are upcoming. Status: researched, ready to build — [docs/research/nimble-workstream.md](docs/research/nimble-workstream.md).
 - **Ad asset CDN (Bourke):** GCS bucket + manifest — [docs/cdn.md](docs/cdn.md).
 - **LH agents platform (Bourke):** targets, task routing by label, approvals via issues. Status: implemented.
+- **Local Liquid tunnel (Bourke):** llama-server and Cloud Run setup — [docs/liquid-local.md](docs/liquid-local.md).
+
+Operating guide: [Long Horizon workflows](docs/LH_WORKFLOWS.md).
 
 ## Milestones (Pacific)
 

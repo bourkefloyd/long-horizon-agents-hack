@@ -7,18 +7,20 @@ Generate local-news-reactive playable/video ad concepts from:
 - five recent local stories found with Nimble
 - five FLUX 3 video prompts/jobs per story
 
-The normal workflow is staged: discover and store the news first, inspect `stories.json` / `news.md`, then generate ad scripts/prompts, then optionally submit video jobs.
+The normal workflow is staged: discover local outlets first, discover and store stories from those outlets, inspect `stories.json` / `news.md`, then generate ad scripts/prompts, then optionally submit video jobs.
 
 ## Why This Exists
 
 The core loop is:
 
-1. Search recent local news for a media market.
-2. Rank/filter for recency, local relevance, virality signals, and brand safety.
-3. Turn each story into five ad angles tied back to the campaign script.
-4. Convert each angle into a 10-second video commercial script.
-5. Optionally submit those scripts/prompts to Black Forest Labs FLUX 3 Video.
-6. Save every story, script, prompt, and generation job as JSON for review and testing.
+1. Search for local news outlets in a media market.
+2. Search recent web news stories from/prioritizing those outlets.
+3. Rank/filter for recency, local relevance, virality signals, and brand safety.
+4. Sanitize each story into an ad-safe story frame/reference.
+5. Turn each sanitized story into five ad angles tied back to the campaign script.
+6. Convert each angle into a 10-second video commercial script.
+7. Optionally submit those scripts/prompts to Black Forest Labs FLUX 3 Video.
+8. Save every outlet, story, sanitized story, script, prompt, and generation job as JSON for review and testing.
 
 ## Setup
 
@@ -41,12 +43,30 @@ If Nimble is only available inside Codex via OAuth/MCP, keep using `--mock-news`
 
 ## Usage
 
-Step 1: discover/store news.
+Step 1: discover/store local news outlets.
+
+```bash
+viral-local-ads \
+  discover-outlets \
+  --market "San Francisco" \
+  --max-outlets 8 \
+  --output runs/sf-outlets
+```
+
+This writes:
+
+```text
+runs/sf-outlets/outlets.json
+runs/sf-outlets/outlets.md
+```
+
+Step 2: discover/store news from those outlets.
 
 ```bash
 viral-local-ads \
   discover-news \
   --market "San Francisco" \
+  --outlets runs/sf-outlets/outlets.json \
   --max-stories 1 \
   --output runs/sf-news
 ```
@@ -58,7 +78,9 @@ runs/sf-news/stories.json
 runs/sf-news/news.md
 ```
 
-Step 2: generate the ad script and FLUX prompt from saved news.
+If you omit `--outlets`, `discover-news` automatically runs outlet discovery first and saves `outlets.json` / `outlets.md` beside `stories.json`.
+
+Step 3: generate the ad script and FLUX prompt from saved news.
 
 ```bash
 viral-local-ads \
@@ -74,11 +96,15 @@ This writes:
 
 ```text
 runs/sf-ad/concepts.json
+runs/sf-ad/input_webpages.json
+runs/sf-ad/input_webpages.md
+runs/sf-ad/sanitized_stories.json
+runs/sf-ad/sanitized_stories.md
 runs/sf-ad/summary.md
 runs/sf-ad/run.json
 ```
 
-Step 3: submit FLUX 3 Video jobs.
+Step 4: submit FLUX 3 Video jobs.
 
 ```bash
 viral-local-ads \
@@ -116,7 +142,7 @@ viral-local-ads \
 
 ## Brand Safety
 
-The generator avoids obviously sensitive news angles by default, including violent crime, death, disaster, lawsuits, politics, health emergencies, and personal tragedy. The goal is to borrow local context and timing, not exploit painful events or imply a news subject endorses the advertiser.
+The generator avoids obviously sensitive news angles by default, including violent crime, death, disaster, lawsuits, politics, health emergencies, and personal tragedy. Before any creative is generated, each raw story is converted into a sanitized story frame/reference that removes publisher logos, private names, famous brands, celebrities, and endorsement-sensitive phrasing. The goal is to borrow local context and timing, not exploit painful events or imply a news subject endorses the advertiser.
 
 ## Current API Notes
 
