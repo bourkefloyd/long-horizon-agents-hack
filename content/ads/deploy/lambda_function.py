@@ -59,7 +59,7 @@ def create(req_in):
     if sum(r["status"] not in ("failed", "moderated") for r in reqs) >= CAP:
         return reply(429, {"error": "render_cap", "message": f"This demo is capped at {CAP} renders."})
     kind, p = req_in["kind"], dict(req_in.get("payload") or {})
-    if kind not in ("order", "episode", "selfie"):
+    if kind not in ("order", "episode", "selfie", "campaign"):
         return reply(400, {"error": "bad_kind"})
     rid = "r" + uuid.uuid4().hex[:12]
     if kind == "episode":

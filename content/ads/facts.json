@@ -1,0 +1,47 @@
+[
+ {
+  "kind": "nimble_search",
+  "query": "San Francisco viral local news this week",
+  "fact": "49ers’ Kyle Juszczyk fined for viral chugging celebration: A San Francisco 49ers star has been fined by the NFL following the team's Week 2 win over the Miami Dolphins.",
+  "source": "https://sports.yahoo.com/articles/49ers-kyle-juszczyk-fined-viral-165853255.html",
+  "retrieved_at": "2026-09-25T20:39:59+00:00",
+  "expires_at": "2026-09-30T20:39:59+00:00",
+  "via": "Nimble"
+ },
+ {
+  "kind": "nimble_search",
+  "query": "San Francisco viral local news this week",
+  "fact": "SF firefighters work to extinguish 1-alarm structure fire: (KRON) — San Francisco firefighters are on the scene of a one-alarm fire in a three-story single-family unit at Laidley Street and Noa Street Sunday morning...",
+  "source": "https://www.kron4.com/news/bay-area/sf-firefighters-work-to-extinguish-1-alarm-structure-fire/",
+  "retrieved_at": "2026-09-25T20:39:59+00:00",
+  "expires_at": "2026-09-30T20:39:59+00:00",
+  "via": "Nimble"
+ },
+ {
+  "kind": "nimble_search",
+  "query": "San Francisco viral local news this week",
+  "fact": "Berkeley enacts strict wildfire home hardening rules: The State of California is finalizing a new set of regulations for hardening homes against wildfire. But the city of Berkeley has already created rules that...",
+  "source": "https://www.cbsnews.com/sanfrancisco/news/berkeley-enacts-strict-wildfire-home-hardening-rules/",
+  "retrieved_at": "2026-09-25T20:39:59+00:00",
+  "expires_at": "2026-09-30T20:39:59+00:00",
+  "via": "Nimble"
+ },
+ {
+  "kind": "nimble_search",
+  "query": "San Francisco viral local news this week",
+  "fact": "'Rogue' AI agent went haywire at tech company. The CEO is still 'bullish' on the technology: A software company founder went viral this week after sharing a post on social media describing how an AI-agent threw his business into chaos for 30 hours.",
+  "source": "https://abcnews.com/GMA/News/rogue-ai-agent-haywire-tech-company-ceo-bullish/story?id=132473181",
+  "retrieved_at": "2026-09-25T20:39:59+00:00",
+  "expires_at": "2026-09-30T20:39:59+00:00",
+  "via": "Nimble"
+ },
+ {
+  "kind": "nimble_search",
+  "query": "San Francisco viral local news this week",
+  "fact": "San Francisco AI startup planned to open hundred-plus 24-hour cafes, then a top executive's dating post w: A San Francisco-based AI insurance startup, Corgi, has put its plans to open more than 100 round-the-clock cafes on hold.",
+  "source": "https://timesofindia.indiatimes.com/technology/tech-news/san-francisco-ai-startup-planned-to-open-hundred-plus-24-hour-cafes-then-a-top-executives-dating-post-went-viral-making-company-with-cafes-in-london-new-york-and-atlanta-junk-all-plans/articleshow/134489285.cms",
+  "retrieved_at": "2026-09-25T20:39:59+00:00",
+  "expires_at": "2026-09-30T20:39:59+00:00",
+  "via": "Nimble"
+ }
+]
