@@ -2,8 +2,8 @@
   "id": "mission-taqueria-late-night-al-pastor-01-local-moment-hook",
   "hook": "San Francisco Mission District is already talking about this: the headline \"San Francisco celebrates culture of lowriding\"",
   "cta": "Order ahead and skip the line",
-  "media_type": "script",
-  "media_file": "script.txt",
+  "media_type": "video",
+  "media_file": "creative.mp4",
   "script_file": "script.txt",
   "duration_s": 10,
   "aspect": "9:16",
@@ -14,12 +14,13 @@
     "geo": [
       "San Francisco Mission District"
     ],
-    "weight": 1,
+    "weight": 2,
     "active": true
   },
   "source": {
     "agent": "viral-local-ad-generator",
-    "generated_at": "2026-09-25T23:49:41Z",
+    "generated_at": "2026-09-25T23:55:19Z",
     "brief_ref": "campaign:mission-taqueria-late-night-al-pastor"
-  }
+  },
+  "poster_file": "poster.jpg"
 }
