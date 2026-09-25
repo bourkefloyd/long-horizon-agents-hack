@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="night" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#071b33"/>
+      <stop offset="1" stop-color="#126c7b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#night)"/>
+  <text x="90" y="190" fill="#9fffe4" font-family="Arial, sans-serif" font-size="38" font-weight="700">15 SECOND CONCEPT</text>
+  <text x="90" y="680" fill="#fff" font-family="Arial, sans-serif" font-size="98" font-weight="800">
+    <tspan x="90" dy="0">WAKE UP</tspan>
+    <tspan x="90" dy="116">SMARTER.</tspan>
+  </text>
+  <g transform="translate(90 1030)">
+    <rect width="900" height="390" rx="48" fill="#fff" opacity=".08"/>
+    <circle cx="115" cy="120" r="50" fill="#9fffe4"/>
+    <path d="M100 90l48 30-48 30z" fill="#071b33"/>
+    <text x="200" y="138" fill="#fff" font-family="Arial, sans-serif" font-size="42" font-weight="700">DAY 1 LEARNS</text>
+    <path d="M200 215h520" stroke="#9fffe4" stroke-width="10" stroke-linecap="round"/>
+    <text x="200" y="310" fill="#fff" font-family="Arial, sans-serif" font-size="42" font-weight="700">DAY 2 BUILDS</text>
+  </g>
+  <text x="90" y="1690" fill="#9fffe4" font-family="Arial, sans-serif" font-size="46" font-weight="700">BUILD THE NEXT VARIANT ’</text>
+</svg>
