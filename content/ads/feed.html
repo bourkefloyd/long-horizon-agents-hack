@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Fog Feed</title>
 <style>
   /* One light look on purpose: white ground, a single teal accent, Liquid Glass controls over video. */
@@ -143,7 +144,7 @@
 const TRIGGER = "trig_014YGcJ8LTusLYpj2ULMqQNh";
 const I = {
   play: '<path d="M7 5l12 7-12 7z"/>',
-  mine: '<path d="M12 3l2.4 5 5.6.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9 5.6-.8z"/>',
+  order: '<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
   next: '<path d="M5 5l9 7-9 7zM17 5v14"/>',
   star: '<circle cx="12" cy="9" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   mute: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l4 6M21 9l-4 6"/>',
@@ -200,7 +201,7 @@ function mount(stage, a, clip, afterEnd) {
     <button class="sound glass press" aria-label="Sound">${svg(soundOn ? "sound" : "mute")}</button>
     <nav class="bar glass" aria-label="Actions">
       <button class="press" data-act="play">${svg("play")}Play</button>
-      <button class="press" data-act="mine">${svg("mine")}Mine</button>
+      <button class="press" data-act="order">${svg("order")}Order</button>
       <button class="press" data-act="next">${svg("next")}Next</button>
       <button class="press" data-act="star">${svg("star")}Star</button>
     </nav>`);
@@ -231,13 +232,15 @@ function offer(stage, a, label = "Play") {
   $(".offer", stage)?.remove();
   const o = document.createElement("div"); o.className = "offer glass light";
   const title = BRAND[brandOf(a)].title;
-  o.innerHTML = `<b>${esc(title)}</b><div class="row"><button class="btn primary press" data-p>${esc(label)}</button><button class="btn press" data-n>Next</button></div><small>Next in <span>4</span></small>`;
+  o.innerHTML = `<b>${esc(title)}</b><div class="row"><button class="btn primary press" data-p>${esc(label)}</button><button class="btn press" data-o>Order</button></div>
+    <button class="btn press" data-n style="width:100%">Next · <span>5</span></button>`;
   stage.appendChild(o);
-  let t = 4;
-  const tick = setInterval(() => { t--; const sp = $("small span", o); if (sp) sp.textContent = t; if (t <= 0) { clearInterval(tick); o.remove(); goNext(stage); } }, 1000);
+  let t = 5;
+  const tick = setInterval(() => { t--; const sp = $("[data-n] span", o); if (sp) sp.textContent = t; if (t <= 0) { clearInterval(tick); o.remove(); goNext(stage); } }, 1000);
   o._stop = () => clearInterval(tick);
   $("[data-p]", o).onclick = () => { o._stop(); o.remove(); tap(a.id, "end card play"); startGame(stage, a); };
   $("[data-n]", o).onclick = () => { o._stop(); o.remove(); goNext(stage); };
+  $("[data-o]", o).onclick = () => { o._stop(); o.remove(); tap(a.id, "end card order"); orderSheet(stage, a); };
 }
 function clearOffer(stage) { const o = $(".offer", stage); if (o) { o._stop?.(); o.remove(); } }
 
@@ -260,7 +263,7 @@ function play(stage) { const v = $("video", stage); if (v) { v.muted = !soundOn;
 function act(kind, a, stage, v) {
   tap(a.id, kind);
   if (kind === "play") { v.pause(); startGame(stage, a); }
-  if (kind === "mine") { v.pause(); orderSheet(stage, a); }
+  if (kind === "order") { v.pause(); clearOffer(stage); orderSheet(stage, a); }
   if (kind === "next") nextEpisode(stage, a);
   if (kind === "star") { v.pause(); selfieSheet(stage, a); }
 }
