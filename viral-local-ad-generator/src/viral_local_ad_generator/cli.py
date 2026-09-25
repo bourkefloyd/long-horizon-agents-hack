@@ -7,10 +7,12 @@ from .bfl_client import BFLClient
 from .config import load_settings
 from .nimble_client import NimbleClient
 from .pipeline import (
+    discover_outlets,
     discover_stories,
     generate_ads_from_stories,
     generate_videos,
     load_concepts,
+    load_outlets,
     load_stories,
     run_pipeline,
     write_run_artifacts,
@@ -23,6 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command")
     add_run_parser(subparsers)
+    add_discover_outlets_parser(subparsers)
     add_discover_news_parser(subparsers)
     add_generate_ad_parser(subparsers)
     add_generate_video_parser(subparsers)
@@ -39,6 +42,14 @@ def add_common_news_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--story-published-at", default="", help="Published date for --story-title.")
     parser.add_argument("--story-snippet", default="", help="Summary/snippet for --story-title.")
     parser.add_argument("--max-stories", type=int, default=5, help="Maximum number of local stories to use.")
+    parser.add_argument("--max-outlets", type=int, default=8, help="Maximum number of local outlets to discover/use.")
+
+
+def add_discover_outlets_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    parser = subparsers.add_parser("discover-outlets", help="Find local news outlets and save outlets.json/outlets.md.")
+    parser.add_argument("--market", required=True, help='Media market, for example "San Francisco".')
+    parser.add_argument("--output", required=True, type=Path, help="Output folder for outlet artifacts.")
+    parser.add_argument("--max-outlets", type=int, default=8, help="Maximum number of local outlets to discover.")
 
 
 def add_run_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -59,6 +70,7 @@ def add_run_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParse
 def add_discover_news_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     parser = subparsers.add_parser("discover-news", help="Find/select news stories and save stories.json/news.md.")
     add_common_news_args(parser)
+    parser.add_argument("--outlets", type=Path, help="Optional path to outlets.json from discover-outlets.")
 
 
 def add_generate_ad_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -107,6 +119,7 @@ def main() -> None:
             poll=args.poll,
             download_media=args.download_media,
             max_stories=args.max_stories,
+            max_outlets=args.max_outlets,
             max_videos=args.max_videos,
             story_title=args.story_title,
             story_url=args.story_url,
@@ -120,13 +133,26 @@ def main() -> None:
         )
         return
 
+    if args.command == "discover-outlets":
+        outlets = discover_outlets(
+            market=args.market,
+            output_dir=args.output,
+            nimble_client=nimble_client,
+            max_outlets=args.max_outlets,
+        )
+        print(f"Saved {len(outlets)} outlets to {args.output / 'outlets.json'}")
+        return
+
     if args.command == "discover-news":
+        outlets = load_outlets(args.outlets) if args.outlets else None
         stories = discover_stories(
             market=args.market,
             output_dir=args.output,
             nimble_client=nimble_client,
             use_mock_news=args.mock_news,
             max_stories=args.max_stories,
+            max_outlets=args.max_outlets,
+            outlets=outlets,
             story_title=args.story_title,
             story_url=args.story_url,
             story_source=args.story_source,

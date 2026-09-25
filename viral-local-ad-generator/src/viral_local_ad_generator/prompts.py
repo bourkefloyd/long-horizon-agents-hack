@@ -64,6 +64,14 @@ def generate_video_concepts(campaign_script: str, market: str, story: NewsStory)
 
 def make_ad_safe_story_frame(market: str, story: NewsStory) -> str:
     text = f"{story.title} {story.snippet}".lower()
+    if any(term in text for term in ("raising cane", "taco bell", "in-n-out")):
+        return f"a {market} food-and-neighborhood story about a new restaurant opening near the waterfront"
+    if any(term in text for term in ("lantern stories", "chinatown", "grant avenue")):
+        return f"a {market} culture story about a Chinatown lantern display celebrating local history"
+    if any(term in text for term in ("usher", "gwen stefani", "dreamfest", "salesforce", "oracle")):
+        return f"a {market} entertainment story about a large benefit concert at a ballpark"
+    if any(term in text for term in ("ripley", "odditorium", "tourist attraction", "fisherman's wharf")):
+        return f"a {market} story about a longtime waterfront tourist attraction closing"
     if any(term in text for term in ("ftx", "bankman-fried", "ellison", "crypto", "fraud")):
         return f"a {market} tech-world story about disputed FTX money and an unexpected new hire"
     if any(term in text for term in ("lawsuit", "foreclosure", "scandal", "detained", "ice")):
@@ -73,6 +81,14 @@ def make_ad_safe_story_frame(market: str, story: NewsStory) -> str:
 
 def make_script_story_reference(market: str, story: NewsStory) -> str:
     text = f"{story.title} {story.snippet}".lower()
+    if any(term in text for term in ("raising cane", "taco bell", "in-n-out")):
+        return f"{market}'s waterfront restaurant-opening story"
+    if any(term in text for term in ("lantern stories", "chinatown", "grant avenue")):
+        return f"{market}'s Chinatown lantern-display story"
+    if any(term in text for term in ("usher", "gwen stefani", "dreamfest", "salesforce", "oracle")):
+        return f"{market}'s large ballpark benefit-concert story"
+    if any(term in text for term in ("ripley", "odditorium", "tourist attraction", "fisherman's wharf")):
+        return f"{market}'s longtime waterfront attraction-closing story"
     if any(term in text for term in ("ftx", "bankman-fried", "ellison", "crypto", "fraud")):
         return f"{market}'s FTX-money dispute and unexpected-hire story"
     if any(term in text for term in ("lawsuit", "foreclosure", "scandal", "detained", "ice")):
@@ -148,8 +164,8 @@ def make_10_second_video_script(
             f"Story content reference to use in the ad: {story_reference}",
             f"Campaign message: {campaign['phrase']}",
             "",
-            f"0.0-2.0s | Shot: Fast social-feed style montage of recognizable {market} street energy, phones lighting up, and abstract finance/startup news-card visuals. | On-screen text: {market} is talking. | Voiceover: \"{market}'s tech crowd is talking about money, second chances, and an unexpected hire.\"",
-            f"2.0-4.0s | Shot: Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: {story_reference}. | On-screen text: Unexpected hire. Fresh twist. | Voiceover: \"When the story is all about a surprising new twist...\"",
+            f"0.0-2.0s | Shot: Fast social-feed style montage of recognizable {market} street energy, phones lighting up, and abstract local-news card visuals tied to the story topic. | On-screen text: {market} is talking. | Voiceover: \"{market} is talking about {story_reference}.\"",
+            f"2.0-4.0s | Shot: Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: {story_reference}. | On-screen text: Local story. Fresh twist. | Voiceover: \"When the local story has everyone paying attention...\"",
             f"4.0-7.0s | Shot: Smash cut to a craveable {campaign['product_shot']}. | On-screen text: {campaign['product_energy']}. | Voiceover: \"...make your next twist {campaign['product']}.\"",
             f"7.0-10.0s | Shot: Hero product shot against a bright {market}-inspired backdrop, then quick end-card with a simple CTA. | On-screen text: {campaign['cta']} | Voiceover: \"{campaign['cta']}\"",
             "",

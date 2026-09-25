@@ -5,6 +5,29 @@ from typing import Any
 
 
 @dataclass
+class NewsOutlet:
+    name: str
+    url: str
+    domain: str = ""
+    snippet: str = ""
+    raw: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> "NewsOutlet":
+        fields = {
+            "name",
+            "url",
+            "domain",
+            "snippet",
+            "raw",
+        }
+        return cls(**{key: value for key, value in payload.items() if key in fields})
+
+
+@dataclass
 class NewsStory:
     title: str
     url: str
