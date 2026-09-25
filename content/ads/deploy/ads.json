@@ -1,0 +1,106 @@
+[
+ {
+  "id": "sutrostack__soma_lunch_headline",
+  "order": 10,
+  "brand": "sutro",
+  "file": "sutrostack__soma_lunch_headline.captioned.mp4"
+ },
+ {
+  "id": "sightglass__n_judah_commuter",
+  "order": 40,
+  "brand": "sightglass",
+  "extra": {
+   "at": 6.5,
+   "label": "See the roaster",
+   "to": "sightglass__n_judah_commuter__roast"
+  },
+  "file": "sightglass__n_judah_commuter.mp4"
+ },
+ {
+  "id": "sightglass__soma_founder",
+  "order": 50,
+  "brand": "sightglass",
+  "extra": {
+   "at": 6.5,
+   "label": "Watch the pitch",
+   "to": "sightglass__soma_founder__pitch"
+  },
+  "file": "sightglass__soma_founder.mp4"
+ },
+ {
+  "id": "sightglass__fog_narrator",
+  "order": 60,
+  "brand": "sightglass",
+  "warning": "Sign shows wrong address (270 is right)",
+  "extra": {
+   "at": 3,
+   "label": "Burn off the fog",
+   "to": "sightglass__fog_narrator__sun"
+  },
+  "file": "sightglass__fog_narrator.mp4"
+ },
+ {
+  "id": "sightglass__soma_founder__pitch",
+  "order": 900,
+  "hidden": true,
+  "brand": "sightglass",
+  "file": "sightglass__soma_founder__pitch.mp4"
+ },
+ {
+  "id": "sightglass__n_judah_commuter__roast",
+  "order": 901,
+  "hidden": true,
+  "brand": "sightglass",
+  "file": "sightglass__n_judah_commuter__roast.mp4"
+ },
+ {
+  "id": "sightglass__fog_narrator__sun",
+  "order": 902,
+  "hidden": true,
+  "brand": "sightglass",
+  "warning": "Wrong sign carried over",
+  "file": "sightglass__fog_narrator__sun.mp4"
+ },
+ {
+  "id": "sutrostack__endcard_win",
+  "order": 910,
+  "hidden": true,
+  "brand": "sutro",
+  "file": "sutrostack__endcard_win.mp4"
+ },
+ {
+  "id": "sutrostack__endcard_almost",
+  "order": 911,
+  "hidden": true,
+  "brand": "sutro",
+  "file": "sutrostack__endcard_almost.mp4"
+ },
+ {
+  "id": "sutrostack__endcard_retry",
+  "order": 912,
+  "hidden": true,
+  "brand": "sutro",
+  "file": "sutrostack__endcard_retry.mp4"
+ },
+ {
+  "id": "sightglass__endcard_win",
+  "order": 920,
+  "hidden": true,
+  "brand": "sightglass",
+  "file": "sightglass__endcard_win.mp4"
+ },
+ {
+  "id": "sightglass__endcard_almost",
+  "order": 921,
+  "hidden": true,
+  "brand": "sightglass",
+  "file": "sightglass__endcard_almost.mp4"
+ },
+ {
+  "id": "sightglass__endcard_retry",
+  "order": 922,
+  "hidden": true,
+  "brand": "sightglass",
+  "file": "sightglass__endcard_retry.mp4"
+ }
+]

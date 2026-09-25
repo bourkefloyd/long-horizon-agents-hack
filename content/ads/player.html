@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SF Ad Player</title>
+<style>
+  :root { --bg: #0d0d0f; --fg: #f4f1ea; --muted: #9a968d; --btn: rgba(255,255,255,.92); --btn-fg: #111; --accent: #e8a33d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.4 system-ui, -apple-system, sans-serif; }
+  header { padding: 16px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  header button { background: none; color: var(--muted); border: 1px solid #333; border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  header button.on { color: var(--fg); border-color: var(--accent); }
+  main { display: flex; justify-content: center; padding: 0 16px 24px; }
+  .phone { position: relative; width: min(360px, 100%); aspect-ratio: 9 / 16; background: #000; border-radius: 28px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .overlay { position: absolute; left: 0; right: 0; bottom: 64px; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 24px; pointer-events: none; }
+  .overlay button { pointer-events: auto; width: 100%; max-width: 260px; padding: 12px 16px; border: 0; border-radius: 14px; background: var(--btn); color: var(--btn-fg); font: 600 15px/1 system-ui, sans-serif; cursor: pointer; animation: pop .25s ease-out; }
+  .overlay button.branch { background: var(--accent); }
+  @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .status { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px; color: var(--muted); }
+  .status code { color: var(--fg); font-size: 12px; word-break: break-all; }
+  .tag { position: absolute; top: 14px; left: 14px; font-size: 11px; color: rgba(255,255,255,.75); background: rgba(0,0,0,.35); padding: 3px 8px; border-radius: 999px; }
+  .tap { position: absolute; top: 14px; right: 14px; font-size: 11px; color: rgba(255,255,255,.75); background: rgba(0,0,0,.35); padding: 3px 8px; border-radius: 999px; border: 0; cursor: pointer; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16px 24px; }
+</style>
+</head>
+<body>
+<header id="tabs"></header>
+<main>
+  <div class="phone">
+    <video id="v" playsinline></video>
+    <div class="overlay" id="ov"></div>
+    <div class="status" id="st"></div>
+    <span class="tag">Spec ad · not affiliated</span>
+    <button class="tap" id="sound">Tap for sound</button>
+  </div>
+</main>
+<footer id="log">Serve with <code>python3 -m http.server -d content/ads</code> and open /player.html</footer>
+<script>
+// Clips are real FLUX 3 renders in out/<id>.mp4. Buttons come from "overlays" in scripts.json.
+// A "branch" button plays a continuation clip rendered with FLUX 3 v2v from the parent clip.
+const v = document.getElementById('v'), ov = document.getElementById('ov'), st = document.getElementById('st');
+const tabs = document.getElementById('tabs'), log = document.getElementById('log');
+let clips = {}, current = null, shown = null;
+
+function load(id) {
+  current = clips[id]; shown = null; ov.innerHTML = ''; st.style.display = 'none';
+  v.src = `out/${id}.mp4`; v.load(); v.play().catch(() => {});
+  [...tabs.children].forEach(b => b.classList.toggle('on', b.dataset.root === current.root));
+  log.textContent = `Playing ${id}`;
+}
+
+function render(t) {
+  const o = (current.overlays || []).find(o => t >= o.at && t <= o.until) || null;
+  if (o === shown) return;
+  shown = o; ov.innerHTML = '';
+  if (!o) return;
+  for (const b of o.buttons) {
+    const el = document.createElement('button');
+    el.textContent = b.label; el.className = b.action;
+    el.onclick = () => {
+      log.textContent = `Tapped "${b.label}" on ${current.id}`;
+      if (b.action === 'link') window.open(b.href, '_blank', 'noopener');
+      if (b.action === 'branch' && clips[b.to]) load(b.to);
+    };
+    ov.appendChild(el);
+  }
+}
+
+v.addEventListener('timeupdate', () => render(v.currentTime));
+v.addEventListener('ended', () => render(v.duration)); // keep the last buttons up on the final frame
+v.addEventListener('error', () => {
+  st.style.display = 'flex';
+  st.innerHTML = `Not rendered yet.<br><br><code>python3 content/ads/render.py --submit --continuations --only ${current.root}</code>`;
+});
+document.getElementById('sound').onclick = e => { v.muted = false; v.currentTime = 0; v.play(); e.target.remove(); };
+v.muted = true; // browsers block autoplay with sound until a tap
+
+fetch('scripts.json').then(r => r.json()).then(d => {
+  for (const x of d.variants.filter(x => x.overlays)) {
+    clips[x.id] = { id: x.id, root: x.id, overlays: x.overlays };
+    const b = document.createElement('button');
+    b.textContent = x.id.split('__')[1].replace(/_/g, ' '); b.dataset.root = x.id;
+    b.onclick = () => load(x.id); tabs.appendChild(b);
+  }
+  for (const c of d.continuations || []) clips[c.id] = { id: c.id, root: c.parent, overlays: c.overlays };
+  const first = new URLSearchParams(location.search).get('ad') || Object.keys(clips)[0];
+  if (first) load(first);
+});
+</script>
+</body>
+</html>
