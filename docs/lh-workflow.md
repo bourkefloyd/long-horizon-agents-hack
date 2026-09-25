@@ -9,7 +9,7 @@ The product is server-side video ad campaign automation: generate video variants
 ## Shape
 
 ```
-Issue labeled lh:<target>, comment /lh, or manual dispatch
+Issue gets label lh:<target> (`issues.labeled`, including at create), comment /lh, or manual dispatch
   -> small lh-<target>.yml caller
   -> lh-target.yml (shared guard: right label, right author, not a PR thread)
   -> lh-run.yml (reusable, target=<target>)
