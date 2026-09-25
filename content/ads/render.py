@@ -22,6 +22,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -110,6 +111,12 @@ def wait(item_id, poll, body, key, out_dir):
         time.sleep(5)
         try:
             res = call(poll, key)
+        except urllib.error.HTTPError as e:  # "Task not found" arrives as a 404 with a JSON status body
+            try:
+                res = json.load(e)
+            except ValueError:
+                print(f"  {item_id} poll error, retrying: {e}", file=sys.stderr)
+                continue
         except OSError as e:  # transient network error: keep polling, the job is still running
             print(f"  {item_id} poll error, retrying: {e}", file=sys.stderr)
             continue
