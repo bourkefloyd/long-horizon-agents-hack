@@ -1,9 +1,10 @@
+import urllib.error
 from datetime import UTC, datetime
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app import main
+from app import derive, main
 from app.github import issue_body
 from app.models import Campaign
 from app.store import GcsCampaignStore, InMemoryCampaignStore
@@ -21,6 +22,11 @@ SF_COFFEE = {
 def client(monkeypatch) -> TestClient:
     monkeypatch.setattr(main, "store", InMemoryCampaignStore())
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+
+    def offline(*args: object, **kwargs: object) -> object:
+        raise urllib.error.URLError("offline")
+
+    monkeypatch.setattr(derive.urllib.request, "urlopen", offline)
     return TestClient(main.app)
 
 
