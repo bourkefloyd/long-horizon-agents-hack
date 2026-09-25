@@ -1,0 +1,79 @@
+name: Content follow-up issues
+
+# After content is generated or published, read what the run produced and open
+# follow-up issues in three buckets: BFL/API bugs, agent-workflow improvements,
+# website bugs/UX. Idempotent (issues carry a marker), capped per run, and
+# switched off entirely by setting the repository variable
+# ISSUE_WORKFLOW_DISABLED to "true".
+
+on:
+  workflow_run:
+    workflows: ["Generate ad content", "Publish ad assets"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      campaign:
+        description: Staged campaign id (blank = newest by generated_at)
+        required: false
+        type: string
+        default: ""
+      all:
+        description: Derive for every staged campaign
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: Print the follow-ups in the job summary without opening issues
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: content-followups
+  cancel-in-progress: false
+
+jobs:
+  followups:
+    if: vars.ISSUE_WORKFLOW_DISABLED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Derive and open follow-ups
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CAMPAIGN: ${{ inputs.campaign }}
+          ALL: ${{ inputs.all }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          TRIGGER: ${{ github.event.workflow_run.name || 'manual' }}
+          TRIGGER_CONCLUSION: ${{ github.event.workflow_run.conclusion || '' }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$CAMPAIGN" && ! "$CAMPAIGN" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+            echo "::error::campaign must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
+            exit 1
+          fi
+          args=()
+          [[ -n "$CAMPAIGN" ]] && args+=(--campaign "$CAMPAIGN")
+          [[ "$ALL" == "true" ]] && args+=(--all)
+          [[ "$DRY_RUN" == "true" ]] && args+=(--dry-run)
+          {
+            echo "## Content follow-ups"
+            echo
+            echo "- Trigger: ${TRIGGER} ${TRIGGER_CONCLUSION}"
+            echo '```'
+            python scripts/content-followups.py "${args[@]}" | tee "$RUNNER_TEMP/followups.log"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
