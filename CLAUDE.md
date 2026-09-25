@@ -7,6 +7,7 @@ Guidance for an agent working in this repository. Facts are from the published L
 - **Local folder:** `/Users/bourkefloydiv/projects/long-horizon-agents-hack`
 - **GitHub:** https://github.com/bourkefloyd/long-horizon-agents-hack
 - **Event page:** https://luma.com/horizonagentshack
+- **Team:** Thomas (marketing schema, Nimble process, scripts), Bourke (infrastructure: web, agents, RSI), Aayush (content generation). Plan, architecture, timeline, and hand-offs are in [HACK_PLAN.md](HACK_PLAN.md); research is in `docs/research/`.
 
 Work here is for the hackathon below. Build the architecture the event asks for. Do not invent a required stack, tracks, a street address, prizes, judging criteria, or a submission template. None of those are published.
 
