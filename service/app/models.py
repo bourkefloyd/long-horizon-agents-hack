@@ -58,6 +58,7 @@ class CampaignStatus(StrEnum):
     DRAFT = "draft"
     QUEUED = "queued"
     GENERATING = "generating"
+    REVIEW = "review"
     LIVE = "live"
 
 
@@ -77,7 +78,14 @@ class Campaign(CampaignCreate):
     issue_url: str | None = None
 
 
-class CampaignDetail(Campaign):
+class CampaignPublic(Campaign):
+    """Read model. ``status`` may be derived; ``ads_count`` and ``feed_url`` are not stored."""
+
+    ads_count: int = 0
+    feed_url: str
+
+
+class CampaignDetail(CampaignPublic):
     """Campaign record merged with its folded signal state."""
 
     state: CampaignState

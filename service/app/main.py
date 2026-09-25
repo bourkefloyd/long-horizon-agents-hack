@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .derive import resolve_campaign
 from .github import (
     GitHubIssueError,
     create_campaign_issue,
@@ -21,6 +22,7 @@ from .models import (
     Campaign,
     CampaignCreate,
     CampaignDetail,
+    CampaignPublic,
     CampaignState,
     CampaignStatus,
     DecisionResult,
@@ -136,14 +138,14 @@ def create_campaign(payload: CampaignCreate) -> Campaign:
     return campaign
 
 
-@app.get("/campaigns", response_model=list[Campaign])
-def list_campaigns() -> list[Campaign]:
-    return store.list_campaigns()
+@app.get("/campaigns", response_model=list[CampaignPublic])
+def list_campaigns() -> list[CampaignPublic]:
+    return [resolve_campaign(campaign) for campaign in store.list_campaigns()]
 
 
 @app.get("/campaigns/{campaign_id}", response_model=CampaignDetail)
 def get_campaign(campaign_id: str) -> CampaignDetail:
-    campaign = _require_campaign(campaign_id)
+    campaign = resolve_campaign(_require_campaign(campaign_id))
     return CampaignDetail(**campaign.model_dump(), state=store.get_state(campaign_id))
 
 
