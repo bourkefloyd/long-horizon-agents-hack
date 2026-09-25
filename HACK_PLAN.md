@@ -11,7 +11,7 @@ An agent that creates video ad campaigns at X by Y (9:16 mobile vertical by defa
 ## Team
 
 - **Thomas:** marketing schema, Nimble process producing video scripts and hooks; later maybe campaign generation with Meta.
-- **Bourke:** Long Horizon infrastructure in GitHub: web, agents, RSI (to define). Workflow: [docs/lh-workflow.md](docs/lh-workflow.md).
+- **Bourke:** Long Horizon infrastructure in GitHub: web, agents, RSI (to define). Workflow: [docs/lh-workflow.md](docs/lh-workflow.md). [Cloud Run service](docs/cloud-run.md).
 - **Aayush:** content generation: video variants and end cards.
 
 ## Workstreams
