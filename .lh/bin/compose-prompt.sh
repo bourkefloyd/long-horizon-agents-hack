@@ -50,8 +50,8 @@ fi
 echo
 echo "# Last run logs (newest first, at most $KEEP)"
 echo
-if ls .lh/log/*.md >/dev/null 2>&1; then
-  ls .lh/log/*.md | sed 's#.*/##; s/\.md$//' | sort -rn | head -n "$KEEP" | while read -r id; do
+if [ -n "$(find .lh/log -maxdepth 1 -name '*.md' -type f 2>/dev/null)" ]; then
+  find .lh/log -maxdepth 1 -name '*.md' -type f | sed 's#.*/##; s/\.md$//' | sort -rn | head -n "$KEEP" | while read -r id; do
     echo "--- .lh/log/$id.md ---"
     head -c 3000 ".lh/log/$id.md"
     echo

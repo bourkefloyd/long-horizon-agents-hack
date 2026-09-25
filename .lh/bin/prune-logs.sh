@@ -10,8 +10,8 @@ KEEP="${1:-5}"
 DIR=".lh/log"
 [ -d "$DIR" ] || exit 0
 
-ls "$DIR"/*.md 2>/dev/null | sed 's#.*/##; s/\.md$//' | sort -rn | tail -n "+$((KEEP + 1))" | while read -r id; do
+find "$DIR" -maxdepth 1 -name '*.md' -type f | sed 's#.*/##; s/\.md$//' | sort -rn | tail -n "+$((KEEP + 1))" | while read -r id; do
   echo "prune-logs: dropping $DIR/$id.md"
   rm -f "$DIR/$id.md"
 done
-echo "prune-logs: $(ls "$DIR"/*.md 2>/dev/null | wc -l | tr -d ' ') log(s) kept (K=$KEEP)"
+echo "prune-logs: $(find "$DIR" -maxdepth 1 -name '*.md' -type f | wc -l | tr -d ' ') log(s) kept (K=$KEEP)"

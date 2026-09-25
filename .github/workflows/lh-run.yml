@@ -121,8 +121,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh issue view "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" \
-            --json title,body,labels \
-            --template '# Issue #{{"'"$ISSUE_NUMBER"'"}}: {{.title}}{{"\n\n"}}{{.body}}{{"\n"}}' \
+            --json number,title,body \
+            --jq '"# Issue #\(.number): \(.title)\n\n\(.body // "")"' \
             > "$RUNNER_TEMP/issue.md"
           wc -l "$RUNNER_TEMP/issue.md"
 
