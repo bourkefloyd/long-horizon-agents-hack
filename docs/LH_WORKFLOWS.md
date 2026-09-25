@@ -59,7 +59,8 @@ The default cap is 80 lines, with at most 200 characters per line. `.lh/bin/chec
 
 `.cursor/cli.json` allows file reads/writes and a short command list while denying git, GitHub CLI, destructive/network shells, credentials, and edits to workflow, Cursor, helper, log, and environment files. The workflow also deterministically discards edits under `.github/` and `.cursor/`.
 
-`.lh/owners.json` maps targets to GitHub assignees for approval issues. Placeholder or missing owners fall back to `default`.
+`.lh/owners.json` maps targets to GitHub assignees for approval issues. `campaign-gen` approvals go to
+[`tbarrios`](https://github.com/tbarrios); missing owners fall back to `default`.
 
 ### Model selection
 
