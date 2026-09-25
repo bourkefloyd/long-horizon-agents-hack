@@ -27,6 +27,11 @@ treated as a 10-second creative, with q25/q50/q75/complete signals at
 state card reads folded campaign state from the service, so newly accepted
 signals appear after the campaign decision step.
 
+On large screens the feed is split: the left column is the ad experience
+(full viewport height), and the right column shows targeting fields, interaction
+counts, and the generation stack (Nimble discover, BFL FLUX 3 preview/submit,
+Liquid fold via the campaign decide step).
+
 ## Environment
 
 `NEXT_PUBLIC_API_BASE_URL` is the campaign service origin. For local development,
@@ -35,6 +40,12 @@ use:
 ```bash
 NEXT_PUBLIC_API_BASE_URL=https://lh-campaign-service-row663omlq-uc.a.run.app
 ```
+
+Optional server-side keys for the `/feed` generation stack (never expose in
+`NEXT_PUBLIC_*`):
+
+- `NIMBLE_API_KEY` — live Nimble discover-news calls (`/api/generation/nimble`)
+- `BFL_API_KEY` or `BLACK_FOREST` — FLUX 3 video submit (`/api/generation/bfl`)
 
 ## Deploy
 

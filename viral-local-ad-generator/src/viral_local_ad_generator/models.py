@@ -59,6 +59,31 @@ class NewsStory:
 
 
 @dataclass
+class SanitizedStory:
+    original_title: str
+    original_url: str
+    sanitized_frame: str
+    sanitized_reference: str
+    sanitization_notes: list[str] = field(default_factory=list)
+    raw_story: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> "SanitizedStory":
+        fields = {
+            "original_title",
+            "original_url",
+            "sanitized_frame",
+            "sanitized_reference",
+            "sanitization_notes",
+            "raw_story",
+        }
+        return cls(**{key: value for key, value in payload.items() if key in fields})
+
+
+@dataclass
 class VideoAdConcept:
     story_title: str
     story_url: str
