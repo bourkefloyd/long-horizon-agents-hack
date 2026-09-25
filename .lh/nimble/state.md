@@ -17,12 +17,12 @@ VideoAdConcept rows (hooks, scripts, FLUX/BFL payloads)—without credentials in
 - **Pipeline:** discover → `generate_ads_from_stories` (prompts + `brand_guard`) → optional BFL; CLI: `run`, `discover-news`, `generate-ad`, `generate-video`.
 - **Outputs:** `stories.json` and `news.md` (discovery); `concepts.json`, `summary.md`, `run.json` (generation); `video_links/` (and optional `videos/`) when BFL poll/submit runs.
 - **Contracts:** `NewsStory` (title, url, scores, brand_safe); `VideoAdConcept` with hook, script, video_script, prompts, 9:16, duration ≤10; checks assert single-story mock dry-run payload.
-- Issue #19: reviewed `viral-local-ad-generator/` I/O; no application code changed this run.
+- Issue #19: reviewed `viral-local-ad-generator/` I/O; no application code changed.
+- Issue #26 / #29: LH router guard—issue-labeled nimble runs reached this target; #29 create-with-label no-op closed with state-only update.
 
 ## Open
 
-- LH router guard test (issue #26): confirm issue-driven nimble routing limits edits to scoped state updates.
-- Live Nimble path is not run in deterministic checks (quota/network); needs human-approved one-shot discovery.
+- Live Nimble path is not run in deterministic checks (quota/network); needs human-approved one-shot discovery (from issue #19 approval flow).
 - `nimble` owner in `.lh/owners.json` is still a placeholder.
 
 ## Decisions
@@ -30,8 +30,10 @@ VideoAdConcept rows (hooks, scripts, FLUX/BFL payloads)—without credentials in
 - LH agent runs must not use git/gh/bash; CI runs `checks.sh`; agents validate with allowed Python commands when fixing code.
 - One live Nimble search per approval: discover only, no BFL spend, no schema change, no publishing; secrets never in state, logs, or PR artifacts.
 - Approval-request file is stripped before commit; issue title comes from its first line.
+- Router test issues (#26, #29) require no product diff—only compact `state.md` refresh unless checks fail.
 
 ## Dropped
 
 - Prior smoke run only refreshed state after reading `nimble_client`, `pipeline`, `cli`, and brand-safety paths—no product diff.
 - Sample run folders under `viral-local-ad-generator/runs/` stay in git, not copied into agent state.
+- Issue #29 explicitly forbids scope creep; no `approval-request.md` on pure router no-ops.
