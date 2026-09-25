@@ -16,8 +16,8 @@ An agent that creates video ad campaigns at X by Y (9:16 mobile vertical by defa
 
 ## Workstreams
 
-- **Black Forest Labs (Aayush):** video and image variant generation via the BFL API from GitHub Actions (MCP if BFL offers one). Status: research in progress.
-- **Nimble (Thomas):** web data for marketing schema, hooks, and competitor research from GitHub Actions. Status: research in progress.
+- **Black Forest Labs (Aayush):** video and image variant generation via the BFL API from GitHub Actions. Status: researched, ready to build — [docs/research/bfl-workstream.md](docs/research/bfl-workstream.md).
+- **Nimble (Thomas):** web data for marketing schema, hooks, and competitor research from GitHub Actions. Status: researched, ready to build — [docs/research/nimble-workstream.md](docs/research/nimble-workstream.md).
 
 ## Milestones (Pacific)
 
