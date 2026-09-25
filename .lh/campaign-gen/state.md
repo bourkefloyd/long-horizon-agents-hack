@@ -22,6 +22,7 @@ BFL briefs and reviewable campaign artifacts without leaking credentials.
 ## Open
 
 - LH router guard test (issue #26): predecessor target routing limited edits to scoped state updates.
+- Model smoke (issue #33): agent step ran on Claude Fable 5.1; model name reported in run summary; state-only change.
 - Live Nimble path is not run in deterministic checks (quota/network); needs human-approved one-shot discovery.
 - `campaign-gen` owner in `.lh/owners.json` is still a placeholder.
 
@@ -31,6 +32,7 @@ BFL briefs and reviewable campaign artifacts without leaking credentials.
 - Target renamed from `nimble` to `campaign-gen`; Nimble remains one research tool in the research → scripts → BFL briefs pipeline.
 - One live Nimble search per approval: discover only, no BFL spend, no schema change, no publishing; secrets never in state, logs, or PR artifacts.
 - Approval-request file is stripped before commit; issue title comes from its first line.
+- Prior runs under the `nimble` target name (issues #19, #26) ran on composer-2.5; this run's model differs, so smoke results are not model-comparable.
 
 ## Dropped
 
