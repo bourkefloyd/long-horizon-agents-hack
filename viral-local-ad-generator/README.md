@@ -16,10 +16,11 @@ The core loop is:
 1. Search for local news outlets in a media market.
 2. Search recent web news stories from/prioritizing those outlets.
 3. Rank/filter for recency, local relevance, virality signals, and brand safety.
-4. Turn each story into five ad angles tied back to the campaign script.
-5. Convert each angle into a 10-second video commercial script.
-6. Optionally submit those scripts/prompts to Black Forest Labs FLUX 3 Video.
-7. Save every outlet, story, script, prompt, and generation job as JSON for review and testing.
+4. Sanitize each story into an ad-safe story frame/reference.
+5. Turn each sanitized story into five ad angles tied back to the campaign script.
+6. Convert each angle into a 10-second video commercial script.
+7. Optionally submit those scripts/prompts to Black Forest Labs FLUX 3 Video.
+8. Save every outlet, story, sanitized story, script, prompt, and generation job as JSON for review and testing.
 
 ## Setup
 
@@ -97,6 +98,8 @@ This writes:
 runs/sf-ad/concepts.json
 runs/sf-ad/input_webpages.json
 runs/sf-ad/input_webpages.md
+runs/sf-ad/sanitized_stories.json
+runs/sf-ad/sanitized_stories.md
 runs/sf-ad/summary.md
 runs/sf-ad/run.json
 ```
@@ -139,7 +142,7 @@ viral-local-ads \
 
 ## Brand Safety
 
-The generator avoids obviously sensitive news angles by default, including violent crime, death, disaster, lawsuits, politics, health emergencies, and personal tragedy. The goal is to borrow local context and timing, not exploit painful events or imply a news subject endorses the advertiser.
+The generator avoids obviously sensitive news angles by default, including violent crime, death, disaster, lawsuits, politics, health emergencies, and personal tragedy. Before any creative is generated, each raw story is converted into a sanitized story frame/reference that removes publisher logos, private names, famous brands, celebrities, and endorsement-sensitive phrasing. The goal is to borrow local context and timing, not exploit painful events or imply a news subject endorses the advertiser.
 
 ## Current API Notes
 

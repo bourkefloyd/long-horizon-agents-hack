@@ -86,10 +86,14 @@ flowchart TD
     H --> I[Run target checks]
     I --> J[Write and prune run log]
     J --> K[Push branch and open or update PR]
-    K --> L[Comment result on task issue]
+    K --> L[Update status comment and swap lh:running for lh:review or lh:failed]
 ```
 
 Issue work uses `lh/<target>/issue-<number>`. A manual run uses `lh/<target>/manual-<run-id>`. If the issue branch already exists, the runner resumes it so state continues before merge. The workflow refuses to push to `main`.
+
+### Issue status while a run is in flight
+
+Once the target and model are resolved, the runner adds `lh:running` to the task issue and posts one status comment (run link, target, model, branch, new or resumed). `.lh/bin/issue-status.sh` then edits that same comment at each milestone: agent finished, checks and state.md result, pull request opened, approval issue opened. An `if: always()` step at the end removes `lh:running` and adds `lh:review` (PR published) or `lh:failed` (any non-success, including failed checks), so the label never sticks after a crash. Manual runs (`issue_number` 0) skip all of this. Every write uses `GITHUB_TOKEN`, whose events do not start workflows, and the callers additionally ignore `github-actions[bot]` as actor, so status writes cannot re-trigger a target.
 
 ## Human approval
 
@@ -190,7 +194,7 @@ Repository variables used by deploy and publish workflows:
 
 The repository setting **Allow GitHub Actions to create and approve pull requests** must be enabled. Otherwise LH publishes its branch but can only return a compare link.
 
-Current labels are `lh:web`, `lh:campaign-gen`, and `lh:approval`. The retired `lh:nimble` label remains on historical closed issues but no workflow routes it.
+Current routing labels are `lh:web`, `lh:campaign-gen`, and `lh:approval`. Status labels set by the runner are `lh:running`, `lh:review`, and `lh:failed`; they must exist in the repository or the status steps only warn. The retired `lh:nimble` label remains on historical closed issues but no workflow routes it.
 
 ### Concurrency and triggers
 

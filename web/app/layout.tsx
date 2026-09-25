@@ -3,7 +3,10 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Long Horizon Campaign Loop",
+  title: {
+    default: "LH Marketing",
+    template: "%s · LH Marketing",
+  },
   description:
     "Operate vertical video experiments and generate the next day's creative brief.",
 };

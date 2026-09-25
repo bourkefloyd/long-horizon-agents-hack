@@ -26,6 +26,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { GenerationStackPanel } from "@/components/generation-stack-panel";
 import { localAdManifest } from "@/content/ads";
 import {
   activeFeedAds,
@@ -42,6 +43,10 @@ const adStyles = [
   { brand: "Boudin Bakery", from: "#26343f", via: "#6e8791", to: "#e6b968" },
 ];
 type AdStyle = (typeof adStyles)[number];
+
+/** Vertical creative fills the viewport below the feed chrome. */
+const adViewportClass =
+  "relative z-10 aspect-[9/16] h-[min(calc(100svh-5.5rem),100%)] w-auto max-h-[calc(100svh-5.5rem)] max-w-[min(100%,calc((100svh-5.5rem)*9/16))] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50";
 
 const brandByPrefix: Record<string, AdStyle> = {
   sightglass: adStyles[0],
@@ -356,9 +361,12 @@ export function AdDemoFeed() {
     );
   }
 
+  const activeAd = ads[activeIndex];
+
   return (
-    <main className="relative h-svh overflow-hidden bg-[#071311] text-white">
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <main className="grid h-svh grid-cols-1 bg-[#071311] text-white lg:grid-cols-[minmax(0,1fr)_min(26rem,34vw)]">
+      <div className="relative min-h-0 overflow-hidden">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/15 bg-black/40 p-1.5 pr-4 shadow-xl backdrop-blur-xl">
           <Link
             href="/"
@@ -410,11 +418,12 @@ export function AdDemoFeed() {
       </header>
 
       <div
-        className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain scroll-smooth"
-        aria-label="Ad demo feed"
+        className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain scroll-smooth pt-[4.25rem]"
+        aria-label="Ad experience"
       >
         {ads.map((ad, index) => {
           const style = brandForAd(ad, index);
+          const isActive = index === activeIndex;
           return (
             <section
               key={ad.id}
@@ -423,39 +432,61 @@ export function AdDemoFeed() {
               }}
               data-index={index}
               aria-label={`${style.brand} ad, ${index + 1} of ${ads.length}`}
-              className="relative grid min-h-svh snap-start place-items-center gap-5 px-4 pb-10 pt-24 lg:grid-cols-[auto_minmax(22rem,27rem)] lg:gap-8 lg:px-10 lg:pb-8 lg:pt-20"
+              className="relative flex min-h-[calc(100svh-4.25rem)] snap-start flex-col lg:min-h-[calc(100svh-4.25rem)]"
             >
               <div
-                className="absolute inset-0 opacity-35"
+                className="pointer-events-none absolute inset-0 opacity-35"
                 style={{
                   background: `radial-gradient(circle at 30% 30%, ${style.via}, transparent 36%), linear-gradient(145deg, ${style.from}, #071311 65%)`,
                 }}
                 aria-hidden="true"
               />
 
-              <AdCreativeFrame
-                ad={ad}
-                active={index === activeIndex}
-                style={style}
-                onCta={() =>
-                  void emitSignal(ad.campaign_id, ad.variant_id, "cta_tap")
-                }
-              />
+              <div className="relative z-10 flex flex-1 flex-col">
+                <div className="flex flex-1 items-center justify-center px-4 py-3 lg:px-8">
+                  <div className="flex w-full max-w-xl flex-col items-center gap-2">
+                    <p className="self-start text-[10px] font-semibold tracking-[0.22em] text-white/45 uppercase lg:hidden">
+                      Ad experience
+                    </p>
+                    <AdCreativeFrame
+                      ad={ad}
+                      active={isActive}
+                      style={style}
+                      shellClassName={adViewportClass}
+                      onCta={() =>
+                        void emitSignal(
+                          ad.campaign_id,
+                          ad.variant_id,
+                          "cta_tap",
+                        )
+                      }
+                    />
+                  </div>
+                </div>
 
-              <StateCard
-                ad={ad}
-                campaign={campaign}
-                loading={stateLoading}
-                error={stateError}
-                signalStatus={signalStatuses[ad.variant_id]}
-                onRetry={loadState}
-              />
+                <div className="space-y-4 px-4 pb-8 lg:hidden">
+                  <StateCard
+                    ad={ad}
+                    campaign={campaign}
+                    loading={stateLoading}
+                    error={stateError}
+                    signalStatus={signalStatuses[ad.variant_id]}
+                    onRetry={loadState}
+                  />
+                  {isActive ? (
+                    <GenerationStackPanel
+                      ad={ad}
+                      onBriefReady={() => void loadState()}
+                    />
+                  ) : null}
+                </div>
+              </div>
             </section>
           );
         })}
       </div>
 
-      <div className="pointer-events-none fixed bottom-4 right-4 z-30 hidden flex-col gap-2 lg:flex">
+      <div className="pointer-events-none absolute bottom-4 right-4 z-30 hidden flex-col gap-2 lg:flex lg:right-[calc(min(26rem,34vw)+1rem)]">
         <Button
           size="icon"
           variant="outline"
@@ -477,6 +508,40 @@ export function AdDemoFeed() {
           <ArrowDown />
         </Button>
       </div>
+      </div>
+
+      <aside
+        className="hidden min-h-0 flex-col gap-4 overflow-y-auto border-l border-white/10 bg-[#050b0a]/90 p-4 lg:flex"
+        aria-label="Ad state and generation"
+      >
+        <div>
+          <p className="text-[10px] font-semibold tracking-[0.22em] text-white/45 uppercase">
+            Ad state
+          </p>
+          <h2 className="mt-1 text-lg font-semibold tracking-tight">
+            Targeting & tracking
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-white/50">
+            Folded counts and live signal status for the visible creative.
+          </p>
+        </div>
+        {activeAd ? (
+          <>
+            <StateCard
+              ad={activeAd}
+              campaign={campaign}
+              loading={stateLoading}
+              error={stateError}
+              signalStatus={signalStatuses[activeAd.variant_id]}
+              onRetry={loadState}
+            />
+            <GenerationStackPanel
+              ad={activeAd}
+              onBriefReady={() => void loadState()}
+            />
+          </>
+        ) : null}
+      </aside>
     </main>
   );
 }
@@ -485,26 +550,46 @@ function AdCreativeFrame({
   ad,
   active,
   style,
+  shellClassName,
   onCta,
 }: {
   ad: Ad;
   active: boolean;
   style: AdStyle;
+  shellClassName: string;
   onCta: () => void;
 }) {
   switch (ad.media_type) {
     case "image":
       return (
-        <ImageAdFrame ad={ad} active={active} style={style} onCta={onCta} />
+        <ImageAdFrame
+          ad={ad}
+          active={active}
+          style={style}
+          shellClassName={shellClassName}
+          onCta={onCta}
+        />
       );
     case "video":
       return (
-        <VideoAdFrame ad={ad} active={active} style={style} onCta={onCta} />
+        <VideoAdFrame
+          ad={ad}
+          active={active}
+          style={style}
+          shellClassName={shellClassName}
+          onCta={onCta}
+        />
       );
     case "script":
     default:
       return (
-        <ScriptAdFrame ad={ad} active={active} style={style} onCta={onCta} />
+        <ScriptAdFrame
+          ad={ad}
+          active={active}
+          style={style}
+          shellClassName={shellClassName}
+          onCta={onCta}
+        />
       );
   }
 }
@@ -513,18 +598,18 @@ function ImageAdFrame({
   ad,
   active,
   style,
+  shellClassName,
   onCta,
 }: {
   ad: Ad;
   active: boolean;
   style: AdStyle;
+  shellClassName: string;
   onCta: () => void;
 }) {
   const imageUrl = ad.poster_url ?? ad.media_url;
   return (
-    <article
-      className="relative z-10 aspect-[9/16] h-[min(72svh,46rem)] max-w-[88vw] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50"
-    >
+    <article className={shellClassName}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={imageUrl}
@@ -574,17 +659,17 @@ function VideoAdFrame({
   ad,
   active,
   style,
+  shellClassName,
   onCta,
 }: {
   ad: Ad;
   active: boolean;
   style: AdStyle;
+  shellClassName: string;
   onCta: () => void;
 }) {
   return (
-    <article
-      className="relative z-10 aspect-[9/16] h-[min(72svh,46rem)] max-w-[88vw] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50 bg-black"
-    >
+    <article className={`${shellClassName} bg-black`}>
       <video
         className="absolute inset-0 h-full w-full object-cover"
         src={ad.media_url}
@@ -636,16 +721,18 @@ function ScriptAdFrame({
   ad,
   active,
   style,
+  shellClassName,
   onCta,
 }: {
   ad: Ad;
   active: boolean;
   style: AdStyle;
+  shellClassName: string;
   onCta: () => void;
 }) {
   return (
     <article
-      className="relative z-10 aspect-[9/16] h-[min(72svh,46rem)] max-w-[88vw] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50"
+      className={shellClassName}
       style={{
         background: `linear-gradient(165deg, ${style.from} 0%, ${style.via} 52%, ${style.to} 115%)`,
       }}
@@ -805,11 +892,34 @@ function StateCard({
           </span>
         </div>
         <CardTitle className="text-lg">Variant state</CardTitle>
-        <CardDescription className="truncate font-mono text-xs text-white/55">
-          {ad.variant_id}
+        <CardDescription className="text-xs leading-5 text-white/55">
+          Targeting fields and interaction counts for{" "}
+          <span className="font-mono text-white/70">{ad.variant_id}</span>
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="mb-4 grid gap-2 rounded-xl border border-white/8 bg-black/20 p-3 text-xs">
+          <StateRow
+            label="Audience"
+            value={
+              Array.isArray(ad.targeting.audience)
+                ? ad.targeting.audience.join(", ") || "Open"
+                : ad.targeting.audience ?? "Open"
+            }
+          />
+          <StateRow
+            label="Geo"
+            value={
+              Array.isArray(ad.targeting.geo)
+                ? ad.targeting.geo.join(", ") || "Open"
+                : ad.targeting.geo ?? "Open"
+            }
+          />
+          <StateRow
+            label="Weight"
+            value={String(ad.targeting.weight)}
+          />
+        </div>
         <div className="grid grid-cols-4 gap-2">
           {metrics.map((metric) => (
             <div
