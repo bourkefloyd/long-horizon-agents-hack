@@ -349,7 +349,17 @@ jobs:
           TITLE="lh(${TARGET}): run ${{ github.run_id }}"
           [ "$ISSUE_NUMBER" != "0" ] && TITLE="lh(${TARGET}): issue #${ISSUE_NUMBER}, run ${{ github.run_id }}"
           git commit -q -m "$TITLE" -m "checks: ${CHECKS_OUTCOME}; state.md: ${STATE_RESULT}; model: ${USED_MODEL}"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"
+
+          # Rebase onto the current base so the PR does not conflict on
+          # state.md just because main moved. Only state.md is auto-resolved
+          # (.lh/bin/merge-state.sh); any other conflict leaves the branch as
+          # committed above and a human resolves it on the PR.
+          git fetch -q origin "$BASE_REF"
+          PUSH_FLAGS=()
+          if bash .lh/bin/rebase-onto-base.sh "origin/$BASE_REF" "$STATE_MAX_LINES"; then
+            PUSH_FLAGS=(--force-with-lease)
+          fi
+          git push "${PUSH_FLAGS[@]}" "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
           BODY_FILE="$RUNNER_TEMP/pr-body.md"
