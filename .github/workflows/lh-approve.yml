@@ -25,7 +25,8 @@ jobs:
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       COMMENTER: ${{ github.event.comment.user.login }}
     steps:
-      - name: Verify assignee and merge linked PR
+      - name: Verify assignee and locate linked PR
+        id: pr
         run: |
           gh api "repos/${REPO}/issues/${ISSUE_NUMBER}" > "$RUNNER_TEMP/issue.json"
 
@@ -46,9 +47,63 @@ jobs:
             *) echo "::error::approval issue does not link a valid ${REPO} pull request"; exit 1 ;;
           esac
 
-          STATE=$(gh pr view "$PR_URL" --repo "$REPO" --json state --jq .state)
+          gh pr view "$PR_URL" --repo "$REPO" --json state,headRefName,baseRefName,isCrossRepository > "$RUNNER_TEMP/pr.json"
+          STATE=$(jq -r .state "$RUNNER_TEMP/pr.json")
           [ "$STATE" = "OPEN" ] || { echo "::error::linked PR is $STATE, not OPEN"; exit 1; }
+          if [ "$(jq -r .isCrossRepository "$RUNNER_TEMP/pr.json")" != "false" ]; then
+            echo "::error::linked PR head is not a branch of ${REPO}"; exit 1
+          fi
+          HEAD_REF=$(jq -r .headRefName "$RUNNER_TEMP/pr.json")
+          BASE_REF=$(jq -r .baseRefName "$RUNNER_TEMP/pr.json")
+          case "$HEAD_REF" in
+            lh/*) ;;
+            *) echo "::error::linked PR head '$HEAD_REF' is not an lh/ agent branch"; exit 1 ;;
+          esac
+          {
+            echo "url=$PR_URL"
+            echo "head=$HEAD_REF"
+            echo "base=$BASE_REF"
+          } >> "$GITHUB_OUTPUT"
 
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.head }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Rebase onto base, auto-resolving state.md
+        # Same safety as the publish step in lh-run.yml: main may have moved
+        # since the agent opened the PR. state.md is merged deterministically
+        # by .lh/bin/merge-state.sh; any other conflict leaves the branch alone
+        # and the merge below reports the conflict.
+        env:
+          PR_URL: ${{ steps.pr.outputs.url }}
+          HEAD_REF: ${{ steps.pr.outputs.head }}
+          BASE_REF: ${{ steps.pr.outputs.base }}
+          STATE_MAX_LINES: 80
+        run: |
+          git config user.name "lh-bot"
+          git config user.email "lh-bot@users.noreply.github.com"
+          git fetch -q origin "$BASE_REF"
+          if git merge-base --is-ancestor "origin/$BASE_REF" HEAD; then
+            echo "PR head already on top of $BASE_REF"
+          elif bash .lh/bin/rebase-onto-base.sh "origin/$BASE_REF" "$STATE_MAX_LINES"; then
+            git push --force-with-lease "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/${HEAD_REF}"
+            # Give GitHub a moment to recompute mergeability on the new head.
+            for _ in 1 2 3 4 5 6; do
+              M=$(gh pr view "$PR_URL" --repo "$REPO" --json mergeable --jq .mergeable)
+              [ "$M" != "UNKNOWN" ] && break
+              sleep 5
+            done
+          else
+            echo "::warning::could not rebase $HEAD_REF onto $BASE_REF automatically; merging as-is"
+          fi
+
+      - name: Merge linked PR
+        env:
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
           gh pr merge "$PR_URL" --repo "$REPO" --squash --delete-branch
           gh issue comment "$ISSUE_NUMBER" --repo "$REPO" \
             --body "Approved by @${COMMENTER} and squash-merged ${PR_URL}."
