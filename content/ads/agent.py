@@ -132,8 +132,13 @@ def campaign_body(p, defaults):
     name = p.get("brand_name") or "the shop"
     who, where = AUDIENCE[p["audience"]]
     one, two, three, hook = (x.format(who=who, where=where, hero=hero) for x in FORMAT[p["format"]])
+    sc_in = p.get("script")  # written by Claude Opus 5.5 when the request is processed
+    if sc_in and "shot1" in sc_in:
+        one, two, three, hook = sc_in["shot1"], sc_in["shot2"], sc_in["shot3"], sc_in["hook"]
     voice = VOICE[p["voice"]]
     close = f"{name}. {GOAL_LINE[p['goal']]}"
+    if sc_in and sc_in.get("close"):
+        close = sc_in["close"]
     if p["voice"] == "spanish narrator":
         hook, close = "", f"{name}. Te esperamos."
     lines = ""
@@ -141,13 +146,21 @@ def campaign_body(p, defaults):
         said = [f'At 0 seconds the narrator says: "{hook}"'] if hook else []
         said.append(f'At 7 seconds the narrator says: "{close}"')
         lines = f" Voiceover by {voice}. " + " ".join(said)
+    dur = int(p.get("length", 10))
+    head = f"{look}. A {dur}-second vertical mobile video ad for {name}, set in {place}, {MOMENT[p['moment']]}. {NO_TEXT}"
+    music = f"AUDIO: Music: {MUSIC[p['music']]}, ending on a short upbeat sting."
+    if sc_in and sc_in.get("shots"):  # Opus 5.5 timed shot list: [{"t": [a, b], "shot": ..., "vo": ...}]
+        names = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"]
+        shots = [f"{'' if i == 0 else 'HARD CUT. '}SHOT {names[i]} ({x['t'][0]}-{x['t'][1]}s): {x['shot']}." for i, x in enumerate(sc_in["shots"])]
+        said = " ".join(f'At {x["t"][0]} seconds the narrator says: "{x["vo"]}"' for x in sc_in["shots"] if x.get("vo"))
+        lines = f" Voiceover by {voice}. {said}" if voice and said else ""
+        prompt = "\n".join([head, *shots, music + lines])
+    else:
+        t1, t2 = round(dur * .3), round(dur * .7)
+        prompt = (f"{head}\nSHOT ONE (0-{t1}s): {one}.\nHARD CUT. SHOT TWO ({t1}-{t2}s): {two}.\n"
+                  f"HARD CUT. SHOT THREE ({t2}-{dur}s): {three}.\n{music}{lines}")
     return {"aspect_ratio": defaults["aspect_ratio"], "resolution": defaults["resolution"], "generate_audio": True,
-            "mode": "t2v", "duration": 10, **({"draft": True} if p.get("quality") == "draft" else {}), "prompt": (
-        f"{look}. A 10-second vertical mobile video ad for {name}, set in {place}, {MOMENT[p['moment']]}. {NO_TEXT}\n"
-        f"SHOT ONE (0-3s): {one}.\n"
-        f"HARD CUT. SHOT TWO (3-7s): {two}.\n"
-        f"HARD CUT. SHOT THREE (7-10s): {three}.\n"
-        f"AUDIO: Music: {MUSIC[p['music']]}, ending on a short upbeat sting.{lines}")}
+            "mode": "t2v", "duration": dur, **({"draft": True} if p.get("quality") == "draft" else {}), "prompt": prompt}
 
 
 def body_for(kind, p, defaults):
@@ -204,6 +217,30 @@ def body_for(kind, p, defaults):
     raise ValueError(kind)
 
 
+def clean(line, limit=60):
+    """Keep a spoken line speakable: no emoji or symbols, bounded length."""
+    out = "".join(ch for ch in line if ch.isalnum() or ch in " .,!?'-:&").strip()
+    return out[:limit].rsplit(" ", 1)[0] if len(out) > limit else out
+
+
+def research(p):
+    """Nimble: this week's local stories for the audience's area. Opus 5.5 picks a brand-safe one and writes the script."""
+    import nimble
+    area = {"soma lunch": "SoMa", "mission brunch": "Mission District", "n-judah commuters": "Inner Sunset",
+            "students": "San Francisco", "wharf visitors": "Fisherman's Wharf"}[p["audience"]]
+    q = p.get("query") or f"San Francisco {area} local news this week"
+    res = nimble.search(q, "news", 6, "week")
+    return q, [{"title": x.get("title"), "description": x.get("description"), "url": x.get("url")} for x in res.get("results", [])]
+
+
+def prepare_campaign(p, ledger):
+    if p.get("research"):
+        r = p["research"]
+        ledger["nimble"] = f"news search '{r['query']}': {r['count']} stories" + (f", used '{p['headline']}'" if p.get("headline") else ", none used")
+    if p.get("script"):
+        ledger["claude"] = p.get("script_by", "Claude Opus 5.5") + " picked the story and wrote the script"
+
+
 def main(kind, req_id, payload):
     p = json.loads(payload)
     defaults = json.loads((HERE / "scripts.json").read_text())["defaults"]
@@ -211,13 +248,35 @@ def main(kind, req_id, payload):
     if not key:
         sys.exit("Set BLACK_FOREST (or BFL_API_KEY) in the environment.")
     OUT.mkdir(exist_ok=True)
+    ledger = {}
+    if kind == "selfie":  # Liquid vision checks the upload before anything is sent to BFL
+        import liquid
+        chk = liquid.check_image(p["image"])
+        ledger["liquid"] = [f"LFM2-VL-1.6B photo check: {'passed' if chk['ok'] else 'rejected'} ({chk['description']})"]
+        if not chk["ok"]:
+            Path(p["image"]).unlink(missing_ok=True)
+            (OUT / f"{req_id}.sponsors.json").write_text(json.dumps(ledger))
+            sys.exit(f"photo rejected: {chk}")
+    if kind == "research":
+        q, stories = research(p)
+        print(json.dumps({"query": q, "stories": stories}, indent=1, ensure_ascii=False))
+        return
+    if kind == "campaign":
+        prepare_campaign(p, ledger)
     body = body_for(kind, p, defaults)
+    mode = {"t2v": "text-to-video", "i2v": "image-to-video", "v2v": "continuation"}[body["mode"]]
+    ledger["bfl"] = f"FLUX 3 {mode}, {body['duration']} s {'draft' if body.get('draft') else 'HD'}"
     poll = render.submit(req_id, body, key, OUT)
     if kind == "selfie":
         Path(p["image"]).unlink(missing_ok=True)  # used once, then dropped
     ok = render.wait(req_id, poll, body, key, OUT)
+    if ok and (kind == "campaign" or os.environ.get("LIQUID_QA")):
+        import liquid
+        qa = liquid.check_video(OUT / f"{req_id}.mp4")
+        ledger.setdefault("liquid", []).append("LFM2-VL-1.6B frame check: " + ("flagged " + "; ".join(qa["found"]) if qa["flagged"] else "no text or logos"))
+    (OUT / f"{req_id}.sponsors.json").write_text(json.dumps(ledger, ensure_ascii=False))
+    print(json.dumps(ledger, ensure_ascii=False))
     sys.exit(0 if ok else 1)
-
 
 if __name__ == "__main__":
     main(*sys.argv[1:4])

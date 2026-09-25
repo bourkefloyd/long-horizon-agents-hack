@@ -125,36 +125,56 @@
   .kv dt { color: var(--muted); } .kv dd { margin: 0; overflow-wrap: anywhere; }
   .list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
   .list s { color: var(--muted); text-decoration-color: var(--bad); }
+  .blk { display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .blk summary { cursor: pointer; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .panel h4.sub { margin-top: 4px; }
+  .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tile { border-radius: 16px; padding: 10px 12px; background: rgba(14,27,29,.04); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .tile b { font-size: 14px; }
+  .tile .count { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .tile.on { background: var(--teal-soft); }
+  .tile.on .count { color: var(--teal); }
+  .tile small { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+  .lb { display: flex; flex-direction: column; gap: 4px; }
+  .lbl2 { font-size: 13px; font-weight: 700; }
+  .spon { display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .spon b { font-weight: 600; }
+  .sp { font-size: 12px; color: var(--muted); }
+  .sp i { font-style: normal; font-weight: 700; color: var(--teal); }
   .req { display: flex; justify-content: space-between; gap: 10px; }
   .st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 8px; background: rgba(14,27,29,.06); white-space: nowrap; align-self: start; }
   .st.rendering { color: var(--warn); } .st.ready { color: var(--teal); background: var(--teal-soft); } .st.failed, .st.moderated { color: var(--bad); }
   .muted { color: var(--muted); }
   .note { color: var(--muted); font-size: 12px; margin: 0; }
 
-  /* Create mode: one multiple-choice question per screen. */
-  .create { position: fixed; inset: 0; z-index: 40; overflow-y: auto; background: radial-gradient(120% 60% at 50% 0%, var(--teal-soft) 0%, #fff 60%); color: var(--ink); }
-  .create .in { max-width: 480px; margin-inline: auto; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px); display: flex; flex-direction: column; gap: 18px; min-height: 100%; }
-  .create .head { display: flex; align-items: center; gap: 12px; }
-  .create .x, .create .back { border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; background: rgba(14,27,29,.06); color: var(--ink); }
-  .create .prog { flex: 1; height: 6px; border-radius: 3px; background: rgba(14,27,29,.08); overflow: hidden; }
-  .create .prog i { display: block; height: 100%; background: var(--teal); border-radius: 3px; transition: width .3s; }
-  .create .step { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--teal); margin: 8px 0 0; }
-  .create h2 { margin: 0; font: 700 26px/1.15 var(--round); letter-spacing: -.02em; text-wrap: balance; }
-  .create .opts { display: flex; flex-direction: column; gap: 10px; }
-  .create .opt { text-align: left; border-radius: 20px; padding: 15px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; color: var(--ink); }
-  .create .opt small { display: block; font-weight: 500; font-size: 13px; color: var(--muted); margin-top: 2px; }
-  .create .opt.on { background: var(--teal); color: #fff; border-color: var(--teal); }
-  .create .opt.on small { color: rgba(255,255,255,.85); }
-  .create .opt .tick { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(14,27,29,.2); flex: none; }
-  .create .opt.on .tick { border-color: #fff; background: #fff; box-shadow: inset 0 0 0 5px var(--teal); }
-  .create input[type=text] { width: 100%; border: 1px solid var(--line); border-radius: 16px; padding: 15px 16px; font: 600 17px var(--ui); color: var(--ink); background: #fff; }
-  .create .sum { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; }
-  .create .sum button { display: flex; justify-content: space-between; gap: 12px; border: 0; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.75); padding: 12px 16px; font-size: 14px; cursor: pointer; text-align: left; color: var(--ink); }
-  .create .sum button span { color: var(--muted); }
-  .create .sum button b { text-align: right; font-weight: 600; }
-  .create .cost { display: flex; justify-content: space-between; align-items: baseline; font-variant-numeric: tabular-nums; }
-  .create .cost b { font: 800 28px/1 var(--round); color: var(--teal); }
-  .create .spacer { flex: 1; }
+  /* Create: one quick page of glass chips with defaults set, and a pinned Generate bar. */
+  .create { position: fixed; inset: 0; z-index: 40; overflow-y: auto; color: var(--ink);
+    background: radial-gradient(90% 50% at 15% 0%, #d9f3ef 0%, transparent 60%), radial-gradient(80% 50% at 100% 30%, #eef7f6 0%, transparent 60%), #fff; }
+  .create .in { max-width: 520px; margin-inline: auto; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 130px; display: flex; flex-direction: column; gap: 14px; }
+  .create .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .create h2 { margin: 0; font: 700 24px/1.1 var(--round); letter-spacing: -.02em; }
+  .create .x { border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; background: rgba(14,27,29,.06); color: var(--ink); }
+  .create .grp { border-radius: 22px; padding: 12px 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .create .lbl { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding-left: 4px; }
+  .create .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+  .create .chips::-webkit-scrollbar { display: none; }
+  .create .chips button { flex: none; border: 1px solid rgba(255,255,255,.9); border-radius: 999px; padding: 9px 14px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    background: rgba(255,255,255,.55); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--ink); box-shadow: inset 0 1px 0 #fff, 0 2px 8px rgba(0,40,38,.06); transition: transform .15s, background .15s; }
+  .create .chips button:active { transform: scale(.95); }
+  .create .chips button.on { background: var(--teal); color: #fff; border-color: var(--teal); box-shadow: 0 6px 16px rgba(15,148,136,.3); }
+  .create input[type=text] { width: 100%; border: 1px solid rgba(255,255,255,.9); border-radius: 16px; padding: 13px 14px; font: 700 18px var(--round); color: var(--ink); background: rgba(255,255,255,.7); box-shadow: inset 0 1px 0 #fff; }
+  .create .sw { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px; font-weight: 600; font-size: 14px; }
+  .create .sw small { display: block; color: var(--muted); font-weight: 500; font-size: 12px; }
+  .create .tog { position: relative; width: 50px; height: 30px; flex: none; border-radius: 999px; border: 0; cursor: pointer; background: rgba(14,27,29,.14); transition: background .2s; }
+  .create .tog::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.2); transition: transform .2s; }
+  .create .tog[aria-checked="true"] { background: var(--teal); }
+  .create .tog[aria-checked="true"]::after { transform: translateX(20px); }
+  .create .dock { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); width: min(496px, calc(100% - 24px)); border-radius: 28px; padding: 10px 10px 10px 18px; display: flex; align-items: center; gap: 12px; z-index: 41; }
+  .create .dock .cost { flex: 1; display: flex; flex-direction: column; line-height: 1.15; }
+  .create .dock .cost b { font: 800 22px/1 var(--round); color: var(--teal); font-variant-numeric: tabular-nums; }
+  .create .dock .cost span { font-size: 12px; color: var(--muted); }
+  .create .dock .btn { flex: none; padding: 14px 22px; }
+  .create .done { display: flex; flex-direction: column; gap: 14px; padding-top: 30vh; text-align: center; align-items: center; }
 </style>
 
 <div class="wrap">
@@ -187,7 +207,7 @@ const BRAND = {
     pours: [["espresso", "#4a2c1d"], ["milk", "#e7d3b8"], ["foam", "#fbf8f2"]], menu: { drink: ["latte", "cortado", "cold brew"], milk: ["whole", "oat", "none"], temp: ["hot", "iced"] } }
 };
 
-let db = null, mcp = null, ads = [], reqs = [], state = { taps: {} }, soundOn = false;
+let db = null, mcp = null, ads = [], reqs = [], scores = [], state = { taps: {} }, soundOn = false;
 // Two homes for the same page: inside claude.ai (artifact db + assets) or on CloudFront (S3 files + /api Lambda).
 const HOSTED = typeof window.claude === "undefined";
 const media = c => c.asset ? "/_blob/" + c.asset : "media/" + c.file;
@@ -224,7 +244,7 @@ function mount(stage, a, clip, afterEnd) {
   stage.insertAdjacentHTML("beforeend", `
     <div class="chip glass">${a.forYou ? "For you" : esc(b.name)} <small>${a.forYou ? esc(a.brandName || b.name) : esc(b.note)}</small></div>
     ${a.warning ? `<div class="chip glass warn">${esc(a.warning)}</div>` : ""}
-    ${a.score ? `<div class="score glass light"><b>${a.score.score}</b><span>${{ win: "Perfect stack", almost: "So close", retry: "Try again" }[a.score.outcome]} · best ${a.score.best}</span></div>` : ""}
+    ${a.score ? `<div class="score glass light"><b>${a.score.score}</b><span>${{ win: "Perfect", almost: "So close", retry: "Try again" }[a.score.outcome]} · best ${a.score.best}${a.score.agent != null ? ` · Liquid agent ${a.score.agent}` : ""}</span></div>` : ""}
     <button class="sound glass press" aria-label="Sound">${svg(soundOn ? "sound" : "mute")}</button>
     <nav class="bar glass" aria-label="Actions">
       <button class="press" data-act="play">${svg("play")}Play</button>
@@ -317,10 +337,12 @@ function startGame(stage, a) {
   (BRAND[brand].pours ? pourGame : stackGame)(g, stage, BRAND[brand], (outcome, score) => {
     tap(a.id, "game " + outcome);
     const best = Math.max(score, (state.best || {})[brand] || 0);
+    if (db) db.collection("scores").add({ player: "You", brand, score, at: new Date().toISOString() }).catch(() => {});
+    const agent = scores.filter(x => x.brand === brand && /Liquid/.test(x.player)).sort((x, y) => y.score - x.score)[0];
     saveState({ last_game: { brand, outcome, score }, best: { ...(state.best || {}), [brand]: best } });
     const card = ads.find(x => x.id === `${brand === "sightglass" ? "sightglass" : "sutrostack"}__endcard_${outcome}`);
     if (!card) { toast(stage, "End card not ready yet"); stage.classList.remove("frozen"); g.remove(); return; }
-    mount(stage, { ...a, extra: null, warning: null, score: { score, best, outcome } }, card, () => offer(stage, a, "Play again"));
+    mount(stage, { ...a, extra: null, warning: null, score: { score, best, outcome, agent: agent?.score } }, card, () => offer(stage, a, "Play again"));
     play(stage);
   });
 }
@@ -481,23 +503,57 @@ function renderPanel() {
   const busy = reqs.some(r => r.status === "queued" || r.status === "rendering");
   $("#live").style.background = busy ? "var(--warn)" : "var(--teal)";
   if (!panelOpen) return;
-  const kept = [["viewer", "SoMa · lunch · 68°F"]];
-  for (const [b, o] of Object.entries(state.orders || {})) kept.push([BRAND[b]?.name || b, Object.values(o).join(" · ")]);
-  if (state.saga) kept.push(["episode", `${state.saga.n} of ${state.saga.clip}`]);
-  if (state.last_campaign) kept.push(["campaign", `${state.last_campaign.brand} · ${state.last_campaign.goal} · ${state.last_campaign.audience} · ${state.last_campaign.variants} ad(s)`]);
-  if (state.last_game) kept.push(["last game", `${state.last_game.score ?? "-"} · ${state.last_game.outcome} (${BRAND[state.last_game.brand]?.name || state.last_game.brand})`]);
-  for (const [b, v] of Object.entries(state.best || {})) kept.push([`best · ${BRAND[b]?.name || b}`, String(v)]);
-  const r = [...reqs].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")).slice(0, 6);
-  const t = Object.entries(state.taps || {}).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const kept = [["Viewer", "SoMa · lunch · 68°F sunny"]];
+  for (const [b, o] of Object.entries(state.orders || {})) kept.push([`${BRAND[b]?.name || b} order`, Object.values(o).join(" · ")]);
+  if (state.saga) kept.push(["Story", `episode ${state.saga.n}`]);
+  if (state.last_campaign) kept.push(["Campaign", `${state.last_campaign.brand} · ${state.last_campaign.variants} ad(s)`]);
+  const r = [...reqs].filter(x => !/Duplicate/.test(x.reason || "")).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")).slice(0, 6);
+  const t = Object.entries(state.taps || {}).sort((a, b) => b[1] - a[1]).slice(0, 8);
   $(".panel").innerHTML = `
-    <h4>Kept</h4><dl class="kv">${kept.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
-    <h4>Dropped</h4><div class="list">${(state.dropped || []).length ? state.dropped.map(d => `<s>${esc(d)}</s>`).join("") : '<span class="muted">Nothing yet</span>'}</div>
-    <h4>Renders</h4><div class="list">${r.length ? r.map(x => `<div class="req"><span>${esc(x.title || x.kind)}</span><span class="st ${esc(x.status)}">${esc(x.status)}</span></div>`).join("") : '<span class="muted">None yet</span>'}</div>
-    <p class="note">Spec ads · Sightglass not affiliated · Sutro Stack is fictional · every clip is FLUX 3</p>
-    <h4>Taps</h4><div class="list">${t.length ? t.map(([k, n]) => `<div class="req"><span>${esc(k)}</span><b>${n}</b></div>`).join("") : '<span class="muted">None yet</span>'}</div>
+    <section class="blk"><h4>Sponsors</h4>${sponsorTiles()}</section>
+    <section class="blk"><h4>Leaderboard</h4>${leaderboard()}</section>
+    <section class="blk"><h4>Kept</h4><dl class="kv">${kept.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+      ${(state.dropped || []).length ? `<h4 class="sub">Dropped</h4><div class="list">${state.dropped.slice(-3).map(d => `<s>${esc(d)}</s>`).join("")}</div>` : ""}</section>
+    <section class="blk"><h4>Renders</h4><div class="list">${r.length ? r.map(x => `<div class="req"><span>${esc(x.title || x.kind)}</span><span class="st ${esc(x.status)}">${esc(x.status)}</span></div>`).join("") : '<span class="muted">None yet</span>'}</div></section>
+    <details class="blk"><summary>Per-video sponsor detail</summary><div class="list">${sponsorRows()}</div></details>
+    <details class="blk"><summary>Taps</summary><div class="list">${t.length ? t.map(([k, n]) => `<div class="req"><span>${esc(k)}</span><b>${n}</b></div>`).join("") : '<span class="muted">None yet</span>'}</div></details>
+    <p class="note">Spec ads · Sightglass not affiliated · Sutro Stack is fictional</p>
     <button class="btn" type="button" id="close-state">Close</button>`;
   $("#close-state").onclick = closePanel;
 }
+
+// What each sponsor actually did, per video: only what's recorded on the ad or request, never assumed.
+const SPONSORS = [["bfl", "Black Forest Labs"], ["nimble", "Nimble"], ["claude", "Claude Opus 5.5"], ["liquid", "Liquid AI"], ["aws", "AWS"], ["tinybird", "Tinybird"]];
+const ROLE = { bfl: "Renders every video", nimble: "Finds this week's stories", claude: "Writes the scripts", liquid: "Checks photos and frames", aws: "Bedrock access (Opus 5.5 not enabled)", tinybird: "" };
+function allVideos() {
+  return [...reqs.filter(r => r.status === "ready" && r.sponsors).map(r => ({ t: r.title || r.kind, sp: r.sponsors })),
+          ...ads.filter(a => a.sponsors && !a.hidden).map(a => ({ t: (BRAND[brandOf(a)]?.name || a.id) + " · " + (a.title || ""), sp: a.sponsors }))];
+}
+function sponsorTiles() {
+  const vids = allVideos();
+  return `<div class="tiles">${[["bfl", "Black Forest Labs"], ["nimble", "Nimble"], ["claude", "Claude Opus 5.5"], ["liquid", "Liquid AI"], ["aws", "AWS"]].map(([k, n]) => {
+    const used = vids.filter(v => v.sp[k]);
+    const last = used.length ? [].concat(used[0].sp[k])[0] : "";
+    return `<div class="tile ${used.length ? "on" : ""}"><b>${esc(n)}</b><span class="count">${used.length ? `${used.length} video${used.length > 1 ? "s" : ""}` : "not used yet"}</span><small>${esc(used.length ? last : ROLE[k])}</small></div>`;
+  }).join("")}</div>`;
+}
+function leaderboard() {
+  const rows = [...scores].sort((a, b) => b.score - a.score);
+  const by = brand => rows.filter(r => r.brand === brand).slice(0, 3);
+  return ["sutro", "sightglass"].map(b => `<div class="lb"><span class="lbl2">${esc(BRAND[b].title)}</span>${by(b).length ? by(b).map((r, i) =>
+    `<div class="req"><span>${i + 1}. ${esc(r.player)}</span><b>${r.score}</b></div>`).join("") : '<span class="muted">No scores yet</span>'}</div>`).join("");
+}
+
+function sponsorRows() {
+  const vids = allVideos();
+  if (!vids.length) return '<span class="muted">None yet</span>';
+  const used = new Set(vids.flatMap(v => Object.keys(v.sp)));
+  const unused = SPONSORS.filter(([k]) => !used.has(k)).map(([, n]) => n);
+  return vids.map(v => `<div class="spon"><b>${esc(v.t)}</b>${SPONSORS.filter(([k]) => v.sp[k]).map(([k, n]) =>
+    `<span class="sp"><i>${esc(n)}</i> ${esc([].concat(v.sp[k]).join(" · "))}</span>`).join("")}</div>`).join("")
+    + (unused.length ? `<span class="muted">Not used in any video yet: ${esc(unused.join(", "))}</span>` : "");
+}
+
 function openPanel() {
   panelOpen = true;
   document.body.insertAdjacentHTML("beforeend", '<div class="scrim"></div><section class="panel glass light" role="dialog" aria-label="State"></section>');
@@ -506,28 +562,29 @@ function openPanel() {
 function closePanel() { panelOpen = false; $(".scrim")?.remove(); $(".panel")?.remove(); }
 $("#open-state").onclick = openPanel;
 
-// ---------- Create mode: build a campaign brief from multiple-choice screens ----------
+// ---------- Create: one page, any brand, defaults set so Generate works immediately ----------
 const FORMATS = ["pov", "trend hook", "day in the life", "asmr close-up", "street interview"];
-const STEPS = [
-  { k: "brand", q: "Which brand?", o: [["sutro", "Sutro Stack", "Burger · fictional"], ["sightglass", "Sightglass", "Coffee · spec ad"], ["new", "A new brand", "Name it next"]] },
-  { k: "brand_name", q: "What's the brand called?", text: true, when: b => b.brand === "new" },
-  { k: "category", q: "What do they sell?", when: b => b.brand === "new", o: [["coffee", "Coffee"], ["burger", "Burgers"], ["bakery", "Bakery"], ["ice cream", "Ice cream"], ["other", "Something else"]] },
-  { k: "goal", q: "What should the campaign do?", o: [["foot traffic", "Bring people in", "Come by today"], ["online orders", "Drive orders", "Order ahead"], ["new item launch", "Launch something new", "New on the menu"], ["brand love", "Build brand love", "Made for SF"]] },
-  { k: "audience", q: "Who is it for?", o: [["soma lunch", "SoMa lunch crowd"], ["mission brunch", "Mission brunch"], ["n-judah commuters", "N-Judah commuters"], ["students", "Students"], ["wharf visitors", "Wharf visitors"]] },
-  { k: "moment", q: "When do they see it?", o: [["morning rush", "Morning rush"], ["lunch", "Lunch"], ["after work", "After work"], ["weekend", "Weekend"]] },
-  { k: "format", q: "What kind of ad?", o: [["pov", "POV", "First person, walk in"], ["trend hook", "Trend hook", "Riff on the local feed"], ["day in the life", "Day in the life"], ["asmr close-up", "ASMR close-up", "Macro textures, no talking"], ["street interview", "Street interview", "Host stops a local"]] },
-  { k: "music", q: "What does it sound like?", o: [["lo-fi chill", "Lo-fi chill"], ["upbeat hip hop", "Upbeat hip hop"], ["indie acoustic", "Indie acoustic"], ["cinematic swell", "Cinematic swell"]] },
-  { k: "voice", q: "Who's talking?", o: [["warm narrator", "Warm narrator"], ["energetic creator", "Energetic creator"], ["spanish narrator", "Spanish narrator"], ["music only", "No voice", "Music only"]] },
-  { k: "playable", q: "Which playable end card?", o: [["stack", "Stack it", "Tap to stack, scored"], ["pour", "Pour it", "Hold to pour, scored"], ["none", "No game"]] },
-  { k: "variants", q: "How many variants to test?", o: [["1", "One ad"], ["2", "Two ads", "A/B on format"], ["3", "Three ads", "A/B/C on format"]] },
-  { k: "quality", q: "Draft or full quality?", o: [["draft", "Draft", "About $0.60 per ad, faster"], ["hd", "Full HD", "About $1.70 per ad"]] },
+const KNOWN = { "sutro stack": { key: "sutro", category: "burger", playable: "stack" }, "sightglass": { key: "sightglass", category: "coffee", playable: "pour" } };
+const GROUPS = [
+  { k: "category", l: "Sells", o: [["coffee", "Coffee"], ["burger", "Burgers"], ["bakery", "Bakery"], ["ice cream", "Ice cream"], ["other", "Other"]] },
+  { k: "goal", l: "Goal", o: [["foot traffic", "Bring people in"], ["online orders", "Drive orders"], ["new item launch", "Launch"], ["brand love", "Brand love"]] },
+  { k: "audience", l: "Audience", o: [["soma lunch", "SoMa lunch"], ["mission brunch", "Mission brunch"], ["n-judah commuters", "N-Judah commuters"], ["students", "Students"], ["wharf visitors", "Wharf visitors"]] },
+  { k: "moment", l: "When", o: [["morning rush", "Morning"], ["lunch", "Lunch"], ["after work", "After work"], ["weekend", "Weekend"]] },
+  { k: "format", l: "Format", o: [["trend hook", "Trend hook"], ["pov", "POV"], ["day in the life", "Day in the life"], ["asmr close-up", "ASMR"], ["street interview", "Street interview"]] },
+  { k: "music", l: "Sound", o: [["upbeat hip hop", "Hip hop"], ["lo-fi chill", "Lo-fi"], ["indie acoustic", "Acoustic"], ["cinematic swell", "Cinematic"]] },
+  { k: "voice", l: "Voice", o: [["energetic creator", "Creator"], ["warm narrator", "Narrator"], ["spanish narrator", "Spanish"], ["music only", "Music only"]] },
+  { k: "playable", l: "Playable end card", o: [["stack", "Stack it"], ["pour", "Pour it"], ["none", "None"]] },
+  { k: "news", l: "News hook", o: [["local", "Local SF"], ["tech", "Tech news"], ["none", "No news"]] },
+  { k: "length", l: "Length", o: [["10", "10 s"], ["15", "15 s"], ["20", "20 s"]] },
+  { k: "variants", l: "Variants", o: [["1", "1 ad"], ["2", "2 ads · A/B"], ["3", "3 ads · A/B/C"]] },
+  { k: "quality", l: "Quality", o: [["draft", "Draft · $0.06/s"], ["hd", "HD · $0.17/s"]] },
 ];
-const LABEL = Object.fromEntries(STEPS.flatMap(s => (s.o || []).map(([v, l]) => [s.k + ":" + v, l])));
-let brief = {}, stepIx = 0;
-const liveSteps = () => STEPS.filter(s => !s.when || s.when(brief));
+const DEFAULTS = { brand_name: "Sutro Stack", category: "burger", goal: "foot traffic", audience: "soma lunch", moment: "lunch", format: "trend hook",
+  music: "upbeat hip hop", voice: "energetic creator", playable: "stack", news: "tech", length: "15", variants: "1", quality: "draft" };
+let brief = {};
 
 function openCreate() {
-  brief = {}; stepIx = 0;
+  brief = { ...DEFAULTS, ...(state.last_brief || {}) };
   document.body.insertAdjacentHTML("beforeend", '<section class="create" role="dialog" aria-label="Create a campaign"><div class="in"></div></section>');
   document.querySelectorAll("video").forEach(v => v.pause());
   renderCreate();
@@ -535,56 +592,47 @@ function openCreate() {
 function closeCreate() { $(".create")?.remove(); observe(); }
 
 function renderCreate() {
-  const box = $(".create .in"), steps = liveSteps();
-  if (stepIx >= steps.length) return renderReview();
-  const st = steps[stepIx], pct = Math.round(stepIx / steps.length * 100);
-  box.innerHTML = `<div class="head"><button class="x press" type="button">Close</button><div class="prog"><i style="width:${pct}%"></i></div></div>
-    <p class="step">Step ${stepIx + 1} of ${steps.length}</p><h2>${esc(st.q)}</h2>
-    ${st.text ? `<input type="text" id="c-brand-name" maxlength="40" placeholder="e.g. Mission Loaf" value="${esc(brief[st.k] || "")}">
-      <button class="btn primary press" type="button" data-next>Continue</button>`
-    : `<div class="opts">${st.o.map(([v, l, sub]) => `<button class="opt glass light press ${brief[st.k] === v ? "on" : ""}" type="button" data-v="${esc(v)}"><span>${esc(l)}${sub ? `<small>${esc(sub)}</small>` : ""}</span><i class="tick"></i></button>`).join("")}</div>`}
-    <div class="spacer"></div>${stepIx ? '<button class="back press" type="button">Back</button>' : ""}`;
+  const box = $(".create .in");
+  box.innerHTML = `<div class="head"><h2>New campaign</h2><button class="x press" type="button">Close</button></div>
+    <div class="grp glass light"><span class="lbl">Brand</span>
+      <input type="text" id="c-brand" maxlength="40" value="${esc(brief.brand_name)}" placeholder="Any brand name" autocomplete="off">
+      <div class="chips">${["Sutro Stack", "Sightglass"].map(n => `<button type="button" data-brand="${n}" class="${brief.brand_name === n ? "on" : ""}">${n}</button>`).join("")}</div></div>
+    ${GROUPS.map(g => `<div class="grp glass light"><span class="lbl">${g.l}</span><div class="chips" role="radiogroup" aria-label="${g.l}">${g.o.map(([v, l]) =>
+      `<button type="button" role="radio" aria-checked="${brief[g.k] === v}" data-k="${g.k}" data-v="${esc(v)}" class="${brief[g.k] === v ? "on" : ""}">${esc(l)}</button>`).join("")}</div></div>`).join("")}
+    <p class="note">Nimble finds the news · Claude Opus 5.5 writes the script · FLUX 3 renders · Liquid LFM2-VL checks every frame</p>`;
+  if (!$(".create .dock")) $(".create").insertAdjacentHTML("beforeend", '<div class="dock glass light"><div class="cost"><b></b><span></span></div><button class="btn primary press" type="button" data-go>Generate</button></div>');
   $(".x", box).onclick = closeCreate;
-  $(".back", box)?.addEventListener("click", () => { stepIx--; renderCreate(); });
-  box.querySelectorAll(".opt").forEach(b => b.onclick = () => {
-    brief[st.k] = b.dataset.v; b.classList.add("on");
-    setTimeout(() => { stepIx++; renderCreate(); }, 180);
-  });
-  const next = $("[data-next]", box), inp = $("#c-brand-name", box);
-  if (next) {
-    const go = () => { const v = inp.value.trim(); if (!v) { inp.focus(); return; } brief[st.k] = v; stepIx++; renderCreate(); };
-    next.onclick = go; inp.onkeydown = e => { if (e.key === "Enter") go(); }; inp.focus();
-  }
+  $("#c-brand", box).oninput = e => { brief.brand_name = e.target.value; const k = KNOWN[brief.brand_name.trim().toLowerCase()]; if (k) Object.assign(brief, { category: k.category, playable: k.playable }); updateDock(); };
+  $("#c-brand", box).onchange = () => renderCreate();
+  box.querySelectorAll("[data-brand]").forEach(b => b.onclick = () => { brief.brand_name = b.dataset.brand; Object.assign(brief, KNOWN[b.dataset.brand.toLowerCase()]); delete brief.key; renderCreate(); });
+  box.querySelectorAll("[data-k]").forEach(b => b.onclick = () => { brief[b.dataset.k] = b.dataset.v; renderCreate(); });
+  box.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { brief[b.dataset.t] = !brief[b.dataset.t]; b.setAttribute("aria-checked", brief[b.dataset.t]); });
+  $(".create [data-go]").onclick = generate;
+  updateDock();
 }
-
-function briefName() { return brief.brand === "new" ? brief.brand_name : BRAND[brief.brand].name; }
-function renderReview() {
-  const box = $(".create .in"), steps = liveSteps(), n = +brief.variants, per = brief.quality === "draft" ? .6 : 1.7;
-  box.innerHTML = `<div class="head"><button class="x press" type="button">Close</button><div class="prog"><i style="width:100%"></i></div></div>
-    <p class="step">Review</p><h2>${esc(briefName())} campaign</h2>
-    <div class="sum glass light">${steps.map((st, i) => `<button type="button" data-i="${i}"><span>${esc(st.q)}</span><b>${esc(st.text ? brief[st.k] : LABEL[st.k + ":" + brief[st.k]])}</b></button>`).join("")}</div>
-    <div class="cost"><span class="muted">${n} ad${n > 1 ? "s" : ""} × $${per.toFixed(2)} · FLUX 3</span><b>$${(n * per).toFixed(2)}</b></div>
-    <div class="spacer"></div>
-    <button class="btn primary press" type="button" data-go>Generate campaign</button>`;
-  $(".x", box).onclick = closeCreate;
-  box.querySelectorAll(".sum button").forEach(b => b.onclick = () => { stepIx = +b.dataset.i; renderCreate(); });
-  $("[data-go]", box).onclick = generate;
+function updateDock() {
+  const n = +brief.variants, per = (brief.quality === "draft" ? .06 : .17) * +brief.length;
+  $(".create .dock b").textContent = "$" + (n * per).toFixed(2);
+  $(".create .dock span").textContent = `${n} × ${brief.length} s ${brief.quality === "draft" ? "draft" : "HD"} · ${brief.brand_name.trim() || "brand"}`;
+  $(".create [data-go]").disabled = !brief.brand_name.trim();
 }
 
 async function generate() {
-  const box = $(".create .in"), n = +brief.variants;
-  const base = brief.brand !== "new" ? brief.brand : (brief.playable === "pour" || brief.category === "coffee" ? "sightglass" : "sutro");
-  const order = [brief.format, ...FORMATS.filter(f => f !== brief.format)];
-  $("[data-go]", box).disabled = true;
+  const name = brief.brand_name.trim(); if (!name) return;
+  const known = KNOWN[name.toLowerCase()];
+  const base = known ? known.key : (brief.playable === "pour" || brief.category === "coffee" ? "sightglass" : "sutro");
+  const n = +brief.variants, order = [brief.format, ...FORMATS.filter(f => f !== brief.format)];
+  $(".create [data-go]").disabled = true;
   for (let i = 0; i < n; i++) {
-    const payload = { ...brief, brand_key: brief.brand, brand_name: briefName(), base, format: order[i], variant: i + 1, of: n };
-    await request("campaign", payload, `${briefName()} · ${LABEL["format:" + order[i]]}${n > 1 ? ` (${i + 1}/${n})` : ""}`, $(".create"));
+    const payload = { ...brief, brand_key: known ? known.key : "new", brand_name: name, base, format: order[i], variant: i + 1, of: n };
+    await request("campaign", payload, `${name} · ${order[i]}${n > 1 ? ` (${i + 1}/${n})` : ""}`, $(".create"));
   }
-  saveState({ last_campaign: { brand: briefName(), goal: brief.goal, audience: brief.audience, variants: n } });
-  box.innerHTML = `<div class="spacer"></div><p class="step">Queued</p><h2>${n} ${esc(briefName())} ad${n > 1 ? "s are" : " is"} rendering</h2>
-    <p class="muted">Each takes a few minutes on FLUX 3 and lands at the top of the feed, with its playable end card and the same actions.</p>
-    <div class="spacer"></div><button class="btn primary press" type="button">Back to the feed</button>`;
-  $("button", box).onclick = closeCreate;
+  saveState({ last_brief: { ...brief }, last_campaign: { brand: name, goal: brief.goal, audience: brief.audience, variants: n } });
+  $(".create .dock").remove();
+  $(".create .in").innerHTML = `<div class="done"><h2>${n} ${esc(name)} ad${n > 1 ? "s" : ""} queued</h2>
+    <p class="muted">${[brief.news !== "none" && "Nimble news search", "Claude Opus 5.5 script", "FLUX 3 render", "Liquid frame check"].filter(Boolean).join(" → ")}. They land at the top of the feed.</p>
+    <button class="btn primary press" type="button">Back to the feed</button></div>`;
+  $(".create .done button").onclick = closeCreate;
 }
 $("#open-create").onclick = openCreate;
 
@@ -627,6 +675,7 @@ async function startHosted() {
   if (!db) { $("#feed").innerHTML = '<p class="muted">This view can’t reach the feed’s data.</p>'; return; }
   db.collection("ads").orderBy("order").onSnapshot(s => { ads = s.docs.map(d => ({ id: d.id, ...d.data() })); renderFeed(); });
   db.collection("requests").onSnapshot(s => { reqs = s.docs.map(d => ({ id: d.id, ...d.data() })); renderFeed(); renderPanel(); });
+  db.collection("scores").orderBy("score", "desc").limit(50).onSnapshot(s => { scores = s.docs.map(d => d.data()); renderPanel(); });
   db.doc("state/viewer").onSnapshot(s => { if (s.exists) { state = { taps: {}, ...s.data() }; renderPanel(); } });
 })();
 </script>
