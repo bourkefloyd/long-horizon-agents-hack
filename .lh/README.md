@@ -16,16 +16,21 @@ Working memory and instructions for the GitHub Actions agent runs. Design note: 
     prompt.md          what "improve" means for this target; the agent may edit it
     state.md           the agent's only memory across runs; rewritten every run
     checks.sh          deterministic checks the agent cannot skip
-  agents/              (later) same three files for the decision agents target
+  nimble/              target: Thomas's local-news ad concept and script generator
+  owners.json          target -> GitHub owner for approval issues
 ```
 
-## Trigger a run
+## Give an agent a task
 
-- Open an issue with the `lh:web` label, or add the label to an existing issue.
-- Comment `/lh <instruction>` on an `lh:web` issue (owner, member, or collaborator only). The text after `/lh` is a one-shot instruction for that run.
-- Manual: Actions > "LH web" > Run workflow. `issue_number` 0 means no issue comment; the PR still opens.
+The target is selected by one label: `lh:web` or `lh:nimble` (later, `lh:bfl`).
 
-Each run works on branch `lh/web/issue-<n>` (or `lh/web/manual-<run-id>`), opens or updates a PR against the branch the workflow ran on, and comments on the issue. Nothing is pushed to `main`. Runs for the same issue queue behind each other (`concurrency`).
+1. Open an issue describing one reviewable task and add its `lh:<target>` label, or add the label to an existing issue.
+2. The target workflow starts on issue creation/labeling. To continue the same task, comment `/lh <instruction>` on that issue
+   (owner, member, or collaborator only); the text after `/lh` applies to that run.
+3. Manual fallback: Actions > "LH <target>" > Run workflow. `issue_number` 0 opens a PR without commenting on an issue.
+
+Each run works on `lh/<target>/issue-<n>` (or `lh/<target>/manual-<run-id>`), opens or updates a PR, and comments on the
+task issue. Nothing is pushed to `main`. Runs for the same target and issue queue behind each other.
 
 ## The state file
 
@@ -39,7 +44,15 @@ The agent may edit `prompt.md` and `state.md`. Those edits ride in the same PR a
 
 ## Add a target
 
-1. Create `.lh/<target>/{prompt.md,state.md,checks.sh}` (copy `web/`, keep the six sections).
-2. Add `.github/workflows/lh-<target>.yml` that calls `lh-run.yml` with `target: <target>`.
-3. Add `web|agents|<target>` to the `Validate inputs` step in `lh-run.yml`.
-4. Create the `lh:<target>` label.
+1. Create `.lh/<target>/{prompt.md,state.md,checks.sh}`; keep the six state sections and make checks deterministic.
+2. Copy a small caller such as `.github/workflows/lh-nimble.yml`, change its name and `target`, and keep `secrets: inherit`.
+   Shared label/comment routing is in `lh-target.yml`; execution is in `lh-run.yml`, which accepts any safe target directory name.
+3. Add the owner to `.lh/owners.json` and create the `lh:<target>` label.
+
+## Human approvals
+
+An agent that proposes spending money, changing a marketing schema, or publishing content writes
+`.lh/<target>/approval-request.md` alongside the proposed change. The first non-empty line is a short summary; it must contain no
+secret or private content. The runner removes that file before commit, opens an `lh:approval` + `lh:<target>` issue assigned from
+`owners.json`, links the PR, and comments the approval issue on the PR. An assignee reviews the PR and comments `/approve` on the
+approval issue; `lh-approve.yml` verifies the assignee and squash-merges the linked PR. No secret belongs in an issue.

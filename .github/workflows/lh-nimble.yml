@@ -1,4 +1,4 @@
-name: LH web
+name: LH nimble
 
 # Thin target caller. Shared routing and execution live in lh-target.yml and
 # lh-run.yml; this file only declares triggers, manual inputs, and the target.
@@ -35,7 +35,7 @@ jobs:
   route:
     uses: ./.github/workflows/lh-target.yml
     with:
-      target: web
+      target: nimble
       issue_number: ${{ inputs.issue_number || 0 }}
       instruction: ${{ inputs.instruction || '' }}
       model: ${{ inputs.model || 'composer-2.5' }}
