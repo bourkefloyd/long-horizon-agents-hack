@@ -92,10 +92,15 @@
   .game .go { position: absolute; left: 20px; right: 20px; bottom: 92px; border: 0; border-radius: 999px; padding: 14px; font-weight: 700; font-size: 16px; cursor: pointer; }
   .layer { height: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
   .mover { position: absolute; top: 120px; height: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+  .stack { display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; width: 100%; }
+  .flash { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%) scale(.8); opacity: 0; font: 800 30px/1 var(--round); color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.35); pointer-events: none; transition: opacity .2s, transform .25s; }
+  .flash.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .flash.good { color: #b8fff4; }
+  .flash.bad { color: #ffd0cc; }
+  .score { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); border-radius: 22px; padding: 10px 18px; display: flex; flex-direction: column; align-items: center; z-index: 4; animation: rise .3s ease-out; }
+  .score b { font: 800 34px/1 var(--round); color: var(--teal); font-variant-numeric: tabular-nums; }
+  .score span { font-size: 12px; color: var(--muted); font-weight: 600; }
   .plate { width: 70%; height: 8px; border-radius: 4px; background: rgba(255,255,255,.85); }
-  .cup { position: relative; width: 150px; height: 190px; border-radius: 0 0 46px 46px; overflow: hidden; background: rgba(255,255,255,.35); border: 3px solid rgba(255,255,255,.9); }
-  .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: linear-gradient(#e9d3b4, #b98a5a); }
-  .line { position: absolute; left: -6px; right: -6px; border-top: 2px dashed #fff; }
 
   /* State sheet (page level) */
   .scrim { position: fixed; inset: 0; background: rgba(14, 27, 29, .2); z-index: 30; }
@@ -136,8 +141,10 @@ const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 const BRAND = {
-  sutro: { name: "Sutro Stack", note: "fictional", game: "stack", menu: { bun: ["sourdough", "brioche", "sesame"], cheese: ["cheddar", "pepper jack", "swiss"], extra: ["grilled onions", "jalapeños", "bacon"] } },
-  sightglass: { name: "Sightglass", note: "spec ad", game: "pour", menu: { drink: ["latte", "cortado", "cold brew"], milk: ["whole", "oat", "none"], temp: ["hot", "iced"] } }
+  sutro: { name: "Sutro Stack", note: "fictional", title: "Stack the burger",
+    layers: [["bun", "#e3a857"], ["patty", "#6d3f26"], ["cheese", "#f2c230"], ["patty", "#6d3f26"], ["top bun", "#e3a857"]], menu: { bun: ["sourdough", "brioche", "sesame"], cheese: ["cheddar", "pepper jack", "swiss"], extra: ["grilled onions", "jalapeños", "bacon"] } },
+  sightglass: { name: "Sightglass", note: "spec ad", title: "Build the latte",
+    layers: [["cup", "#d6e2e4"], ["ice", "#bfe3ee"], ["espresso", "#4a2c1d"], ["milk", "#efe2cf"], ["foam", "#fbf8f2"]], menu: { drink: ["latte", "cortado", "cold brew"], milk: ["whole", "oat", "none"], temp: ["hot", "iced"] } }
 };
 
 let db = null, mcp = null, ads = [], reqs = [], state = { taps: {} }, soundOn = false;
@@ -170,6 +177,7 @@ function mount(stage, a, assetOverride, afterEnd) {
   stage.insertAdjacentHTML("beforeend", `
     <div class="chip glass">${a.forYou ? "For you" : esc(b.name)} <small>${a.forYou ? esc(b.name) : esc(b.note)}</small></div>
     ${a.warning ? `<div class="chip glass warn">${esc(a.warning)}</div>` : ""}
+    ${a.score ? `<div class="score glass light"><b>${a.score.score}</b><span>${{ win: "Perfect stack", almost: "So close", retry: "Try again" }[a.score.outcome]} · best ${a.score.best}</span></div>` : ""}
     <button class="sound glass press" aria-label="Sound">${svg(soundOn ? "sound" : "mute")}</button>
     <nav class="bar glass" aria-label="Actions">
       <button class="press" data-act="play">${svg("play")}Play</button>
@@ -228,51 +236,43 @@ function startGame(stage, a) {
   stage.classList.add("frozen");
   const brand = brandOf(a), g = document.createElement("div"); g.className = "game";
   stage.appendChild(g);
-  (BRAND[brand].game === "pour" ? pourGame : stackGame)(g, stage, outcome => {
+  stackGame(g, stage, BRAND[brand], (outcome, score) => {
     tap(a.id, "game " + outcome);
-    saveState({ last_game: { brand, outcome } });
+    const best = Math.max(score, (state.best || {})[brand] || 0);
+    saveState({ last_game: { brand, outcome, score }, best: { ...(state.best || {}), [brand]: best } });
     const card = ads.find(x => x.id === `${brand === "sightglass" ? "sightglass" : "sutrostack"}__endcard_${outcome}`);
     if (!card) { toast(stage, "End card not ready yet"); stage.classList.remove("frozen"); g.remove(); return; }
-    mount(stage, { ...a, extra: null, warning: null }, card.asset, () => startGame(stage, a));
+    mount(stage, { ...a, extra: null, warning: null, score: { score, best, outcome } }, card.asset, () => startGame(stage, a));
     play(stage);
   });
 }
 
-function stackGame(g, stage, done) {
-  const colors = ["#e3a857", "#6d3f26", "#f2c230", "#6d3f26", "#e3a857"], names = ["bun", "patty", "cheese", "patty", "top bun"];
-  g.innerHTML = `<div class="hud glass">Stack it · <span>1</span>/5</div><div class="mover"></div>
-    <div class="stack" style="display:flex;flex-direction:column-reverse;align-items:center;gap:2px;width:100%"></div><div class="plate"></div>
-    <button class="go glass tint press">Drop the bun</button>`;
-  const mover = $(".mover", g), stack = $(".stack", g), go = $(".go", g), n = $(".hud span", g);
-  let i = 0, x = 0, dir = 1, raf = 0; const offs = [];
+// Five drops. Each scores 0-100 by how centred it lands; a near-perfect drop adds a combo bonus.
+function stackGame(g, stage, cfg, done) {
+  const L = cfg.layers;
+  g.innerHTML = `<div class="hud glass">${esc(cfg.title)} · <b class="pts">0</b></div><div class="flash"></div><div class="mover"></div>
+    <div class="stack"></div><div class="plate"></div>
+    <button class="go glass tint press">Drop the ${esc(L[0][0])}</button>`;
+  const mover = $(".mover", g), stack = $(".stack", g), go = $(".go", g), pts = $(".pts", g), flash = $(".flash", g);
+  let i = 0, x = 0, dir = 1, raf = 0, total = 0, combo = 0, speed = .010;
   const W = () => stage.clientWidth, LW = () => W() * .55;
-  const set = () => { mover.style.width = LW() + "px"; mover.style.background = colors[i]; x = 0; };
-  const loop = () => { x += dir * W() * .011; if (x < 0 || x > W() - LW()) dir *= -1; mover.style.left = x + "px"; raf = requestAnimationFrame(loop); };
+  const set = () => { mover.style.width = LW() + "px"; mover.style.background = L[i][1]; x = 0; };
+  const loop = () => { x += dir * W() * speed; if (x < 0 || x > W() - LW()) dir *= -1; mover.style.left = x + "px"; raf = requestAnimationFrame(loop); };
+  const say = (t, cls) => { flash.textContent = t; flash.className = "flash show " + (cls || ""); setTimeout(() => flash.className = "flash", 650); };
   set(); loop();
   go.onclick = () => {
-    const off = (x - (W() - LW()) / 2) / LW(); offs.push(Math.abs(off));
-    const d = document.createElement("div"); d.className = "layer"; d.style.cssText = `width:${LW()}px;background:${colors[i]};transform:translateX(${off * LW()}px)`; stack.appendChild(d);
-    if (++i < 5) { n.textContent = i + 1; go.textContent = "Drop the " + names[i]; set(); return; }
-    cancelAnimationFrame(raf);
-    const avg = offs.reduce((s, o) => s + o, 0) / 5;
-    setTimeout(() => done(avg < .08 ? "win" : avg < .2 ? "almost" : "retry"), 450);
+    const off = (x - (W() - LW()) / 2) / LW(), miss = Math.abs(off);
+    let p = Math.max(0, Math.round(100 - miss * 400));
+    if (miss < .03) { combo++; p += 10 * combo; say(combo > 1 ? `Perfect ×${combo}` : "Perfect!", "good"); }
+    else { combo = 0; say(p >= 70 ? "Nice" : p > 0 ? "Wobbly" : "Miss", p > 0 ? "" : "bad"); }
+    total += p; pts.textContent = total;
+    const d = document.createElement("div"); d.className = "layer";
+    d.style.cssText = `width:${LW()}px;background:${L[i][1]};transform:translateX(${off * LW()}px)`; stack.appendChild(d);
+    if (++i < L.length) { go.textContent = "Drop the " + L[i][0]; speed += .0025; set(); return; }
+    cancelAnimationFrame(raf); go.disabled = true;
+    const avg = total / L.length;
+    setTimeout(() => done(avg >= 80 ? "win" : avg >= 50 ? "almost" : "retry", total), 700);
   };
-}
-
-function pourGame(g, stage, done) {
-  const target = .62 + Math.random() * .2;
-  g.innerHTML = `<div class="hud glass">Pour to the line</div>
-    <div class="cup"><div class="fill"></div><div class="line" style="bottom:${target * 100}%"></div></div>
-    <button class="go glass tint press">Hold to pour</button>`;
-  const fill = $(".fill", g), go = $(".go", g);
-  let level = 0, raf = 0, pouring = false, finished = false;
-  const step = () => { if (!pouring) return; level = Math.min(1.05, level + .006); fill.style.height = Math.min(level, 1) * 100 + "%"; if (level >= 1.05) stop(); else raf = requestAnimationFrame(step); };
-  const start = e => { e.preventDefault(); if (finished) return; pouring = true; go.textContent = "Let go at the line"; step(); };
-  const stop = () => { if (!pouring || finished) return; pouring = false; finished = true; cancelAnimationFrame(raf);
-    const miss = Math.abs(level - target); setTimeout(() => done(level > 1 ? "retry" : miss < .04 ? "win" : miss < .12 ? "almost" : "retry"), 450); };
-  go.addEventListener("pointerdown", start); go.addEventListener("pointerup", stop); go.addEventListener("pointerleave", stop);
-  go.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") start(e); });
-  go.addEventListener("keyup", e => { if (e.key === " " || e.key === "Enter") stop(); });
 }
 
 // ---------- Idea 1: make it mine ----------
@@ -354,7 +354,8 @@ function renderPanel() {
   const kept = [["viewer", "SoMa · lunch · 68°F"]];
   for (const [b, o] of Object.entries(state.orders || {})) kept.push([BRAND[b]?.name || b, Object.values(o).join(" · ")]);
   if (state.saga) kept.push(["episode", `${state.saga.n} of ${state.saga.clip}`]);
-  if (state.last_game) kept.push(["game", `${state.last_game.outcome} (${state.last_game.brand})`]);
+  if (state.last_game) kept.push(["last game", `${state.last_game.score ?? "-"} · ${state.last_game.outcome} (${BRAND[state.last_game.brand]?.name || state.last_game.brand})`]);
+  for (const [b, v] of Object.entries(state.best || {})) kept.push([`best · ${BRAND[b]?.name || b}`, String(v)]);
   const r = [...reqs].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")).slice(0, 6);
   const t = Object.entries(state.taps || {}).sort((a, b) => b[1] - a[1]).slice(0, 6);
   $(".panel").innerHTML = `
