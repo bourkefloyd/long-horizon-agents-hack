@@ -1,0 +1,274 @@
+name: Promote demo branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to merge into main
+        required: true
+        type: string
+        default: complide/wonderful-faraday-eoinzh
+      retag:
+        description: Deploy main and retag both services
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  actions: write
+  contents: write
+  id-token: write
+  pull-requests: write
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    outputs:
+      merge_state: ${{ steps.promote.outputs.merge_state }}
+      merge_sha: ${{ steps.wait.outputs.merge_sha }}
+      pr_url: ${{ steps.promote.outputs.pr_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge branch and open pull request
+        id: promote
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_BRANCH: ${{ inputs.branch }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$SOURCE_BRANCH" =~ ^[A-Za-z0-9._/-]+$ ]] ||
+             [[ "$SOURCE_BRANCH" == -* ]] ||
+             [[ "$SOURCE_BRANCH" == */.. ]] ||
+             [[ "$SOURCE_BRANCH" == *../* ]]; then
+            echo "::error::Invalid branch name: ${SOURCE_BRANCH}"
+            exit 1
+          fi
+
+          promotion_branch="promote-demo-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main "$SOURCE_BRANCH"
+          git switch --create "$promotion_branch" origin/main
+
+          set +e
+          git merge --no-ff --no-edit "origin/${SOURCE_BRANCH}"
+          merge_exit=$?
+          set -e
+
+          merge_state=clean
+          conflict_list=""
+          if (( merge_exit != 0 )); then
+            conflict_list="$(git diff --name-only --diff-filter=U)"
+            if [[ -z "$conflict_list" ]]; then
+              echo "::error::Merge failed without producing resolvable conflicts"
+              exit "$merge_exit"
+            fi
+
+            merge_state=conflict
+            git merge --abort
+
+            # A conflicted index cannot be pushed. Point the temporary branch at
+            # the requested source so GitHub can display the real conflict.
+            git reset --hard "origin/${SOURCE_BRANCH}"
+          fi
+
+          git push --set-upstream origin "$promotion_branch"
+
+          body_file="$(mktemp)"
+          {
+            echo "Automated promotion of \`${SOURCE_BRANCH}\` into \`main\`."
+            if [[ "$merge_state" == conflict ]]; then
+              echo
+              echo "The local merge attempt found conflicts. This PR is intentionally left open."
+              echo
+              echo "Conflicting files:"
+              while IFS= read -r path; do
+                echo "- \`${path}\`"
+              done <<< "$conflict_list"
+            fi
+          } > "$body_file"
+
+          pr_url="$(gh pr create \
+            --base main \
+            --head "$promotion_branch" \
+            --title "Promote ${SOURCE_BRANCH} to main" \
+            --body-file "$body_file")"
+
+          {
+            echo "merge_state=${merge_state}"
+            echo "pr_url=${pr_url}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Promotion pull request"
+            echo
+            echo "- Source: \`${SOURCE_BRANCH}\`"
+            echo "- Pull request: ${pr_url}"
+            if [[ "$merge_state" == conflict ]]; then
+              echo "- Result: merge conflicts; PR left open"
+              echo
+              echo "### Conflicting files"
+              while IFS= read -r path; do
+                echo "- \`${path}\`"
+              done <<< "$conflict_list"
+            else
+              echo "- Result: clean merge"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$merge_state" == clean ]]; then
+            gh pr merge "$pr_url" --auto --squash ||
+              gh pr merge "$pr_url" --squash
+          fi
+
+      - name: Wait for pull request merge
+        id: wait
+        if: ${{ steps.promote.outputs.merge_state == 'clean' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.promote.outputs.pr_url }}
+        run: |
+          set -euo pipefail
+          for _ in {1..180}; do
+            state="$(gh pr view "$PR_URL" --json state --jq .state)"
+            if [[ "$state" == MERGED ]]; then
+              merge_sha="$(gh pr view "$PR_URL" --json mergeCommit --jq .mergeCommit.oid)"
+              echo "merge_sha=${merge_sha}" >> "$GITHUB_OUTPUT"
+              echo "- Merge commit: \`${merge_sha}\`" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if [[ "$state" == CLOSED ]]; then
+              echo "::error::Promotion PR closed without merging"
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "::error::Timed out waiting for promotion PR to merge"
+          exit 1
+
+  retag:
+    needs: promote
+    if: ${{ inputs.retag && needs.promote.outputs.merge_state == 'clean' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch deployments and find runs
+        id: deployments
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_SHA: ${{ needs.promote.outputs.merge_sha }}
+        run: |
+          set -euo pipefail
+
+          wait_for_run() {
+            local workflow="$1"
+            local output_name="$2"
+            local run_id=""
+
+            gh workflow run "$workflow" --ref main
+            for _ in {1..60}; do
+              run_id="$(gh run list \
+                --workflow "$workflow" \
+                --branch main \
+                --event workflow_dispatch \
+                --commit "$MERGE_SHA" \
+                --limit 1 \
+                --json databaseId \
+                --jq '.[0].databaseId // empty')"
+              if [[ -n "$run_id" ]]; then
+                echo "${output_name}=${run_id}" >> "$GITHUB_OUTPUT"
+                return 0
+              fi
+              sleep 5
+            done
+
+            echo "::error::Could not find ${workflow} run for ${MERGE_SHA}"
+            return 1
+          }
+
+          wait_for_run deploy-web.yml web_run_id
+          wait_for_run deploy-cloud-run.yml service_run_id
+
+      - name: Wait for deployments
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WEB_RUN_ID: ${{ steps.deployments.outputs.web_run_id }}
+          SERVICE_RUN_ID: ${{ steps.deployments.outputs.service_run_id }}
+        run: |
+          set -euo pipefail
+          gh run watch "$WEB_RUN_ID" --exit-status
+          gh run watch "$SERVICE_RUN_ID" --exit-status
+          {
+            echo "## Deployment runs"
+            echo
+            echo "- Web: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${WEB_RUN_ID}"
+            echo "- Campaign service: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${SERVICE_RUN_ID}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate Cloud Run configuration
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          DEPLOYER_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          FALLBACK_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          set -euo pipefail
+          for name in PROJECT_ID REGION; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing repository variable for ${name}"
+              exit 1
+            fi
+          done
+          if [[ -z "$WIF_PROVIDER" || -z "$DEPLOYER_SERVICE_ACCOUNT" ]]; then
+            if [[ -z "$FALLBACK_KEY" ]]; then
+              echo "::error::Configure both WIF variables or the GCP_SA_KEY fallback secret"
+              exit 1
+            fi
+          fi
+
+      - name: Authenticate with Workload Identity Federation
+        if: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && vars.GCP_SERVICE_ACCOUNT != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Authenticate with service account key
+        if: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER == '' || vars.GCP_SERVICE_ACCOUNT == '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Tag latest ready revisions
+        run: |
+          set -euo pipefail
+          for service in lh-campaign-service lh-web; do
+            revision="$(gcloud run services describe "$service" \
+              --region "$REGION" \
+              --project "$PROJECT_ID" \
+              --format='value(status.latestReadyRevisionName)')"
+            echo "Tagging ${service}: demo=${revision}"
+            gcloud run services update-traffic "$service" \
+              --region "$REGION" \
+              --project "$PROJECT_ID" \
+              --update-tags "demo=${revision}"
+            tagged_url="$(gcloud run services describe "$service" \
+              --region "$REGION" \
+              --project "$PROJECT_ID" \
+              --format=json |
+              jq -r '.status.traffic[] | select(.tag == "demo") | .url' |
+              head -n1)"
+            {
+              echo "### ${service}"
+              echo "- Revision: \`${revision}\`"
+              echo "- Tagged URL: ${tagged_url}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
