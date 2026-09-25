@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ExternalLink, Megaphone, Plus, RefreshCw } from "lucide-react";
+import {
+  ExternalLink,
+  Megaphone,
+  PlaySquare,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 
 import { CampaignStatusBadge } from "@/components/campaign-status-badge";
 import { CampaignsPageShell } from "@/components/campaigns-page-shell";
@@ -147,6 +153,7 @@ export function CampaignList() {
                       <TableHead className="hidden sm:table-cell">
                         Created
                       </TableHead>
+                      <TableHead className="text-right">Feed</TableHead>
                       <TableHead className="pr-6 text-right">Task</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -175,6 +182,16 @@ export function CampaignList() {
                         </TableCell>
                         <TableCell className="hidden font-mono text-xs text-muted-foreground sm:table-cell">
                           {formatCreatedAt(campaign.created_at)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link
+                            href={`/feed?campaign=${encodeURIComponent(campaign.id)}`}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-orange-700 hover:underline"
+                            aria-label={`View feed for ${campaign.name}`}
+                          >
+                            <PlaySquare className="size-3.5" aria-hidden="true" />
+                            Feed
+                          </Link>
                         </TableCell>
                         <TableCell className="pr-6 text-right">
                           {campaign.issue_url ? (

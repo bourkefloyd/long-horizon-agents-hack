@@ -8,6 +8,12 @@ export const metadata: Metadata = {
     "Swipe through vertical ad concepts while campaign signals become compact state.",
 };
 
-export default function FeedPage() {
-  return <AdDemoFeed />;
+export default async function FeedPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ campaign?: string | string[] }>;
+}) {
+  const { campaign } = await searchParams;
+  const campaignId = (Array.isArray(campaign) ? campaign[0] : campaign)?.trim();
+  return <AdDemoFeed campaignId={campaignId || undefined} />;
 }
