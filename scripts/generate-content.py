@@ -149,8 +149,67 @@ PERSONA_LABEL = {
 }
 
 
+_T0 = time.time()
+
+
 def log(msg):
     print(msg, flush=True)
+    trace.event(msg)
+
+
+class Trace:
+    """Intermediate artifacts for debugging a run, written as they happen so a crash still leaves them behind.
+
+    Layout under the trace dir ($TRACE_DIR, default out/trace/<campaign>/):
+      events.jsonl                 every log line with a UTC timestamp and seconds since start
+      discovery.json               provenance, raw and sanitized stories
+      plan.json                    variants with hook, CTA, audience, story, prompts and script (before any paid call)
+      qa.json                      Liquid text/vision verdicts
+      <variant>/poster.prompt.txt  exact prompt sent to the FLUX image endpoint
+      <variant>/video.prompt.txt   exact prompt sent to the FLUX video endpoint
+      <variant>/script.txt         the ad script the prompts were derived from
+      <variant>/<kind>.request.json  full BFL request body plus the returned task id / polling URL
+      <variant>/<kind>.result.json   final BFL poll result (status, cost, result URL)
+      run.json                     copy of the final run record
+    """
+
+    def __init__(self):
+        self.dir = None
+
+    def start(self, path):
+        self.dir = Path(path)
+        self.dir.mkdir(parents=True, exist_ok=True)
+        (self.dir / "events.jsonl").write_text("")
+
+    def event(self, msg):
+        if not self.dir:
+            return
+        rec = {"t": dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds"),
+               "elapsed_s": round(time.time() - _T0, 3), "msg": str(msg)}
+        with (self.dir / "events.jsonl").open("a") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+    def write_json(self, name, obj):
+        if self.dir:
+            path = self.dir / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(obj, indent=1, ensure_ascii=False, default=str) + "\n")
+
+    def write_text(self, name, text):
+        if self.dir:
+            path = self.dir / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text((text or "").rstrip("\n") + "\n")
+
+    def variant(self, v):
+        """Snapshot everything the renderer will be asked to do for one variant."""
+        vid = v["variant_id"]
+        self.write_text(f"{vid}/poster.prompt.txt", v["prompts"]["poster"])
+        self.write_text(f"{vid}/video.prompt.txt", v["prompts"]["video"])
+        self.write_text(f"{vid}/script.txt", v["script_text"] if v.get("staged_meta") else script_text(v))
+
+
+trace = Trace()
 
 
 # ---------------------------------------------------------------- discovery
@@ -399,7 +458,7 @@ def staged_variants(campaign_dir):
             "variant_id": vdir.name, "hook": meta["hook"], "cta": meta["cta"],
             "audience": audience[0] if audience else "Open", "authored_by": (meta.get("source") or {}).get("agent", "staged"),
             "story": None, "story_safe": None, "duration_s": duration,
-            "staged_meta": meta, "script_file": script_file,
+            "staged_meta": meta, "script_file": script_file, "script_text": script,
             "prompts": {"video": video_p, "poster": poster_p},
         })
     return record, out
@@ -563,6 +622,9 @@ def main():
     ap.add_argument("--staging", type=Path, default=ROOT / "cdn" / "staging")
     ap.add_argument("--dry-run", action="store_true", help="discover, write the plan, estimate cost; call nothing paid")
     ap.add_argument("--timeout-minutes", type=float, default=40)
+    ap.add_argument("--trace-dir", type=Path, default=os.environ.get("TRACE_DIR") or None,
+                    help="where to write intermediate artifacts (prompts, BFL requests/results, events); "
+                         "default $TRACE_DIR or out/trace/<campaign>")
     a = ap.parse_args()
     a.campaign_name, a.campaign_audience, a.brief_ref = None, None, None
 
@@ -591,6 +653,8 @@ def main():
         sys.exit("--variants must be 1..8")
     if a.max_usd < 0:
         sys.exit("--max-usd must be >= 0 (0 = unlimited)")
+    trace.start(a.trace_dir or ROOT / "out" / "trace" / campaign)
+    log(f"trace: {trace.dir}")
 
     if a.render_staged:
         campaign_dir = a.staging / campaign
@@ -654,6 +718,19 @@ def main():
            "estimate_usd": {"images": img_usd, "videos": vid_usd, "total": est, "cap": a.max_usd or None},
            "variants": [], "liquid_qa": None}
 
+    # Plan snapshot before anything is paid for: the exact prompts, scripts and stories behind each variant.
+    trace.write_json("discovery.json", {"provenance": provenance, "stories": run["stories"],
+                                        "sanitized_stories": run["sanitized_stories"]})
+    plan = []
+    for i, v in enumerate(variants):
+        trace.variant(v)
+        plan.append({k: v.get(k) for k in ("variant_id", "hook", "cta", "audience", "authored_by", "story", "story_safe",
+                                           "duration_s", "prompts")}
+                    | {"video_planned": i < n_videos, "mode": "render-staged" if v.get("staged_meta") else "generate"})
+    trace.write_json("plan.json", {"campaign_id": campaign, "campaign_name": a.campaign_name, "brief": a.brief,
+                                   "market": a.market, "audience": a.campaign_audience, "product": product_name,
+                                   "estimate_usd": run["estimate_usd"], "variants": plan})
+
     if a.dry_run:
         for v in variants:
             run["variants"].append({k: v[k] for k in ("variant_id", "hook", "cta", "audience", "authored_by", "story",
@@ -661,6 +738,7 @@ def main():
             if not v.get("staged_meta"):
                 run["variants"][-1]["script"] = script_text(v)
         (campaign_dir / "run.json").write_text(json.dumps(run, indent=1, ensure_ascii=False) + "\n")
+        trace.write_json("run.json", run)
         log(f"dry run: wrote {campaign_dir / 'run.json'}; nothing submitted")
         return
 
@@ -679,6 +757,7 @@ def main():
             except Exception as e:
                 qa[v["variant_id"]] = {"text": {"error": str(e)}}
             log(f"liquid text QA {v['variant_id']}: {qa[v['variant_id']]['text']}")
+        trace.write_json("qa.json", qa)
 
     before = credits(key)
     log(f"credits before: {before}")
@@ -692,11 +771,17 @@ def main():
         for i, v in enumerate(variants):
             img_body = {"prompt": v["prompts"]["poster"], "width": POSTER_W, "height": POSTER_H, "output_format": "jpeg",
                         "safety_tolerance": 2}
-            jobs.append((v, "poster", img_body, submit(IMAGE_ENDPOINT, key, img_body, f"{v['variant_id']} poster")))
+            job = submit(IMAGE_ENDPOINT, key, img_body, f"{v['variant_id']} poster")
+            jobs.append((v, "poster", img_body, job))
+            trace.write_json(f"{v['variant_id']}/poster.request.json",
+                             {"endpoint": IMAGE_ENDPOINT, "body": img_body, "task": job, "submitted_at": dt.datetime.now(dt.timezone.utc)})
             if i < n_videos:
                 vid_body = {"mode": "t2v", "prompt": v["prompts"]["video"], "aspect_ratio": "9:16", "duration": v["duration_s"],
                             "resolution": RESOLUTION, "generate_audio": True, "safety_tolerance": 2}
-                jobs.append((v, "video", vid_body, submit(VIDEO_ENDPOINT, key, vid_body, f"{v['variant_id']} video")))
+                job = submit(VIDEO_ENDPOINT, key, vid_body, f"{v['variant_id']} video")
+                jobs.append((v, "video", vid_body, job))
+                trace.write_json(f"{v['variant_id']}/video.request.json",
+                                 {"endpoint": VIDEO_ENDPOINT, "body": vid_body, "task": job, "submitted_at": dt.datetime.now(dt.timezone.utc)})
     except OutOfCredits as e:
         out_of_credits = str(e)
         log(f"::error::{out_of_credits}")
@@ -726,6 +811,8 @@ def main():
                 res = {"status": "Timeout", "id": job.get("id")}
             vdir = campaign_dir / v["variant_id"]
             vdir.mkdir(exist_ok=True)
+            trace.write_json(f"{v['variant_id']}/{kind}.result.json",
+                             {"finished_at": dt.datetime.now(dt.timezone.utc), "result": res})
             entry = {"task_id": job.get("id"), "quoted_credits": job.get("cost"), "status": res.get("status"),
                      "settled_credits": res.get("cost"), "request": {k: x for k, x in body.items() if k != "prompt"}}
             if res.get("status") == "Ready":
@@ -824,6 +911,7 @@ def main():
                    "credits_before": before, "credits_after": after,
                    "spent_by_balance_usd": round((before - after) / 100, 4) if before is not None and after is not None else None}
     (campaign_dir / "run.json").write_text(json.dumps(run, indent=1, ensure_ascii=False) + "\n")
+    trace.write_json("run.json", run)
     log(f"cost: quoted {quoted:.0f} credits, settled {settled:.0f} credits (~${settled / 100:.2f}); balance {before} -> {after}")
 
     if published == 0:
