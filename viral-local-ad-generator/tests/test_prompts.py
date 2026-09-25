@@ -2,10 +2,54 @@ from __future__ import annotations
 
 import unittest
 
-from viral_local_ad_generator.prompts import make_campaign_info, split_campaign_and_cta
+from viral_local_ad_generator.models import NewsStory
+from viral_local_ad_generator.prompts import (
+    ANGLES,
+    generate_video_concepts,
+    make_campaign_info,
+    order_angles,
+    split_campaign_and_cta,
+)
+
+TAQUERIA_BRIEF = (
+    "Late-night al pastor tacos carved fresh off the trompo until 2 AM, two blocks from the 24th St Mission BART. "
+    "Order ahead on the link and skip the line after the show. CTA: Order ahead and skip the line."
+)
 
 
 class MakeCampaignInfoTests(unittest.TestCase):
+    def test_taco_brief_gets_a_trompo_product_shot(self) -> None:
+        campaign = make_campaign_info(TAQUERIA_BRIEF)
+
+        self.assertEqual(campaign["product"], "fresh al pastor tacos")
+        self.assertIn("trompo", campaign["product_shot"])
+        self.assertEqual(campaign["product_energy"], "Late-night taco energy")
+        self.assertEqual(campaign["craving"], "late-night taco craving")
+        # The explicit CTA marker still wins over the taco default.
+        self.assertEqual(campaign["cta"], "Order ahead and skip the line")
+
+    def test_taco_brief_without_al_pastor_or_late_night_uses_generic_taco_copy(self) -> None:
+        campaign = make_campaign_info("Neighborhood taqueria lunch special")
+
+        self.assertEqual(campaign["product"], "fresh street tacos")
+        self.assertEqual(campaign["product_energy"], "Fresh taco energy")
+        self.assertEqual(campaign["craving"], "taco craving")
+        self.assertEqual(campaign["cta"], "Grab your tacos today.")
+
+    def test_taco_brief_with_a_link_gets_an_order_ahead_cta(self) -> None:
+        campaign = make_campaign_info("Street tacos, order on the link")
+
+        self.assertEqual(campaign["cta"], "Order ahead on the link and skip the line.")
+
+    def test_long_brief_keeps_its_explicit_cta_after_truncation(self) -> None:
+        padding = "Fresh tacos every night " * 12  # ~290 chars, longer than the phrase cap
+        campaign = make_campaign_info(f"{padding.strip()}. CTA: Order ahead tonight.")
+
+        self.assertEqual(campaign["cta"], "Order ahead tonight")
+        self.assertLessEqual(len(campaign["phrase"]), 220)
+        self.assertNotIn("CTA", campaign["phrase"])
+
+
     def test_imperative_brief_is_reused_as_the_cta(self) -> None:
         campaign = make_campaign_info("Come try our famous kouign Amann")
 
@@ -77,6 +121,39 @@ class MakeCampaignInfoTests(unittest.TestCase):
 
     def test_empty_brief_uses_placeholder_phrase(self) -> None:
         self.assertEqual(make_campaign_info("   ")["phrase"], "the featured offer")
+
+
+class OrderAnglesTests(unittest.TestCase):
+    def test_brief_without_time_of_day_keeps_the_canonical_order(self) -> None:
+        for brief in (
+            "Casual mobile game cross-promo for SF coffee lovers",
+            "Casual sandwitch lovers buy now link",
+            "Come try our famous kouign Amann",
+            "Fred's Coffee new Frappe",
+        ):
+            self.assertEqual(order_angles(brief), list(ANGLES), brief)
+
+    def test_late_night_brief_promotes_the_late_night_angle_into_the_first_three(self) -> None:
+        angles = order_angles(TAQUERIA_BRIEF)
+
+        self.assertEqual(angles[0], "local moment hook")
+        self.assertEqual(angles[:3], ["local moment hook", "commuter craving", "late-night payoff"])
+        self.assertEqual(sorted(angles), sorted(ANGLES))
+
+    def test_lunch_brief_promotes_the_lunch_angle(self) -> None:
+        angles = order_angles("Weekday lunch special for office workers")
+
+        self.assertEqual(angles[:2], ["local moment hook", "quick lunch rescue"])
+        self.assertEqual(sorted(angles), sorted(ANGLES))
+
+    def test_concept_variant_numbering_follows_the_ordered_angles(self) -> None:
+        story = NewsStory(title="San Francisco celebrates culture of lowriding", url="https://example.com/lowriding")
+        concepts = generate_video_concepts(TAQUERIA_BRIEF, "San Francisco Mission District", story)
+
+        self.assertEqual([concept.variant_index for concept in concepts], [1, 2, 3, 4, 5])
+        self.assertEqual(concepts[2].angle, "late-night payoff")
+        self.assertIn("al pastor", concepts[2].video_script)
+        self.assertIn("Order ahead and skip the line", concepts[2].video_script)
 
 
 class SplitCampaignAndCtaTests(unittest.TestCase):

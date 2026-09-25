@@ -1,0 +1,25 @@
+{
+  "id": "mission-taqueria-late-night-al-pastor-02-commuter-craving",
+  "hook": "On the way across San Francisco Mission District, the local buzz meets a late-night taco craving.",
+  "cta": "Order ahead and skip the line",
+  "media_type": "script",
+  "media_file": "script.txt",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "night-out crowd and late-shift workers, 21-35, leaving shows, bars and BART after 10 PM"
+    ],
+    "geo": [
+      "San Francisco Mission District"
+    ],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "viral-local-ad-generator",
+    "generated_at": "2026-09-25T23:49:41Z",
+    "brief_ref": "campaign:mission-taqueria-late-night-al-pastor"
+  }
+}

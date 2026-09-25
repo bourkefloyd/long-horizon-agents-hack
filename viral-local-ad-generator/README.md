@@ -146,6 +146,11 @@ The brief doubles as the CTA when it is already an invitation ("Come try our fam
 otherwise the CTA is `Try <brief> today.` unless the brief contains an explicit `CTA:` marker. Generic headlines are
 quoted in hooks and voiceover (`the headline "<title>"`) rather than spliced into a sentence.
 
+Variant angles follow the brief: `local moment hook` is always first, then angles the brief signals (`late-night`,
+`after the show` promote `late-night payoff`; `lunch` promotes `quick lunch rescue`; `BART`, `commute` promote
+`commuter craving`), then the remaining canonical angles. A late-night taqueria brief therefore stages
+`03-late-night-payoff` instead of `03-fan-celebration`.
+
 ```bash
 viral-local-ads \
   stage-cdn \
