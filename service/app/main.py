@@ -2,6 +2,7 @@ from datetime import timedelta
 from threading import Lock
 
 from fastapi import FastAPI, Query, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from .logic import fold_events, utc_now
 from .models import CampaignState, DecisionResult, SignalEvent
@@ -11,10 +12,28 @@ app = FastAPI(title="Campaign Loop Service", version="0.1.0")
 store: CampaignStore = InMemoryCampaignStore()
 decision_lock = Lock()
 
+# Demo scope: allow the browser frontend to call this in-memory API without credentials.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
+
+def _health_payload() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return _health_payload()
+
 
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
-    return {"status": "ok"}
+    return _health_payload()
 
 
 @app.post("/signals", status_code=status.HTTP_202_ACCEPTED)

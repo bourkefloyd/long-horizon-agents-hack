@@ -13,6 +13,7 @@ In **Settings → Secrets and variables → Actions**, add these repository vari
 - `ARTIFACT_REGISTRY_REPOSITORY`: the Docker repository name created below, for example `campaign-services`.
 - `GCP_WORKLOAD_IDENTITY_PROVIDER`: the full provider resource name printed by the command below.
 - `GCP_SERVICE_ACCOUNT`: the deployer service account email printed below.
+- `CLOUD_RUN_PUBLIC` (optional): set to `false` to require authenticated Cloud Run invocations. When unset or any value other than `false`, deploy adds `--allow-unauthenticated` for the hackathon demo.
 
 Workload Identity Federation needs no GitHub secret. As a less secure fallback only, add repository secret `GCP_SA_KEY` containing the complete service-account JSON key. When that fallback is used, omit one or both WIF variables.
 
@@ -71,7 +72,7 @@ echo "$DEPLOYER_SA"
 echo "$RUNTIME_SA"
 ```
 
-Put the last three values in `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_SERVICE_ACCOUNT`, and `CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT`. The workflow builds in GitHub Actions, pushes to Artifact Registry, and deploys to Cloud Run. It does not make the service public.
+Put the last three values in `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_SERVICE_ACCOUNT`, and `CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT`. The workflow builds in GitHub Actions, pushes to Artifact Registry, and deploys to Cloud Run. By default (`CLOUD_RUN_PUBLIC` unset), the service allows unauthenticated invocation so the browser frontend can reach it.
 
 For the JSON-key fallback, create a key with `gcloud iam service-accounts keys create /tmp/gcp-sa-key.json --iam-account="$DEPLOYER_SA"`, save its full contents as `GCP_SA_KEY`, then securely delete the local file. Prefer WIF because it has no long-lived key.
 
@@ -87,4 +88,4 @@ python -m pytest
 uvicorn app.main:app --reload --port 8080
 ```
 
-Check `http://127.0.0.1:8080/healthz`. Signal timestamps must include a timezone, and `POST /campaigns/{id}/decide` accepts an optional `window_hours` query parameter (default `24`).
+Check `http://127.0.0.1:8080/health`; `/healthz` is also available. Signal timestamps must include a timezone, and `POST /campaigns/{id}/decide` accepts an optional `window_hours` query parameter (default `24`).

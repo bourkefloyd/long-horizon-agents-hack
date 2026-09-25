@@ -77,4 +77,5 @@ jobs:
           region: ${{ vars.GCP_REGION }}
           service: ${{ vars.CLOUD_RUN_SERVICE }}
           image: ${{ env.IMAGE }}
-          flags: --service-account=${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}
+          flags: >-
+            --service-account=${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}${{ vars.CLOUD_RUN_PUBLIC != 'false' && ' --allow-unauthenticated' || '' }}
