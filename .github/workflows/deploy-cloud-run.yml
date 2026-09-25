@@ -70,6 +70,10 @@ jobs:
           docker build --tag "${IMAGE}" service
           docker push "${IMAGE}"
 
+      # ADS_BUCKET switches the campaign store to GCS JSON (campaigns/<id>.json).
+      # GITHUB_TOKEN is mounted from Secret Manager only after the secret exists;
+      # flip the LH_GITHUB_TOKEN_SECRET_READY repository variable to "true" once
+      # LH_GITHUB_TOKEN is created and the runtime SA can access it.
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
@@ -77,5 +81,7 @@ jobs:
           region: ${{ vars.GCP_REGION }}
           service: ${{ vars.CLOUD_RUN_SERVICE }}
           image: ${{ env.IMAGE }}
+          env_vars: |-
+            ADS_BUCKET=${{ vars.ADS_BUCKET }}
           flags: >-
-            --service-account=${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}${{ vars.CLOUD_RUN_PUBLIC != 'false' && ' --allow-unauthenticated' || '' }}
+            --service-account=${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}${{ vars.CLOUD_RUN_PUBLIC != 'false' && ' --allow-unauthenticated' || '' }}${{ vars.LH_GITHUB_TOKEN_SECRET_READY == 'true' && ' --set-secrets=GITHUB_TOKEN=LH_GITHUB_TOKEN:latest' || '' }}

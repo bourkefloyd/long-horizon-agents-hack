@@ -185,7 +185,8 @@ Repository variables used by deploy and publish workflows:
 - `CLOUD_RUN_SERVICE`, `CLOUD_RUN_WEB_SERVICE`
 - `CLOUD_RUN_PUBLIC` (optional; `false` requires authenticated API invocation)
 - `API_BASE_URL`
-- `ADS_BUCKET`, `ADS_MANIFEST_URL`
+- `ADS_BUCKET`, `ADS_MANIFEST_URL` (`ADS_BUCKET` is also set on the campaign service so `campaigns/<id>.json` persists in GCS)
+- `LH_GITHUB_TOKEN_SECRET_READY` (set to `true` once the Secret Manager secret `LH_GITHUB_TOKEN` exists; the deploy then mounts it as `GITHUB_TOKEN` so `POST /campaigns/{id}/queue` can open `lh:campaign-gen` issues)
 
 The repository setting **Allow GitHub Actions to create and approve pull requests** must be enabled. Otherwise LH publishes its branch but can only return a compare link.
 

@@ -52,3 +52,37 @@ class NextDayBrief(BaseModel):
 class DecisionResult(BaseModel):
     state: CampaignState
     next_day_brief: NextDayBrief
+
+
+class CampaignStatus(StrEnum):
+    DRAFT = "draft"
+    QUEUED = "queued"
+    GENERATING = "generating"
+    LIVE = "live"
+
+
+class CampaignCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    brief: str = Field(min_length=1, max_length=4000)
+    vertical: str = Field(min_length=1, max_length=120)
+    geo: str = Field(min_length=1, max_length=120)
+    audience: str = Field(min_length=1, max_length=240)
+    dims: str = Field(default="9:16", pattern=r"^\d{1,2}:\d{1,2}$")
+
+
+class Campaign(CampaignCreate):
+    id: str = Field(min_length=1, max_length=64)
+    status: CampaignStatus = CampaignStatus.DRAFT
+    created_at: AwareDatetime
+    issue_url: str | None = None
+
+
+class CampaignDetail(Campaign):
+    """Campaign record merged with its folded signal state."""
+
+    state: CampaignState
+
+
+class QueueResult(BaseModel):
+    campaign: Campaign
+    message: str
