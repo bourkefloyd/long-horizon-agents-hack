@@ -80,7 +80,17 @@ def make_script_story_reference(market: str, story: NewsStory) -> str:
 def make_campaign_info(campaign_script: str) -> dict[str, str]:
     phrase = " ".join(campaign_script.split())[:220] or "the featured offer"
     lower = phrase.lower()
-    if "frappe" in lower:
+    cta = f"Try {phrase} today."
+    if "game" in lower:
+        product = "a new casual mobile game"
+        product_shot = (
+            "phone-screen game reveal: a bright casual game on a handheld phone, one thumb tap, "
+            "a satisfying level-clear burst, and a coffee cup resting beside it on a cafe table"
+        )
+        product_energy = "Quick-play energy"
+        craving = "quick-play craving"
+        cta = "Download the game and play on your next break."
+    elif "frappe" in lower:
         product = "a new Frappe"
         product_shot = (
             "cold frappe reveal: clear cup, creamy blended coffee, whipped top, "
@@ -104,7 +114,7 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         "product_shot": product_shot,
         "product_energy": product_energy,
         "craving": craving,
-        "cta": f"Try {phrase} today.",
+        "cta": cta,
     }
 
 

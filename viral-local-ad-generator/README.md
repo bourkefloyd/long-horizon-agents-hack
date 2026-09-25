@@ -126,6 +126,34 @@ If you also want local downloads, add `--download-media`. Downloaded files are s
 runs/<run-name>/videos/
 ```
 
+Step 5 (website campaigns): stage scripts for the ad CDN.
+
+The website queues a campaign as a task issue whose body contains a fenced ```json block with the campaign record
+(`id`, `name`, `brief`, `vertical`, `geo`, `audience`, `dims`). `stage-cdn` accepts that record as a JSON file or the raw
+issue body, uses `brief` as the campaign script and `geo` as the market, and writes one folder per variant under
+`cdn/staging/<campaign_id>/<variant>/` with `script.txt` and a `meta.json` in the layout described in `docs/cdn.md`.
+Only `dims: "9:16"` is accepted. Nothing is published until the staged folder is reviewed and merged to `main`.
+
+```bash
+viral-local-ads \
+  stage-cdn \
+  --campaign-record examples/sf-coffee-launch.json \
+  --stories runs/sf-news/stories.json \
+  --max-stories 1 \
+  --max-videos 3 \
+  --output runs/sf-coffee-launch \
+  --staging ../cdn/staging
+```
+
+This writes:
+
+```text
+../cdn/staging/sf-coffee-launch/campaign.json
+../cdn/staging/sf-coffee-launch/01-local-moment-hook/{meta.json,script.txt}
+../cdn/staging/sf-coffee-launch/02-commuter-craving/{meta.json,script.txt}
+../cdn/staging/sf-coffee-launch/03-fan-celebration/{meta.json,script.txt}
+```
+
 You can still use the one-shot flow when you do not need a checkpoint:
 
 ```bash
