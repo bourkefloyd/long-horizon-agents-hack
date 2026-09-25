@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { LoaderCircle, Radio, Sparkles, Video, Wand2 } from "lucide-react";
+import {
+  Database,
+  LoaderCircle,
+  Radio,
+  Sparkles,
+  Video,
+  Wand2,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -166,7 +173,7 @@ export function GenerationStackPanel({
       <CardHeader className="border-b border-white/10 pb-4">
         <CardTitle className="text-base">Generation stack</CardTitle>
         <CardDescription className="text-white/55">
-          Nimble research → BFL render → Liquid fold for the next variant.
+          The tools behind this ad and what each one does.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3 pt-4">
@@ -179,7 +186,7 @@ export function GenerationStackPanel({
         <StackRow
           icon={<Radio className="size-4" aria-hidden="true" />}
           title="Nimble"
-          subtitle="Local news + hooks for scripts"
+          subtitle="Local data for generation: SF news and hooks"
           ready={status?.nimble.configured}
           readyLabel={status?.nimble.configured ? "Live key" : "Mock mode"}
           actionLabel={busy === "nimble" ? "Discovering…" : "Discover news"}
@@ -202,8 +209,8 @@ export function GenerationStackPanel({
 
         <StackRow
           icon={<Video className="size-4" aria-hidden="true" />}
-          title="Black Forest Labs"
-          subtitle="FLUX 3 video from this ad script"
+          title="BFL (Black Forest Labs)"
+          subtitle="Content generation: posters and video"
           ready={status?.bfl.configured}
           readyLabel={status?.bfl.configured ? "API key" : "Preview only"}
           actionLabel={busy === "bfl" ? "Working…" : "Preview prompt"}
@@ -233,9 +240,17 @@ export function GenerationStackPanel({
         ) : null}
 
         <StackRow
+          icon={<Database className="size-4" aria-hidden="true" />}
+          title="Tinybird"
+          subtitle="Memory: signal history (TBD, not wired)"
+          ready={false}
+          readyLabel="Not wired"
+        />
+
+        <StackRow
           icon={<Sparkles className="size-4" aria-hidden="true" />}
           title="Liquid fold"
-          subtitle="Fold signals into next-day brief"
+          subtitle="Decision: fold signals into the next-day brief"
           ready={status?.liquid.configured}
           readyLabel={status?.liquid.configured ? "Campaign API" : "Offline"}
           actionLabel={busy === "liquid" ? "Folding…" : "Run decide step"}
@@ -272,9 +287,9 @@ function StackRow({
   subtitle: string;
   ready?: boolean;
   readyLabel?: string;
-  actionLabel: string;
-  disabled: boolean;
-  onAction: () => void;
+  actionLabel?: string;
+  disabled?: boolean;
+  onAction?: () => void;
 }) {
   return (
     <div className="flex items-start justify-between gap-3 rounded-xl border border-white/8 bg-white/5 p-3">
@@ -296,15 +311,17 @@ function StackRow({
           </Badge>
         </div>
       </div>
-      <Button
-        size="sm"
-        variant="outline"
-        className="shrink-0 border-white/15 bg-black/30 text-white hover:bg-white/10"
-        disabled={disabled}
-        onClick={onAction}
-      >
-        {actionLabel}
-      </Button>
+      {actionLabel && onAction ? (
+        <Button
+          size="sm"
+          variant="outline"
+          className="shrink-0 border-white/15 bg-black/30 text-white hover:bg-white/10"
+          disabled={disabled}
+          onClick={onAction}
+        >
+          {actionLabel}
+        </Button>
+      ) : null}
     </div>
   );
 }
