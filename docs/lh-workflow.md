@@ -9,9 +9,10 @@ The product is server-side video ad campaign automation: generate video variants
 ## Shape
 
 ```
-Issue labeled lh:web, comment /lh, or manual dispatch
-  -> lh-web.yml (guard: right label, right author, not a PR thread)
-  -> lh-run.yml (reusable, target=web)
+Issue labeled lh:<target>, comment /lh, or manual dispatch
+  -> small lh-<target>.yml caller
+  -> lh-target.yml (shared guard: right label, right author, not a PR thread)
+  -> lh-run.yml (reusable, target=<target>)
        checkout without credentials
        resume branch lh/web/issue-<n> if it exists, else create it
        compose prompt = prompt.md + state.md + issue + last K logs
@@ -21,7 +22,7 @@ Issue labeled lh:web, comment /lh, or manual dispatch
        run .lh/web/checks.sh (cannot be skipped)
        write .lh/log/<run-id>.md, prune to K
        commit, push branch, open or update PR against the run's base ref
-       comment on the issue
+       comment on the issue; open an approval issue if the agent requested one
        fail the job if checks failed (work is still published)
 ```
 
@@ -41,18 +42,30 @@ Issue labeled lh:web, comment /lh, or manual dispatch
 - Never pushes to `main`. Two guards refuse if the work branch equals the default branch.
 - `/lh` comments only count from OWNER, MEMBER, or COLLABORATOR.
 - One run per target and issue at a time (`concurrency: lh-<target>-<issue>`).
+- `NIMBLE_API_KEY` is exposed only to the `nimble` agent and its deterministic checks; offline checks do not require it.
 
 ## Inputs
 
-`lh-run.yml` (`workflow_call`): `target` (web|agents), `issue_number` (0 for manual), `instruction` (text after `/lh`), `model` (default `composer-2.5`; falls back to `auto` if the slug is not in `agent models`), `state_max_lines` (80), `keep_logs` (5). Secret: `CURSOR_API_KEY`.
+`lh-run.yml` (`workflow_call`): safe `.lh/<target>` directory name, `issue_number` (0 for manual), `instruction` (text after
+`/lh`), `model` (default `composer-2.5`; falls back to `auto` if unavailable), `state_max_lines` (80), `keep_logs` (5).
+Secrets: required `CURSOR_API_KEY`; optional `NIMBLE_API_KEY`.
 
 ## Setup
 
 - Repo secret `CURSOR_API_KEY` (present).
-- Label `lh:web`.
+- Repo secret `NIMBLE_API_KEY` for live Nimble tasks.
+- Target labels: `lh:web`, `lh:nimble` (later `lh:bfl`).
+- Approval label: `lh:approval`. Target owners live in `.lh/owners.json`.
 - Repo setting "Allow GitHub Actions to create and approve pull requests" must be on, or the publish step falls back to a compare link in the issue comment.
 - Issue and comment triggers only fire from the default branch. `workflow_dispatch` can target any branch that has the workflow file.
 
-## Reuse for the agents target
+## Routing and approvals
 
-Add `.lh/agents/{prompt.md,state.md,checks.sh}` and `.github/workflows/lh-agents.yml` calling `lh-run.yml` with `target: agents`. No workflow logic changes.
+An issue gives an agent a task by carrying exactly the target label used by its caller. Add a target with one
+`.lh/<target>/{prompt.md,state.md,checks.sh}` folder, one small caller copied from `lh-nimble.yml`, one owner entry, and one label;
+shared workflow logic does not change.
+
+For a proposal that would spend money, change a marketing schema, or publish content, the agent writes
+`.lh/<target>/approval-request.md`. The deterministic runner removes it before commit, opens `Approval needed: <summary>` with
+`lh:approval` and `lh:<target>`, assigns the configured owner (repository owner fallback), links the PR, and comments the issue link
+on the PR. An assignee comments `/approve` on that issue; `lh-approve.yml` verifies assignment and squash-merges the linked PR.
