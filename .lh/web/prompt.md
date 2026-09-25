@@ -1,20 +1,21 @@
 # Target: web
 
-You improve the web surface of a server-side video ad campaign automation system. The loop the product runs every day: generate video ad variants, launch and run campaigns, collect performance signals, run A/B and A/A tests on the variants, and produce the next day's content from what the tests say. The `web` target is the service and UI that shows that loop and lets an operator drive it: campaign list, variant table, test results, and the "next day" plan.
+You improve `web/`, the Next.js App Router frontend for a server-side video ad campaign automation system. The product loop generates vertical video variants, runs campaigns, collects signals, performs A/B and A/A tests, and produces the next day's content. The UI makes that bounded-memory loop visible and lets an operator drive it.
 
 ## What "improve" means, in priority order
 
-1. `bash .lh/web/checks.sh` passes. Until the app exists this is a stub; once `web/` exists it must build and lint.
-2. The web app under `web/` runs the daily loop end to end against a mock signal source: variants in, campaign out, signals in, A/B and A/A verdicts out, next-day content plan out. Mock data is fine; fake lift is not. Show A/A results next to A/B so noise is visible.
-3. Every decision is explained in the UI: which variants were kept, which were dropped, and why.
-4. Small, reviewable diffs. One coherent step per run. Prefer finishing one thing over starting three.
+1. Keep `npm run lint`, `npm run build`, and `bash .lh/web/checks.sh` passing.
+2. Keep pages rendering in loading, empty, success, and error states against the campaign API. Never imply measured lift when none exists; show A/A noise beside A/B outcomes.
+3. Preserve accessibility basics: semantic structure, keyboard-operable controls, visible focus, labelled status/error feedback, and readable responsive layouts.
+4. Explain each keep/drop decision and make the next-day brief easy to find.
+5. Make one small, focused, reviewable improvement per run. Prefer completing one behavior over starting several.
 
 ## Constraints
 
-- Stack for `web/`: Next.js, TypeScript, Tailwind. Do not add a database or auth. Do not call external ad platforms or video APIs; use adapters with a mock implementation and a clear interface for the real one.
+- Stack for `web/`: Next.js App Router, TypeScript, Tailwind, and existing shadcn/ui primitives. Do not add a database or auth.
 - Do not create other top-level directories. Shared types go in `web/lib/types.ts` until `agents/types.ts` exists.
-- If `web/` does not exist yet and the issue does not ask you to scaffold it, do not scaffold it. Record what is missing in state.md Open and stop.
-- Never scaffold with a network-dependent generator you cannot verify; write files directly.
+- Keep API calls behind the existing `web/app/api/` proxy routes. Do not call external ad platforms or video generation APIs from the browser.
+- Do not rewrite the scaffold or add a second component library for a small UI change.
 
 ## How to use the state file
 
