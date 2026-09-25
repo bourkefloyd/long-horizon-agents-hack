@@ -16,8 +16,7 @@
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   /* Reels: one full-screen clip per swipe. The video is edge to edge by request; controls float on glass. */
-  html, body { height: 100%; }
-  html { scroll-snap-type: y mandatory; overscroll-behavior-y: contain; }
+  html, body { height: 100%; overflow: hidden; }
   body { background: var(--ground); color: var(--ink); font: 15px/1.4 var(--ui); }
   button { font: inherit; color: inherit; }
   :focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
@@ -51,8 +50,15 @@
   .pillbtn.glass.light { color: var(--teal); }
   .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); margin-right: 6px; vertical-align: 1px; }
 
-  .feed { display: flex; flex-direction: column; }
-  .post { scroll-snap-align: start; scroll-snap-stop: always; height: 100vh; height: 100svh; }
+  /* TikTok-style: a full-screen vertical pager. Swipe up (or wheel / arrow down) for the next clip. */
+  .feed { position: fixed; inset: 0; overflow-y: auto; scroll-snap-type: y mandatory; overscroll-behavior: contain; scrollbar-width: none; background: #0c1516; }
+  .feed::-webkit-scrollbar { display: none; }
+  .post { height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; justify-content: center; }
+  .post .stage { width: min(480px, 100%); }
+  .offer { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(280px, calc(100% - 48px)); border-radius: 28px; padding: 18px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; z-index: 7; animation: up .28s cubic-bezier(.2,.9,.3,1.1); }
+  .offer b { font: 700 18px/1.2 var(--round); }
+  .offer .row { width: 100%; }
+  .offer small { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
   .stage { position: relative; width: 100%; max-width: 100%; height: 100%; overflow: hidden; background: #0c1516; }
   @media (min-width: 520px) { .stage { border-radius: 0; box-shadow: 0 0 0 1px var(--line); } }
   .stage video { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -122,7 +128,7 @@
   .st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 8px; background: rgba(14,27,29,.06); white-space: nowrap; align-self: start; }
   .st.rendering { color: var(--warn); } .st.ready { color: var(--teal); background: var(--teal-soft); } .st.failed, .st.moderated { color: var(--bad); }
   .muted { color: var(--muted); }
-  .foot { color: var(--muted); font-size: 12px; text-align: center; padding: 18px 16px 28px; scroll-snap-align: end; }
+  .note { color: var(--muted); font-size: 12px; margin: 0; }
 </style>
 
 <div class="wrap">
@@ -131,7 +137,6 @@
     <button class="pillbtn glass light press" id="open-state" aria-haspopup="dialog"><span class="dot" id="live"></span>State</button>
   </header>
   <main class="feed" id="feed" aria-label="Ad feed"></main>
-  <p class="foot">Spec ads · Sightglass not affiliated · Sutro Stack is fictional · every clip is FLUX 3</p>
 </div>
 
 <script>
@@ -217,9 +222,38 @@ function mount(stage, a, clip, afterEnd) {
       stage.appendChild(e); }
   });
   // Every clip ends in the playable end card, unless it is an end card itself.
-  v.addEventListener("ended", () => afterEnd ? afterEnd() : startGame(stage, a));
+  v.addEventListener("ended", () => afterEnd ? afterEnd() : offer(stage, a));
   v.addEventListener("error", () => toast(stage, "Clip didn't load. Reload to retry."));
 }
+
+// When a clip ends: offer the playable, and move on by itself if nobody taps.
+function offer(stage, a, label = "Play") {
+  $(".offer", stage)?.remove();
+  const o = document.createElement("div"); o.className = "offer glass light";
+  const title = BRAND[brandOf(a)].title;
+  o.innerHTML = `<b>${esc(title)}</b><div class="row"><button class="btn primary press" data-p>${esc(label)}</button><button class="btn press" data-n>Next</button></div><small>Next in <span>4</span></small>`;
+  stage.appendChild(o);
+  let t = 4;
+  const tick = setInterval(() => { t--; const sp = $("small span", o); if (sp) sp.textContent = t; if (t <= 0) { clearInterval(tick); o.remove(); goNext(stage); } }, 1000);
+  o._stop = () => clearInterval(tick);
+  $("[data-p]", o).onclick = () => { o._stop(); o.remove(); tap(a.id, "end card play"); startGame(stage, a); };
+  $("[data-n]", o).onclick = () => { o._stop(); o.remove(); goNext(stage); };
+}
+function clearOffer(stage) { const o = $(".offer", stage); if (o) { o._stop?.(); o.remove(); } }
+
+function goNext(stage, step = 1) {
+  const feed = $("#feed"), list = [...feed.children], i = list.indexOf(stage.closest(".post"));
+  const j = (i + step + list.length) % list.length;  // wraps to the top after the last clip
+  feed.scrollTo({ top: j * feed.clientHeight, behavior: "smooth" });
+}
+
+document.addEventListener("keydown", e => {
+  if (e.target.closest?.("input, textarea, form")) return;
+  const cur = document.querySelector(".post.active .stage");
+  if (!cur) return;
+  if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); goNext(cur, 1); }
+  if (e.key === "ArrowUp" || e.key === "k") { e.preventDefault(); goNext(cur, -1); }
+});
 
 function play(stage) { const v = $("video", stage); if (v) { v.muted = !soundOn; v.play().catch(() => {}); } }
 
@@ -256,7 +290,7 @@ function startGame(stage, a) {
     saveState({ last_game: { brand, outcome, score }, best: { ...(state.best || {}), [brand]: best } });
     const card = ads.find(x => x.id === `${brand === "sightglass" ? "sightglass" : "sutrostack"}__endcard_${outcome}`);
     if (!card) { toast(stage, "End card not ready yet"); stage.classList.remove("frozen"); g.remove(); return; }
-    mount(stage, { ...a, extra: null, warning: null, score: { score, best, outcome } }, card, () => startGame(stage, a));
+    mount(stage, { ...a, extra: null, warning: null, score: { score, best, outcome } }, card, () => offer(stage, a, "Play again"));
     play(stage);
   });
 }
@@ -425,6 +459,7 @@ function renderPanel() {
     <h4>Kept</h4><dl class="kv">${kept.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
     <h4>Dropped</h4><div class="list">${(state.dropped || []).length ? state.dropped.map(d => `<s>${esc(d)}</s>`).join("") : '<span class="muted">Nothing yet</span>'}</div>
     <h4>Renders</h4><div class="list">${r.length ? r.map(x => `<div class="req"><span>${esc(x.title || x.kind)}</span><span class="st ${esc(x.status)}">${esc(x.status)}</span></div>`).join("") : '<span class="muted">None yet</span>'}</div>
+    <p class="note">Spec ads · Sightglass not affiliated · Sutro Stack is fictional · every clip is FLUX 3</p>
     <h4>Taps</h4><div class="list">${t.length ? t.map(([k, n]) => `<div class="req"><span>${esc(k)}</span><b>${n}</b></div>`).join("") : '<span class="muted">None yet</span>'}</div>
     <button class="btn" type="button" id="close-state">Close</button>`;
   $("#close-state").onclick = closePanel;
@@ -442,9 +477,12 @@ let io = null;
 function observe() {
   io?.disconnect();
   io = new IntersectionObserver(es => es.forEach(e => {
-    const v = $("video", e.target); if (!v) return;
-    if (e.isIntersecting && e.intersectionRatio > .6) { if (!e.target.classList.contains("frozen")) { v.muted = !soundOn; v.play().catch(() => {}); } } else v.pause();
-  }), { threshold: [0, .6, 1] });
+    const v = $("video", e.target), post = e.target.closest(".post");
+    if (e.isIntersecting && e.intersectionRatio > .6) {
+      post.classList.add("active");
+      if (v && !e.target.classList.contains("frozen")) { v.muted = !soundOn; if (v.ended) v.currentTime = 0; v.play().catch(() => {}); }
+    } else { post.classList.remove("active"); clearOffer(e.target); if (v) v.pause(); }
+  }), { root: $("#feed"), threshold: [0, .6, 1] });
   document.querySelectorAll(".stage").forEach(s => io.observe(s));
 }
 
