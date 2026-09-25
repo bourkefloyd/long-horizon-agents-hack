@@ -473,7 +473,7 @@ export function AdDemoFeed({ campaignId }: { campaignId?: string }) {
   const activeAd = ads[activeIndex];
 
   return (
-    <main className="grid h-svh grid-cols-1 bg-[#071311] text-white lg:grid-cols-[minmax(0,1fr)_min(26rem,34vw)]">
+    <main className="grid h-svh grid-cols-1 grid-rows-[minmax(0,1fr)] bg-[#071311] text-white lg:grid-cols-[minmax(0,1fr)_min(26rem,34vw)]">
       <div className="relative min-h-0 overflow-hidden">
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/15 bg-black/40 p-1.5 pr-4 shadow-xl backdrop-blur-xl">
@@ -534,7 +534,10 @@ export function AdDemoFeed({ campaignId }: { campaignId?: string }) {
       </header>
 
       <div
-        className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain scroll-smooth pt-[4.25rem] scroll-pt-[4.25rem]"
+        // Mandatory snapping only on the split layout: on a phone each section
+        // is taller than the screen (frame + info card), and iOS snaps a tall
+        // section back to its start, trapping the content below the fold.
+        className="h-full overflow-y-auto scroll-smooth pt-[4.25rem] scroll-pt-[4.25rem] lg:snap-y lg:snap-mandatory lg:overscroll-y-contain"
         aria-label="Ad experience"
       >
         {ads.map((ad, index) => {
@@ -650,37 +653,41 @@ export function AdDemoFeed({ campaignId }: { campaignId?: string }) {
       </nav>
       </div>
 
+      {/* Block flow, not a flex column: a fixed-height flex column shrinks and
+          clips its cards instead of letting the panel scroll. */}
       <aside
-        className="hidden min-h-0 flex-col gap-4 overflow-y-auto border-l border-white/10 bg-[#050b0a]/90 p-4 lg:flex"
+        className="hidden min-h-0 overflow-y-auto overscroll-y-contain border-l border-white/10 bg-[#050b0a]/90 p-4 lg:block"
         aria-label="Info card"
       >
-        <div>
-          <p className="text-[10px] font-semibold tracking-[0.22em] text-white/45 uppercase">
-            Info card
-          </p>
-          <h2 className="mt-1 text-lg font-semibold tracking-tight">
-            What the system knows
-          </h2>
-          <p className="mt-1 text-xs leading-5 text-white/50">
-            Targeting, tracked signals and the tools behind the visible ad.
-          </p>
+        <div className="flex flex-col gap-4">
+          <div>
+            <p className="text-[10px] font-semibold tracking-[0.22em] text-white/45 uppercase">
+              Info card
+            </p>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight">
+              What the system knows
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-white/50">
+              Targeting, tracked signals and the tools behind the visible ad.
+            </p>
+          </div>
+          {activeAd ? (
+            <>
+              <StateCard
+                ad={activeAd}
+                campaign={campaign}
+                loading={stateLoading}
+                error={stateError}
+                signalStatus={signalStatuses[activeAd.variant_id]}
+                onRetry={loadState}
+              />
+              <GenerationStackPanel
+                ad={activeAd}
+                onBriefReady={() => void loadState()}
+              />
+            </>
+          ) : null}
         </div>
-        {activeAd ? (
-          <>
-            <StateCard
-              ad={activeAd}
-              campaign={campaign}
-              loading={stateLoading}
-              error={stateError}
-              signalStatus={signalStatuses[activeAd.variant_id]}
-              onRetry={loadState}
-            />
-            <GenerationStackPanel
-              ad={activeAd}
-              onBriefReady={() => void loadState()}
-            />
-          </>
-        ) : null}
       </aside>
     </main>
   );
@@ -1087,7 +1094,7 @@ function StateCard({
   return (
     <Card className="relative z-10 w-full max-w-md border-white/10 bg-black/35 text-white shadow-2xl backdrop-blur-xl">
       <CardHeader className="border-b border-white/10">
-        <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <Badge
             className={
               hasFoldedState
@@ -1104,7 +1111,7 @@ function StateCard({
               "Awaiting first fold"
             )}
           </Badge>
-          <span className="font-mono text-[10px] text-white/45">
+          <span className="min-w-0 max-w-full truncate font-mono text-[10px] text-white/45">
             campaign/{ad.campaign_id}
           </span>
         </div>
@@ -1137,16 +1144,18 @@ function StateCard({
             value={String(ad.targeting.weight)}
           />
         </div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2" data-metrics="">
           {metrics.map((metric) => (
             <div
               key={metric.label}
-              className="rounded-xl border border-white/8 bg-white/6 p-2.5"
+              className="min-w-0 rounded-xl border border-white/8 bg-white/6 p-2.5"
             >
               <p className="font-mono text-lg font-semibold tabular-nums">
                 {metric.value}
               </p>
-              <p className="mt-0.5 text-[10px] text-white/50">{metric.label}</p>
+              <p className="mt-0.5 truncate text-[10px] text-white/50">
+                {metric.label}
+              </p>
             </div>
           ))}
         </div>
