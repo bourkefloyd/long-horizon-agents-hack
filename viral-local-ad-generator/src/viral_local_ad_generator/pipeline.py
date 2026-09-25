@@ -6,8 +6,10 @@ from pathlib import Path
 from .bfl_client import BFLClient, find_media_url
 from .brand_guard import validate_no_famous_brands
 from .models import NewsOutlet, NewsStory, VideoAdConcept
+from .models import NewsOutlet, NewsStory, SanitizedStory, VideoAdConcept
 from .nimble_client import NimbleClient, mock_stories
 from .prompts import generate_video_concepts
+from .sanitizer import sanitize_stories_for_ad
 
 
 def run_pipeline(
@@ -129,10 +131,12 @@ def generate_ads_from_stories(
     max_videos: int | None = None,
 ) -> list[VideoAdConcept]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    sanitized_stories = sanitize_stories_for_ad(market, stories)
+    write_sanitized_stories(output_dir, market, sanitized_stories)
     concepts = [
         concept
-        for story in stories
-        for concept in generate_video_concepts(campaign_script, market, story)
+        for story, sanitized_story in zip(stories, sanitized_stories, strict=True)
+        for concept in generate_video_concepts(campaign_script, market, story, sanitized_story)
     ]
     if max_videos is not None:
         concepts = concepts[:max_videos]
@@ -151,6 +155,7 @@ def generate_videos(
     download_media: bool,
 ) -> list[VideoAdConcept]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    validate_no_famous_brands(concepts)
     for index, concept in enumerate(concepts, start=1):
         job = bfl_client.submit_flux3_video(concept.bfl_payload)
         if poll and job.get("polling_url"):
@@ -176,15 +181,19 @@ def write_run_artifacts(
     stories: list[NewsStory],
     concepts: list[VideoAdConcept],
 ) -> dict[str, object]:
+    sanitized_stories = sanitize_stories_for_ad(market, stories)
     result = {
         "market": market,
         "story_count": len(stories),
+        "sanitized_story_count": len(sanitized_stories),
         "concept_count": len(concepts),
         "stories": [story.to_dict() for story in stories],
+        "sanitized_stories": [story.to_dict() for story in sanitized_stories],
         "concepts": [concept.to_dict() for concept in concepts],
     }
     write_json(output_dir / "run.json", result)
     write_json(output_dir / "stories.json", result["stories"])
+    write_sanitized_stories(output_dir, market, sanitized_stories)
     write_json(output_dir / "concepts.json", result["concepts"])
     write_video_link_index(output_dir, concepts)
     write_markdown_summary(output_dir / "summary.md", market, stories, concepts)
@@ -204,6 +213,11 @@ def load_outlets(path: Path) -> list[NewsOutlet]:
 def load_concepts(path: Path) -> list[VideoAdConcept]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     return [VideoAdConcept.from_dict(item) for item in payload]
+
+
+def load_sanitized_stories(path: Path) -> list[SanitizedStory]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return [SanitizedStory.from_dict(item) for item in payload]
 
 
 def select_stories(stories: list[NewsStory], count: int) -> list[NewsStory]:
@@ -280,6 +294,29 @@ def write_input_webpages(output_dir: Path, stories: list[NewsStory]) -> None:
     write_text(output_dir / "input_webpages.md", "\n".join(lines))
 
 
+def write_sanitized_stories(
+    output_dir: Path,
+    market: str,
+    sanitized_stories: list[SanitizedStory],
+) -> None:
+    write_json(output_dir / "sanitized_stories.json", [story.to_dict() for story in sanitized_stories])
+
+    lines = [f"# Sanitized Story Inputs: {market}", ""]
+    for index, story in enumerate(sanitized_stories, start=1):
+        notes = ", ".join(story.sanitization_notes) or "none"
+        lines.extend(
+            [
+                f"## {index}. {story.sanitized_reference}",
+                "",
+                f"- Original title: {story.original_title}",
+                f"- Original URL: {story.original_url}",
+                f"- Sanitized frame: {story.sanitized_frame}",
+                f"- Sanitized reference: {story.sanitized_reference}",
+                f"- Sanitization notes: {notes}",
+                "",
+            ]
+        )
+    write_text(output_dir / "sanitized_stories.md", "\n".join(lines))
 def write_outlets_summary(path: Path, market: str, outlets: list[NewsOutlet]) -> None:
     lines = [f"# Local News Outlets: {market}", ""]
     for index, outlet in enumerate(outlets, start=1):
@@ -323,14 +360,21 @@ def write_markdown_summary(
     stories: list[NewsStory],
     concepts: list[VideoAdConcept],
 ) -> None:
+    sanitized_by_url = {
+        story.original_url: story
+        for story in sanitize_stories_for_ad(market, stories)
+    }
     lines = [f"# Viral Local Ad Run: {market}", ""]
     for story in stories:
+        sanitized_story = sanitized_by_url.get(story.url)
+        heading = sanitized_story.sanitized_reference if sanitized_story else story.title
+        frame = sanitized_story.sanitized_frame if sanitized_story else story.title
         lines.extend(
             [
-                f"## {story.title}",
+                f"## {heading}",
                 "",
-                f"- Source: {story.source or 'unknown'}",
-                f"- URL: {story.url}",
+                f"- Sanitized story frame: {frame}",
+                "- Source webpage: see input_webpages.md",
                 f"- Published: {story.published_at or 'unknown'}",
                 f"- Scores: relevance {story.relevance_score:.2f}, virality {story.virality_score:.2f}",
                 "",
