@@ -107,6 +107,7 @@ def submit(item_id, body, key, out_dir):
 
 
 def wait(item_id, poll, body, key, out_dir):
+    not_found = 0
     while True:
         time.sleep(5)
         try:
@@ -121,7 +122,10 @@ def wait(item_id, poll, body, key, out_dir):
             print(f"  {item_id} poll error, retrying: {e}", file=sys.stderr)
             continue
         status = res.get("status")
-        if status not in DONE:
+        # The polling host sometimes routes to a node that doesn't know the job yet or any more;
+        # only trust "Task not found" once it repeats for about a minute.
+        not_found = not_found + 1 if status == "Task not found" else 0
+        if status not in DONE or 0 < not_found < 12:
             continue
         (out_dir / f"{item_id}.job.json").unlink(missing_ok=True)
         if status == "Ready":
