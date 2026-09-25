@@ -68,6 +68,16 @@
       "sfx": "foghorns in the distance, an oven door creaking open, crust crackling as it cools",
       "sonic_logo": "a low foghorn note blending into a warm brass chord on the final frame",
       "cta": "Since 1849"
+    },
+    "big_mac": {
+      "name": "McDonald's Big Mac",
+      "category": "spec ad, not an SF brand; not affiliated with or endorsed by McDonald's",
+      "sources": [],
+      "look": "punchy social-feed look, fast cuts, saturated warm colors, crisp commercial food lighting",
+      "hero": "a warm, craveable double-patty burger with a three-part sesame seed bun, special sauce, shredded lettuce, melted cheese, pickles and onions, clean slow-motion product close-up",
+      "sfx": "phone notification pings, swipe whooshes, a bun squish, a sizzle",
+      "sonic_logo": "a short upbeat five-note whistle-and-horn sting on the final frame",
+      "cta": "Grab a Big Mac today"
     }
   },
   "personas": {
@@ -126,6 +136,40 @@
       "voice": "a deep, theatrical, slightly smug male voice, as if the fog itself is talking",
       "language": "English",
       "music": "playful low woodwinds and a bouncy tuba, comedic and sly"
+    },
+    "soma_lunch": {
+      "who": "office workers on a weekday lunch break",
+      "where": "SoMa, San Francisco: brick warehouses, glass offices, Bay Bridge in the distance",
+      "when": "weekday lunch hour, mostly sunny and warm",
+      "voice": "an energetic, friendly young narrator with fast social-media pacing, American English",
+      "language": "English",
+      "music": "upbeat trending-style hip hop beat with snappy hi-hats and a bass drop at the reveal",
+      "data": [
+        {
+          "kind": "location",
+          "fact": "viewer is in SoMa",
+          "source": "targeting input"
+        },
+        {
+          "kind": "time",
+          "fact": "weekday lunch hour",
+          "source": "targeting input"
+        },
+        {
+          "kind": "weather",
+          "fact": "mostly sunny, 68°F at noon",
+          "source": "https://api.weather.gov/gridpoints/MTR/85,105/forecast/hourly",
+          "retrieved_at": "2026-09-25",
+          "expires_at": "2026-09-25T15:00-07:00"
+        },
+        {
+          "kind": "local_headline",
+          "fact": "viral SF story: a prediction market's charity arm hired a former FTX figure and had spent FTX money",
+          "source": "https://sfstandard.com/2026/09/23/caroline-ellison-new-job-ftx-manifund/",
+          "retrieved_at": "2026-09-25",
+          "expires_at": "2026-09-30"
+        }
+      ]
     }
   },
   "variants": [
@@ -283,6 +327,49 @@
               "to": "sightglass__fog_narrator__sun"
             }
           ]
+        }
+      ]
+    },
+    {
+      "id": "bigmac__soma_lunch_headline",
+      "product": "big_mac",
+      "persona": "soma_lunch",
+      "shots": [
+        {
+          "t": [
+            0,
+            2
+          ],
+          "shot": "fast social-feed style montage of San Francisco lunch-hour street energy in sunny SoMa: brick warehouses, Bay Bridge in the distance, people on the sidewalk glancing at phones that light up, surprised reactions, quick whip pans",
+          "text": "San Francisco is talking.",
+          "vo": "San Francisco's feed is all over a viral local headline."
+        },
+        {
+          "t": [
+            2,
+            4
+          ],
+          "shot": "abstract, stylized news-feed cards sliding past fast on a phone screen: shapes, a crypto coin icon, a briefcase icon, surprised emoji reactions, blurred unreadable text, no logos, no real faces, no names",
+          "text": "Viral headline. New craving.",
+          "vo": "From the headline everyone is sharing to the lunch everyone knows..."
+        },
+        {
+          "t": [
+            4,
+            7
+          ],
+          "shot": "smash cut to a warm, craveable burger reveal: three-part sesame seed bun, special sauce, shredded lettuce, melted cheese, slow-motion clean product close-up",
+          "text": "New Big Mac energy.",
+          "vo": "...make your next twist a Big Mac."
+        },
+        {
+          "t": [
+            7,
+            10
+          ],
+          "shot": "hero product shot of the burger on a table in bright sunshine against a sunny San Francisco backdrop with painted houses and blue sky, then it holds still for an end card with empty space at the top for text",
+          "text": "Grab a Big Mac today.",
+          "vo": "Grab a Big Mac today."
         }
       ]
     }

@@ -34,7 +34,24 @@ USD_PER_SEC_HD = 0.17
 DONE = {"Ready", "Request Moderated", "Content Moderated", "Error", "Task not found"}
 
 
+def compile_shots(product, persona, variant, duration, aspect_ratio):
+    """Explicit timed shots. On-screen text is burned in afterwards by caption.py, not drawn by FLUX."""
+    orientation = "vertical" if aspect_ratio == "9:16" else aspect_ratio
+    lines = [f"{product['look'][0].upper() + product['look'][1:]}. A {duration}-second {orientation} mobile video ad "
+             f"in {len(variant['shots'])} shots. No on-screen text, captions, subtitles, logos or readable words."]
+    names = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"]
+    for i, s in enumerate(variant["shots"]):
+        lead = "" if i == 0 else "HARD CUT. "
+        lines.append(f"{lead}SHOT {names[i]} ({s['t'][0]}-{s['t'][1]}s): {s['shot']}.")
+    vo = " ".join(f"At {s['t'][0]} seconds the narrator says: \"{s['vo']}\"" for s in variant["shots"] if s.get("vo"))
+    lines.append(f"AUDIO: Music: {persona['music']}, ending with {product['sonic_logo']}. "
+                 f"Sound effects: {product['sfx']}. Voiceover by {persona['voice']}, in {persona['language']}. {vo}")
+    return "\n".join(lines)
+
+
 def compile_prompt(product, persona, variant, duration, aspect_ratio):
+    if "shots" in variant:
+        return compile_shots(product, persona, variant, duration, aspect_ratio)
     t1, t2 = round(duration * 0.3), round(duration * 0.7)
     orientation = "vertical" if aspect_ratio == "9:16" else aspect_ratio
     hook, close = variant["lines"]
