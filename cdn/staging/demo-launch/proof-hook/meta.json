@@ -1,0 +1,19 @@
+{
+  "id": "demo-launch-proof-hook",
+  "hook": "One compact row remembers what worked.",
+  "cta": "Watch the loop",
+  "media_type": "image",
+  "media_file": "poster.svg",
+  "poster_file": "poster.svg",
+  "aspect": "9:16",
+  "targeting": {
+    "geo": ["US"],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "seed-demo",
+    "generated_at": "2026-09-25T20:00:00Z",
+    "brief_ref": "HACK_PLAN.md"
+  }
+}

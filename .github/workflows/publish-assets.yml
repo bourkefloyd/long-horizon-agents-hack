@@ -1,0 +1,59 @@
+name: Publish ad assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cdn/staging/**"
+      - "cdn/publish.py"
+      - "cdn/manifest.schema.json"
+      - "cdn/requirements.txt"
+      - ".github/workflows/publish-assets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-ad-assets
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      ADS_BUCKET: ${{ vars.ADS_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate configuration
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          DEPLOYER_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          for name in ADS_BUCKET WIF_PROVIDER DEPLOYER_SERVICE_ACCOUNT; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing repository variable ${name}"
+              exit 1
+            fi
+          done
+
+      - name: Authenticate with Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: cdn/requirements.txt
+
+      - name: Install publisher dependencies
+        run: python -m pip install --requirement cdn/requirements.txt
+
+      - name: Publish staged assets
+        run: python cdn/publish.py
