@@ -94,9 +94,9 @@ jobs:
     needs: guard
     if: needs.guard.outputs.run == 'true'
     uses: ./.github/workflows/lh-run.yml
-    concurrency:
-      group: lh-web-${{ needs.guard.outputs.issue_number }}
-      cancel-in-progress: false
+    # Concurrency (one run per target and issue) lives in lh-run.yml only.
+    # A matching group here deadlocks: the caller holds the slot until the
+    # reusable workflow finishes, which cannot start while the slot is taken.
     with:
       target: web
       issue_number: ${{ fromJSON(needs.guard.outputs.issue_number) }}
