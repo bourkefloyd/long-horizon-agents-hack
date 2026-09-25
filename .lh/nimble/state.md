@@ -21,6 +21,7 @@ VideoAdConcept rows (hooks, scripts, FLUX/BFL payloads)—without credentials in
 
 ## Open
 
+- LH router guard test (issue #26): confirm issue-driven nimble routing limits edits to scoped state updates.
 - Live Nimble path is not run in deterministic checks (quota/network); needs human-approved one-shot discovery.
 - `nimble` owner in `.lh/owners.json` is still a placeholder.
 
