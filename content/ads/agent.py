@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Turn one feed action into one FLUX 3 render. The feed's db holds the requests; this does the work.
 
-    python3 content/ads/agent.py order   REQ_ID '{"bun": "sourdough", "cheese": "pepper jack", "extra": "jalapeños"}'
-    python3 content/ads/agent.py episode REQ_ID '{"parent": "sightglass__n_judah_commuter", "episode": 2}'
-    python3 content/ads/agent.py selfie  REQ_ID '{"image": "/path/to/selfie.jpg"}'
+    python3 content/ads/agent.py order   REQ_ID '{"brand": "sutro", "bun": "sourdough", "cheese": "pepper jack", "extra": "jalapeños"}'
+    python3 content/ads/agent.py order   REQ_ID '{"brand": "sightglass", "drink": "latte", "milk": "oat", "temp": "iced"}'
+    python3 content/ads/agent.py episode REQ_ID '{"brand": "sightglass", "parent": "sightglass__n_judah_commuter", "episode": 2}'
+    python3 content/ads/agent.py selfie  REQ_ID '{"brand": "sutro", "image": "/path/to/selfie.jpg"}'
 
 Writes out/<REQ_ID>.mp4. Key from BLACK_FOREST. The selfie file is deleted after the render is submitted.
 """
@@ -36,33 +37,62 @@ def b64(path):
     return base64.b64encode(Path(path).read_bytes()).decode()
 
 
+SCENE = {
+    "sutro": {
+        "look": "Punchy social-feed look, saturated warm colors, crisp commercial food lighting",
+        "place": "a sunny San Francisco burger shop",
+        "hero": "a double smash burger on a toasted sourdough bun",
+        "music": "upbeat hip hop beat with snappy hi-hats",
+        "sfx": "sizzle on a flat-top grill, a crunchy bite",
+        "next": "the story moves forward to a warm payoff: the burger gets its first big bite and everyone at the table laughs",
+    },
+    "sightglass": {
+        "look": "Bright airy look, tall industrial windows, soft morning light on wood and steel",
+        "place": "a lofty SoMa coffee roastery with a roaster turning in the background",
+        "hero": "a coffee in a white ceramic cup",
+        "music": "mellow lo-fi beat with muted keys",
+        "sfx": "roaster rumble, a cup set down on a wooden bar",
+        "next": "the story moves forward to a warm payoff: the same person takes the first sip by the window and smiles",
+    },
+}
+NO_TEXT = "No on-screen text, captions, logos, signs or readable words."
+
+
 def body_for(kind, p, defaults):
     base = {"aspect_ratio": defaults["aspect_ratio"], "resolution": defaults["resolution"], "generate_audio": True}
+    sc = SCENE[p.get("brand", "sutro")]
     if kind == "order":
-        build = f"{p['bun']} bun, {p['cheese']}, {p['extra']}"
+        if p.get("brand") == "sightglass":
+            build = f"{p['temp']} {p['milk']} {p['drink']}".replace("none ", "")
+            make = f"a barista makes one {build} to order: espresso pouring, milk added, the drink finished in a white ceramic cup"
+            line = f"Your {build}. Ready when you are."
+        else:
+            build = f"{p['bun']} bun, {p['cheese']}, {p['extra']}"
+            make = f"a cook at a sizzling flat-top grill builds one double smash burger to order: {build}, each ingredient landing on the stack in a satisfying close-up"
+            line = "Your Sutro Stack is ready."
         return {**base, "mode": "t2v", "duration": 10, "prompt": (
-            "Punchy social-feed look, saturated warm colors, crisp commercial food lighting. A 10-second vertical "
-            "mobile video ad. No on-screen text, captions, logos or readable words.\n"
-            f"SHOT ONE (0-4s): a cook at a sizzling flat-top grill in a sunny San Francisco burger shop builds one "
-            f"double smash burger to order: {build}. Each ingredient lands on the stack in a satisfying close-up.\n"
-            "HARD CUT. SHOT TWO (4-10s): the finished burger in slow-motion hero close-up on a counter in bright "
-            "sunshine, cheese dripping, then a hand slides it forward toward the camera.\n"
-            "AUDIO: Music: upbeat hip hop beat with snappy hi-hats. Sound effects: sizzle, a crunchy bite. Voiceover by "
-            "an energetic, friendly young narrator, American English. At 1 second the narrator says: "
-            f"\"You built it: {build}.\" At 6 seconds the narrator says: \"Your Sutro Stack is ready.\"")}
+            f"{sc['look']}. A 10-second vertical mobile video ad. {NO_TEXT}\n"
+            f"SHOT ONE (0-5s): in {sc['place']}, {make}.\n"
+            "HARD CUT. SHOT TWO (5-10s): the finished order in slow-motion hero close-up in bright light, then a hand "
+            "slides it toward the camera.\n"
+            f"AUDIO: Music: {sc['music']}. Sound effects: {sc['sfx']}. Voiceover by a friendly narrator, American "
+            f"English. At 1 second the narrator says: \"You picked {build}.\" At 6 seconds: \"{line}\"")}
     if kind == "episode":
         parent = OUT / f"{p['parent']}.mp4"
-        return {**base, "mode": "v2v", "duration": 5, "start_video": b64(parent), "prompt": SAGA[int(p["episode"])]}
+        n = int(p["episode"])
+        prompt = SAGA.get(n) if p["parent"].startswith("sightglass__n_judah") or p.get("saga") == "n_judah" else None
+        prompt = prompt or (f"Continue the same shot, same characters and same setting for five more seconds; "
+                            f"{sc['next']}. Same music continues and resolves. {NO_TEXT}")
+        return {**base, "mode": "v2v", "duration": 5, "start_video": b64(parent), "prompt": prompt}
     if kind == "selfie":
         return {**base, "mode": "t2v", "duration": 10, "reference_images": [b64(p["image"])], "prompt": (
-            "Punchy social-feed look, bright sunny San Francisco lunchtime, saturated warm colors. A 10-second "
-            "vertical mobile video ad. No on-screen text, captions, logos or readable words.\n"
-            "SHOT ONE (0-4s): the person from the reference images, same face and hair, walks up to the counter of "
-            "a sunny SoMa burger shop and grins at the camera.\n"
-            "HARD CUT. SHOT TWO (4-10s): the same person from the reference images takes a big bite of a double "
-            "smash burger on a toasted sourdough bun, eyes closed in delight, then gives a thumbs up.\n"
-            "AUDIO: Music: upbeat hip hop beat. Sound effects: sizzle, a crunchy bite. Voiceover by an energetic "
-            "narrator, American English. At 6 seconds the narrator says: \"Lunch looks good on you.\"")}
+            f"{sc['look']}. A 10-second vertical mobile video ad. {NO_TEXT}\n"
+            f"SHOT ONE (0-4s): the person from the reference images, same face and hair, walks into {sc['place']} "
+            "and grins at the camera.\n"
+            f"HARD CUT. SHOT TWO (4-10s): the same person from the reference images enjoys {sc['hero']}, eyes closed "
+            "in delight, then gives a thumbs up.\n"
+            f"AUDIO: Music: {sc['music']}. Sound effects: {sc['sfx']}. Voiceover by an energetic narrator, American "
+            "English. At 6 seconds the narrator says: \"Looks good on you.\"")}
     raise ValueError(kind)
 
 

@@ -1,436 +1,395 @@
 <title>Fog Feed</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-  /* Single dark look on purpose: a short-video feed reads as a dark surface in both host themes. */
+  /* One light look on purpose: white ground, a single teal accent, Liquid Glass controls over video. */
   :root {
-    color-scheme: dark;
-    --ground: #0b0c0e;
-    --panel: #15171b;
-    --line: #262a31;
-    --ink: #f2f0ec;
-    --muted: #9ba1ab;
-    --fog: #c9d3dc;
-    --accent: #ff7a45;      /* grill orange, for the one action that matters on each card */
-    --ok: #57c78b;
-    --warn: #f2b84b;
-    --bad: #ef6461;
-    --ui: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    color-scheme: light;
+    --ground: #ffffff;
+    --ink: #0e1b1d;
+    --muted: #6a7a7c;
+    --line: #e4eeed;
+    --teal: #0f9488;
+    --teal-soft: #e7f5f3;
+    --warn: #b7791f;
+    --bad: #c2413b;
+    --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    --round: -apple-system, "SF Pro Rounded", ui-rounded, system-ui, sans-serif;
   }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body { background: var(--ground); color: var(--ink); font: 14px/1.45 var(--ui); padding-inline: 16px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-snap-type: y proximity; }
+  body { background: var(--ground); color: var(--ink); font: 15px/1.4 var(--ui); padding-inline: 16px; }
   button { font: inherit; color: inherit; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 
-  .app { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 340px); gap: 28px; justify-content: center; padding-block: 16px 40px; }
-  @media (max-width: 800px) { .app { grid-template-columns: minmax(0, 420px); } }
+  /* Liquid Glass: translucent fill, blur + saturation, a bright rim, and a specular sheen on top. */
+  .glass {
+    position: relative; isolation: isolate;
+    background: rgba(255, 255, 255, .16);
+    -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, .42);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1px 1px rgba(255,255,255,.18), 0 8px 24px rgba(0, 20, 22, .18);
+    color: #fff;
+  }
+  .glass::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none;
+    background: linear-gradient(160deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.08) 38%, rgba(255,255,255,0) 60%, rgba(255,255,255,.12) 100%);
+  }
+  .glass.light { background: rgba(255, 255, 255, .72); color: var(--ink); border-color: rgba(255,255,255,.9); box-shadow: inset 0 1px 0 #fff, 0 10px 30px rgba(0, 40, 38, .12); }
+  .glass.tint { background: rgba(15, 148, 136, .55); border-color: rgba(190, 245, 238, .6); }
+  .press { transition: transform .18s cubic-bezier(.2,.9,.3,1.4), background .2s; }
+  .press:active { transform: scale(.94); }
+  @media (prefers-reduced-motion: reduce) { .press, .sheet, .toast { transition: none; animation: none; } }
 
-  header.top { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .brand { font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
-  .brand span { color: var(--fog); font-weight: 400; }
-  .sub { color: var(--muted); font-size: 13px; }
+  .wrap { max-width: 440px; margin-inline: auto; padding-block: 0 32px; }
+  .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; justify-content: space-between; padding-block: 10px; background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .logo { font: 700 21px/1 var(--round); letter-spacing: -.02em; }
+  .logo i { font-style: normal; color: var(--teal); }
+  .pillbtn { border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .pillbtn.glass.light { color: var(--teal); }
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); margin-right: 6px; vertical-align: 1px; }
 
-  /* Feed column */
-  .feed { display: flex; flex-direction: column; gap: 22px; }
-  .post { display: flex; flex-direction: column; gap: 10px; }
-  .post-head { display: flex; align-items: center; gap: 10px; }
-  .avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 13px; background: var(--panel); border: 1px solid var(--line); }
-  .who { display: flex; flex-direction: column; line-height: 1.2; }
-  .who b { font-size: 14px; }
-  .who small { color: var(--muted); font-size: 12px; }
-  .tag { margin-left: auto; font: 600 10px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 5px 8px; }
-  .tag.idea { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
-
-  .stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 9 / 16; background: #000; border-radius: 14px; overflow: hidden; }
+  .feed { display: flex; flex-direction: column; gap: 18px; }
+  .post { scroll-snap-align: start; scroll-margin-top: 56px; }
+  .stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 9 / 16; max-height: calc(100svh - 80px); margin-inline: auto; border-radius: 26px; overflow: hidden; background: var(--teal-soft); }
   .stage video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .rail { position: absolute; right: 10px; bottom: 90px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
-  .rail button { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(0,0,0,.35); display: grid; place-items: center; cursor: pointer; }
-  .rail button[aria-pressed="true"] svg { fill: var(--accent); stroke: var(--accent); }
-  .rail svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2; }
-  .sound { position: absolute; top: 10px; right: 10px; border: 0; border-radius: 999px; padding: 6px 10px; background: rgba(0,0,0,.45); font-size: 12px; cursor: pointer; }
-  .notice { position: absolute; top: 10px; left: 10px; right: 90px; font-size: 11px; color: #fff; background: rgba(0,0,0,.45); border-radius: 8px; padding: 6px 8px; }
+  .stage.frozen video { filter: blur(6px) saturate(.9); transform: scale(1.04); }
 
-  .actions { position: absolute; left: 12px; right: 66px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
-  .actions button, .cta { border: 0; border-radius: 12px; padding: 12px 14px; font-weight: 700; background: rgba(255,255,255,.94); color: #111; cursor: pointer; text-align: left; animation: rise .25s ease-out; }
-  .actions button.branch, .cta.primary { background: var(--accent); color: #1a0d05; }
-  @keyframes rise { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .actions button { animation: none; } }
+  .chip { position: absolute; top: 12px; left: 12px; border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; max-width: calc(100% - 80px); }
+  .chip small { font-weight: 500; opacity: .8; }
+  .chip.warn { top: 50px; font-size: 12px; font-weight: 500; }
+  .sound { position: absolute; top: 12px; right: 12px; width: 38px; height: 38px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; }
+  .sound svg, .bar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  .caption { color: var(--ink); }
-  .caption b { margin-right: 6px; }
-  .caption .muted { color: var(--muted); }
+  /* The same four actions on every post. */
+  .bar { position: absolute; left: 10px; right: 10px; bottom: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 6px; border-radius: 26px; z-index: 5; }
+  .bar button { border: 0; background: transparent; border-radius: 20px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; cursor: pointer; color: #fff; }
+  .bar button:hover { background: rgba(255,255,255,.14); }
+  .bar button.on { background: rgba(255,255,255,.9); color: var(--teal); }
+  .bar button:disabled { opacity: .5; cursor: default; }
 
-  /* Sheets inside a stage: order builder, selfie consent, playable */
-  .sheet { position: absolute; inset: auto 0 0 0; background: var(--panel); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; padding: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 88%; overflow: auto; }
-  .sheet h3 { margin: 0; font-size: 16px; }
+  .extra { position: absolute; left: 50%; transform: translateX(-50%); bottom: 92px; border: 0; border-radius: 999px; padding: 10px 16px; font-weight: 600; font-size: 14px; cursor: pointer; white-space: nowrap; z-index: 4; animation: rise .3s ease-out; }
+  @keyframes rise { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  /* Sheets and toasts inside a stage */
+  .sheet { position: absolute; left: 8px; right: 8px; bottom: 8px; border-radius: 28px; padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 14px; z-index: 10; max-height: calc(100% - 16px); overflow: auto; animation: up .28s cubic-bezier(.2,.9,.3,1.1); }
+  @keyframes up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .sheet h3 { margin: 0; font: 700 18px/1.2 var(--round); }
   .sheet p { margin: 0; color: var(--muted); font-size: 13px; }
-  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
-  .opts label { display: inline-flex; }
-  .opts input { position: absolute; opacity: 0; pointer-events: none; }
-  .opts span { border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; cursor: pointer; }
-  .opts input:checked + span { border-color: var(--accent); color: var(--accent); }
-  .opts input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .row .cta { flex: 1 1 140px; text-align: center; }
-  .cta.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-  .cta:disabled { opacity: .45; cursor: not-allowed; }
-  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span { display: inline-block; border-radius: 999px; padding: 8px 13px; background: rgba(14, 27, 29, .06); font-size: 14px; cursor: pointer; }
+  .seg input:checked + span { background: var(--teal); color: #fff; }
+  .seg input:focus-visible + span { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .row { display: flex; gap: 8px; }
+  .btn { flex: 1; border: 0; border-radius: 999px; padding: 13px; font-weight: 600; cursor: pointer; background: rgba(14,27,29,.06); color: var(--ink); }
+  .btn.primary { background: var(--teal); color: #fff; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--muted); }
+  .toast { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); border-radius: 999px; padding: 9px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; z-index: 12; animation: rise .3s ease-out; }
 
-  /* Playable */
-  .game { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; padding: 24px 16px 120px; background: radial-gradient(120% 80% at 50% 100%, #3a2415 0%, #120c09 70%); }
-  .game .hud { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; font: 600 12px var(--mono); color: var(--fog); }
-  .layer { height: 22px; border-radius: 10px; transition: transform .15s; }
-  .mover { position: absolute; top: 90px; height: 22px; border-radius: 10px; }
-  .plate { width: 70%; height: 8px; border-radius: 4px; background: #5b4636; }
-  .game .tap { position: absolute; left: 16px; right: 16px; bottom: 20px; }
+  /* Playable end card */
+  .game { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 20px 170px; }
+  .game .hud { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .game .go { position: absolute; left: 20px; right: 20px; bottom: 92px; border: 0; border-radius: 999px; padding: 14px; font-weight: 700; font-size: 16px; cursor: pointer; }
+  .layer { height: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+  .mover { position: absolute; top: 120px; height: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+  .plate { width: 70%; height: 8px; border-radius: 4px; background: rgba(255,255,255,.85); }
+  .cup { position: relative; width: 150px; height: 190px; border-radius: 0 0 46px 46px; overflow: hidden; background: rgba(255,255,255,.35); border: 3px solid rgba(255,255,255,.9); }
+  .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: linear-gradient(#e9d3b4, #b98a5a); }
+  .line { position: absolute; left: -6px; right: -6px; border-top: 2px dashed #fff; }
 
-  /* State panel */
-  aside.state { display: flex; flex-direction: column; gap: 16px; align-self: start; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-  .card h2 { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font: 12px/1.5 var(--mono); }
-  .kv dt { color: var(--muted); }
-  .kv dd { margin: 0; overflow-wrap: anywhere; }
-  .dropped { font: 12px/1.5 var(--mono); color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
-  .dropped s { text-decoration-color: var(--bad); }
-  .reqs { display: flex; flex-direction: column; gap: 8px; }
-  .req { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
-  .pill { font: 600 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 5px 7px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; align-self: start; }
-  .pill.queued { color: var(--muted); } .pill.rendering { color: var(--warn); } .pill.ready { color: var(--ok); }
-  .pill.failed, .pill.moderated { color: var(--bad); }
-  .empty { color: var(--muted); font-size: 13px; }
-  .taps { font: 12px/1.6 var(--mono); }
-  .foot { color: var(--muted); font-size: 12px; }
+  /* State sheet (page level) */
+  .scrim { position: fixed; inset: 0; background: rgba(14, 27, 29, .2); z-index: 30; }
+  .panel { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); max-width: 440px; margin-inline: auto; max-height: 70svh; overflow: auto; border-radius: 30px; padding: 18px; z-index: 31; display: flex; flex-direction: column; gap: 14px; }
+  .panel h4 { margin: 0; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; margin: 0; }
+  .kv dt { color: var(--muted); } .kv dd { margin: 0; overflow-wrap: anywhere; }
+  .list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+  .list s { color: var(--muted); text-decoration-color: var(--bad); }
+  .req { display: flex; justify-content: space-between; gap: 10px; }
+  .st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 8px; background: rgba(14,27,29,.06); white-space: nowrap; align-self: start; }
+  .st.rendering { color: var(--warn); } .st.ready { color: var(--teal); background: var(--teal-soft); } .st.failed, .st.moderated { color: var(--bad); }
+  .muted { color: var(--muted); }
+  .foot { color: var(--muted); font-size: 12px; text-align: center; padding-top: 18px; }
 </style>
 
-<div class="app">
+<div class="wrap">
   <header class="top">
-    <div class="brand">fogfeed <span>· SF, hyper-personalized</span></div>
-    <div class="sub" id="status">Loading the feed…</div>
+    <div class="logo">fog<i>feed</i></div>
+    <button class="pillbtn glass light press" id="open-state" aria-haspopup="dialog"><span class="dot" id="live"></span>State</button>
   </header>
-
   <main class="feed" id="feed" aria-label="Ad feed"></main>
-
-  <aside class="state" aria-label="Agent state">
-    <section class="card">
-      <h2>Kept state</h2>
-      <dl class="kv" id="kept"><dt>viewer</dt><dd>SoMa · lunch</dd></dl>
-    </section>
-    <section class="card">
-      <h2>Dropped</h2>
-      <div class="dropped" id="dropped"><span class="empty">Nothing dropped yet.</span></div>
-    </section>
-    <section class="card">
-      <h2>Render requests</h2>
-      <div class="reqs" id="reqs"><span class="empty">Tap an action in the feed. Renders take a few minutes.</span></div>
-    </section>
-    <section class="card">
-      <h2>Action taps</h2>
-      <div class="taps" id="taps"><span class="empty">No taps yet.</span></div>
-    </section>
-    <p class="foot">Spec ads. Sightglass is a real SF business and is not affiliated with this experiment. Sutro Stack is a fictional brand. Every clip is a real FLUX 3 render.</p>
-  </aside>
+  <p class="foot">Spec ads · Sightglass not affiliated · Sutro Stack is fictional · every clip is FLUX 3</p>
 </div>
 
 <script>
 const TRIGGER = "trig_014YGcJ8LTusLYpj2ULMqQNh";
-const ICON = {
-  heart: '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.4 5 7 5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.6 0 5.8 3.6 4.5 6.8C19.5 16.4 12 21 12 21z"/></svg>',
-  save: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',
-  share: '<svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg>'
+const I = {
+  play: '<path d="M7 5l12 7-12 7z"/>',
+  mine: '<path d="M12 3l2.4 5 5.6.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9 5.6-.8z"/>',
+  next: '<path d="M5 5l9 7-9 7zM17 5v14"/>',
+  star: '<circle cx="12" cy="9" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  mute: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l4 6M21 9l-4 6"/>',
+  sound: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 8c1.5 1.2 1.5 6.8 0 8"/>'
 };
+const svg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+const BRAND = {
+  sutro: { name: "Sutro Stack", note: "fictional", game: "stack", menu: { bun: ["sourdough", "brioche", "sesame"], cheese: ["cheddar", "pepper jack", "swiss"], extra: ["grilled onions", "jalapeños", "bacon"] } },
+  sightglass: { name: "Sightglass", note: "spec ad", game: "pour", menu: { drink: ["latte", "cortado", "cold brew"], milk: ["whole", "oat", "none"], temp: ["hot", "iced"] } }
+};
+
 let db = null, mcp = null, ads = [], reqs = [], state = { taps: {} }, soundOn = false;
 const posts = new Map();
+const brandOf = a => a.brand || (String(a.id).startsWith("sightglass") ? "sightglass" : "sutro");
 
-function src(asset) { return asset ? "/_blob/" + asset : ""; }
-
-// ---- rendering the feed ----
+// ---------- feed ----------
 function renderFeed() {
-  const feed = $("#feed");
-  // "For you" renders go first, newest on top; then the seeded ads in order.
   const mine = reqs.filter(r => r.status === "ready" && r.asset)
     .sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""))
-    .map(r => ({ id: "req-" + r.id, handle: "for you", title: r.title || "Made for you", idea: r.idea, asset: r.asset,
-                 caption: r.caption || "Rendered from your action.", kind: r.kind,
-                 overlays: r.kind === "episode" ? [{ at: 2, until: 5, buttons: [{ label: "Next episode", action: "episode" }] }]
-                         : r.kind === "order" ? [{ at: 6, until: 10, buttons: [{ label: "Change my order", action: "order" }] }] : [] }));
-  const items = [...mine, ...ads.filter(a => !a.hidden)];
-  const want = new Set(items.map(i => i.id));
-  for (const [id, el] of posts) if (!want.has(id)) { el.remove(); posts.delete(id); }
+    .map(r => ({ id: r.clip || r.id, key: "req-" + r.id, brand: r.payload?.brand || "sutro", asset: r.asset, forYou: true }));
+  const items = [...mine, ...ads.filter(a => !a.hidden).map(a => ({ ...a, key: a.id }))];
+  const feed = $("#feed"), want = new Set(items.map(i => i.key));
+  for (const [k, el] of posts) if (!want.has(k)) { el.remove(); posts.delete(k); }
   items.forEach((item, i) => {
-    let el = posts.get(item.id);
-    if (!el) { el = buildPost(item); posts.set(item.id, el); }
+    let el = posts.get(item.key);
+    if (!el) { el = document.createElement("article"); el.className = "post"; el.innerHTML = '<div class="stage"></div>'; mount($(".stage", el), item); posts.set(item.key, el); }
     if (feed.children[i] !== el) feed.insertBefore(el, feed.children[i] || null);
   });
   observe();
 }
 
-function buildPost(a) {
-  const el = document.createElement("article");
-  el.className = "post";
-  el.dataset.id = a.id;
-  const initials = (a.handle || "ad").split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  el.innerHTML = `
-    <div class="post-head">
-      <div class="avatar" aria-hidden="true">${esc(initials)}</div>
-      <div class="who"><b>${esc(a.handle)}</b><small>${esc(a.subtitle || "Sponsored · spec ad")}</small></div>
-      ${a.idea ? `<span class="tag idea">${esc(a.idea)}</span>` : ""}
-    </div>
-    <div class="stage"></div>
-    <div class="caption"><b>${esc(a.handle)}</b>${esc(a.caption || "")} ${a.note ? `<span class="muted">${esc(a.note)}</span>` : ""}</div>`;
-  const stage = $(".stage", el);
-  if (a.kind === "playable") buildPlayable(stage, a);
-  else if (a.kind === "selfie") buildSelfie(stage, a);
-  else buildVideo(stage, a);
-  return el;
-}
-
-function rail(stage, a) {
-  const r = document.createElement("div");
-  r.className = "rail";
-  for (const k of ["heart", "save", "share"]) {
-    const b = document.createElement("button");
-    b.setAttribute("aria-label", { heart: "Like", save: "Save", share: "Share" }[k]);
-    b.setAttribute("aria-pressed", "false");
-    b.innerHTML = ICON[k];
-    b.onclick = () => { const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); if (on) tap(a.id, k); };
-    r.appendChild(b);
-  }
-  stage.appendChild(r);
-}
-
-function buildVideo(stage, a, assetOverride) {
-  stage.innerHTML = "";
+// A post = the clip + the same chrome every time: brand chip, sound, four actions.
+function mount(stage, a, assetOverride, afterEnd) {
+  stage.innerHTML = ""; stage.classList.remove("frozen");
+  const b = BRAND[brandOf(a)];
   const v = document.createElement("video");
-  v.src = src(assetOverride || a.asset);
-  v.muted = !soundOn; v.playsInline = true; v.preload = "metadata"; v.loop = false;
+  v.src = "/_blob/" + (assetOverride || a.asset); v.muted = !soundOn; v.playsInline = true; v.preload = "metadata";
   stage.appendChild(v);
-  if (a.warning) { const n = document.createElement("div"); n.className = "notice"; n.textContent = a.warning; stage.appendChild(n); }
-  const s = document.createElement("button");
-  s.className = "sound"; s.textContent = soundOn ? "Sound on" : "Tap for sound";
-  s.onclick = () => { soundOn = true; document.querySelectorAll("video").forEach(x => x.muted = x !== v); v.muted = false; v.currentTime = 0; v.play(); s.textContent = "Sound on"; };
-  stage.appendChild(s);
-  rail(stage, a);
-  const act = document.createElement("div");
-  act.className = "actions";
-  stage.appendChild(act);
-  let shown = null;
-  const overlays = a.overlays || [];
-  const show = t => {
-    const o = overlays.find(o => t >= o.at && t <= o.until) || null;
-    if (o === shown) return;
-    shown = o; act.innerHTML = "";
-    if (!o) return;
-    for (const b of o.buttons) {
-      const btn = document.createElement("button");
-      btn.textContent = b.label; btn.className = b.action;
-      btn.onclick = () => runAction(a, b, stage);
-      act.appendChild(btn);
-    }
+  stage.insertAdjacentHTML("beforeend", `
+    <div class="chip glass">${a.forYou ? "For you" : esc(b.name)} <small>${a.forYou ? esc(b.name) : esc(b.note)}</small></div>
+    ${a.warning ? `<div class="chip glass warn">${esc(a.warning)}</div>` : ""}
+    <button class="sound glass press" aria-label="Sound">${svg(soundOn ? "sound" : "mute")}</button>
+    <nav class="bar glass" aria-label="Actions">
+      <button class="press" data-act="play">${svg("play")}Play</button>
+      <button class="press" data-act="mine">${svg("mine")}Mine</button>
+      <button class="press" data-act="next">${svg("next")}Next</button>
+      <button class="press" data-act="star">${svg("star")}Star</button>
+    </nav>`);
+  $(".sound", stage).onclick = () => {
+    soundOn = !soundOn;
+    document.querySelectorAll("video").forEach(x => x.muted = !soundOn || x !== v);
+    document.querySelectorAll(".sound").forEach(s => s.innerHTML = svg(soundOn ? "sound" : "mute"));
+    if (soundOn) { v.currentTime = 0; v.play().catch(() => {}); }
   };
-  v.addEventListener("timeupdate", () => show(v.currentTime));
-  v.addEventListener("ended", () => show(v.duration));
-  v.addEventListener("error", () => { act.innerHTML = '<button disabled>This clip failed to load. Reload the page to try again.</button>'; });
+  stage.querySelectorAll(".bar button").forEach(btn => btn.onclick = () => act(btn.dataset.act, a, stage, v));
+  // Timed extra from the script (a branch), one at most, above the bar.
+  let shown = false;
+  v.addEventListener("timeupdate", () => {
+    const o = (a.extra && v.currentTime >= a.extra.at) ? a.extra : null;
+    if (!!o === shown) return; shown = !!o;
+    $(".extra", stage)?.remove();
+    if (o) { const e = document.createElement("button"); e.className = "extra glass press"; e.textContent = o.label;
+      e.onclick = () => { tap(a.id, o.label); const t = ads.find(x => x.id === o.to); if (t) { mount(stage, { ...t, brand: brandOf(a) }); play(stage); } };
+      stage.appendChild(e); }
+  });
+  // Every clip ends in the playable end card, unless it is an end card itself.
+  v.addEventListener("ended", () => afterEnd ? afterEnd() : startGame(stage, a));
+  v.addEventListener("error", () => toast(stage, "Clip didn't load. Reload to retry."));
 }
 
-async function runAction(a, b, stage) {
-  tap(a.id, b.label);
-  if (b.action === "branch") {
-    const target = ads.find(x => x.id === b.to);
-    if (target) { buildVideo(stage, target); const v = $("video", stage); v.muted = !soundOn; v.play().catch(() => {}); }
-  } else if (b.action === "link") {
-    window.open(b.href, "_blank", "noopener");
-  } else if (b.action === "replay") {
-    buildPlayable(stage, a.game || a);
-  } else if (b.action === "order") {
-    orderSheet(stage, a);
-  } else if (b.action === "episode") {
-    const last = state.saga || { clip: a.asset_name || a.id, n: 1 };
-    const n = (last.n || 1) + 1;
-    if (n > 4) { toast(stage, "That was the season finale."); return; }
-    await request("episode", { parent: last.clip, episode: n }, { idea: "Idea 6 · Serialized", title: `Episode ${n}`,
-      caption: `Episode ${n}, continued from the last clip you saw.` }, stage);
-  }
+function play(stage) { const v = $("video", stage); if (v) { v.muted = !soundOn; v.play().catch(() => {}); } }
+
+function act(kind, a, stage, v) {
+  tap(a.id, kind);
+  if (kind === "play") { v.pause(); startGame(stage, a); }
+  if (kind === "mine") { v.pause(); orderSheet(stage, a); }
+  if (kind === "next") nextEpisode(stage, a);
+  if (kind === "star") { v.pause(); selfieSheet(stage, a); }
 }
 
 function toast(stage, text) {
-  const n = document.createElement("div");
-  n.className = "sheet"; n.innerHTML = `<p>${esc(text)}</p>`;
-  stage.appendChild(n);
-  setTimeout(() => n.remove(), 3500);
+  $(".toast", stage)?.remove();
+  const t = document.createElement("div"); t.className = "toast glass tint"; t.textContent = text; t.setAttribute("role", "status");
+  stage.appendChild(t); setTimeout(() => t.remove(), 3200);
 }
 
-// ---- Idea 1: your order, next ad ----
-const MENU = { bun: ["sourdough", "brioche", "sesame"], cheese: ["cheddar", "pepper jack", "swiss"], extra: ["grilled onions", "jalapeños", "bacon"] };
-function orderSheet(stage, a) {
-  const cur = state.order || { bun: "sourdough", cheese: "cheddar", extra: "grilled onions" };
-  const sheet = document.createElement("form");
-  sheet.className = "sheet";
-  sheet.innerHTML = `<h3>Build your Sutro Stack</h3>
-    <p>Your pick is saved. The next ad in your feed shows this exact burger.</p>
-    ${Object.entries(MENU).map(([k, vals]) => `<div class="opts" role="radiogroup" aria-label="${k}">${vals.map(v =>
-      `<label><input type="radio" id="o-${k}-${v.replace(/\W/g, "")}" name="${k}" value="${esc(v)}" ${cur[k] === v ? "checked" : ""}><span>${esc(v)}</span></label>`).join("")}</div>`).join("")}
-    <div class="row"><button class="cta primary" type="submit">Make my ad</button><button class="cta ghost" type="button" data-close>Cancel</button></div>`;
-  sheet.addEventListener("submit", async e => {
-    e.preventDefault();
-    const f = new FormData(sheet);
-    const order = { bun: f.get("bun"), cheese: f.get("cheese"), extra: f.get("extra") };
-    sheet.remove();
-    await saveState({ order, dropped_add: state.order ? `order ${state.order.bun}/${state.order.cheese}/${state.order.extra} (replaced)` : null });
-    await request("order", order, { idea: "Idea 1 · Your order", title: "Your Sutro Stack",
-      caption: `Built for you: ${order.bun} bun, ${order.cheese}, ${order.extra}.` }, stage);
+function sheet(stage, html) {
+  $(".sheet", stage)?.remove();
+  const s = document.createElement("form"); s.className = "sheet glass light"; s.innerHTML = html;
+  stage.appendChild(s); $("[data-close]", s)?.addEventListener("click", () => s.remove());
+  return s;
+}
+
+// ---------- Idea 8: playable end card on every clip ----------
+function startGame(stage, a) {
+  stage.querySelectorAll(".sheet,.game,.extra").forEach(x => x.remove());
+  stage.classList.add("frozen");
+  const brand = brandOf(a), g = document.createElement("div"); g.className = "game";
+  stage.appendChild(g);
+  (BRAND[brand].game === "pour" ? pourGame : stackGame)(g, stage, outcome => {
+    tap(a.id, "game " + outcome);
+    saveState({ last_game: { brand, outcome } });
+    const card = ads.find(x => x.id === `${brand === "sightglass" ? "sightglass" : "sutrostack"}__endcard_${outcome}`);
+    if (!card) { toast(stage, "End card not ready yet"); stage.classList.remove("frozen"); g.remove(); return; }
+    mount(stage, { ...a, extra: null, warning: null }, card.asset, () => startGame(stage, a));
+    play(stage);
   });
-  $("[data-close]", sheet).onclick = () => sheet.remove();
-  stage.appendChild(sheet);
 }
 
-// ---- Idea 7: star in the sequel ----
-function buildSelfie(stage, a) {
-  stage.innerHTML = `<div class="game" style="justify-content:center;padding-bottom:24px">
-    <div class="sheet" style="position:relative;border-radius:16px;inset:auto">
-      <h3>Star in your next ad</h3>
-      <p>Upload one photo of your face. FLUX 3 uses it as a reference so the next Sutro Stack ad stars you.</p>
-      <label class="check"><input type="checkbox" id="consent"> <span>I'm 18 or older, this is a photo of me, and I agree to send it to Black Forest Labs for one render. It is deleted from this feed once the render is submitted.</span></label>
-      <input type="file" id="selfie" accept="image/jpeg,image/png" hidden>
-      <div class="row"><button class="cta primary" id="pick" disabled>Choose photo</button></div>
-      <p id="selfie-note"></p>
-    </div></div>`;
-  const consent = $("#consent", stage), pick = $("#pick", stage), file = $("#selfie", stage), note = $("#selfie-note", stage);
-  consent.onchange = () => pick.disabled = !consent.checked;
+function stackGame(g, stage, done) {
+  const colors = ["#e3a857", "#6d3f26", "#f2c230", "#6d3f26", "#e3a857"], names = ["bun", "patty", "cheese", "patty", "top bun"];
+  g.innerHTML = `<div class="hud glass">Stack it · <span>1</span>/5</div><div class="mover"></div>
+    <div class="stack" style="display:flex;flex-direction:column-reverse;align-items:center;gap:2px;width:100%"></div><div class="plate"></div>
+    <button class="go glass tint press">Drop the bun</button>`;
+  const mover = $(".mover", g), stack = $(".stack", g), go = $(".go", g), n = $(".hud span", g);
+  let i = 0, x = 0, dir = 1, raf = 0; const offs = [];
+  const W = () => stage.clientWidth, LW = () => W() * .55;
+  const set = () => { mover.style.width = LW() + "px"; mover.style.background = colors[i]; x = 0; };
+  const loop = () => { x += dir * W() * .011; if (x < 0 || x > W() - LW()) dir *= -1; mover.style.left = x + "px"; raf = requestAnimationFrame(loop); };
+  set(); loop();
+  go.onclick = () => {
+    const off = (x - (W() - LW()) / 2) / LW(); offs.push(Math.abs(off));
+    const d = document.createElement("div"); d.className = "layer"; d.style.cssText = `width:${LW()}px;background:${colors[i]};transform:translateX(${off * LW()}px)`; stack.appendChild(d);
+    if (++i < 5) { n.textContent = i + 1; go.textContent = "Drop the " + names[i]; set(); return; }
+    cancelAnimationFrame(raf);
+    const avg = offs.reduce((s, o) => s + o, 0) / 5;
+    setTimeout(() => done(avg < .08 ? "win" : avg < .2 ? "almost" : "retry"), 450);
+  };
+}
+
+function pourGame(g, stage, done) {
+  const target = .62 + Math.random() * .2;
+  g.innerHTML = `<div class="hud glass">Pour to the line</div>
+    <div class="cup"><div class="fill"></div><div class="line" style="bottom:${target * 100}%"></div></div>
+    <button class="go glass tint press">Hold to pour</button>`;
+  const fill = $(".fill", g), go = $(".go", g);
+  let level = 0, raf = 0, pouring = false, finished = false;
+  const step = () => { if (!pouring) return; level = Math.min(1.05, level + .006); fill.style.height = Math.min(level, 1) * 100 + "%"; if (level >= 1.05) stop(); else raf = requestAnimationFrame(step); };
+  const start = e => { e.preventDefault(); if (finished) return; pouring = true; go.textContent = "Let go at the line"; step(); };
+  const stop = () => { if (!pouring || finished) return; pouring = false; finished = true; cancelAnimationFrame(raf);
+    const miss = Math.abs(level - target); setTimeout(() => done(level > 1 ? "retry" : miss < .04 ? "win" : miss < .12 ? "almost" : "retry"), 450); };
+  go.addEventListener("pointerdown", start); go.addEventListener("pointerup", stop); go.addEventListener("pointerleave", stop);
+  go.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") start(e); });
+  go.addEventListener("keyup", e => { if (e.key === " " || e.key === "Enter") stop(); });
+}
+
+// ---------- Idea 1: make it mine ----------
+function orderSheet(stage, a) {
+  const brand = brandOf(a), menu = BRAND[brand].menu, cur = (state.orders || {})[brand] || {};
+  const s = sheet(stage, `<h3>Make it yours</h3>
+    ${Object.entries(menu).map(([k, vals]) => `<div class="seg" role="radiogroup" aria-label="${k}">${vals.map((v, j) =>
+      `<label><input type="radio" id="m-${brand}-${k}-${j}" name="${k}" value="${esc(v)}" ${(cur[k] || vals[0]) === v ? "checked" : ""}><span>${esc(v)}</span></label>`).join("")}</div>`).join("")}
+    <p>Your next ad shows exactly this.</p>
+    <div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Make my ad</button></div>`);
+  s.addEventListener("submit", async e => {
+    e.preventDefault();
+    const pick = Object.fromEntries(new FormData(s)); s.remove();
+    const prev = (state.orders || {})[brand];
+    await saveState({ orders: { ...(state.orders || {}), [brand]: pick }, drop: prev ? `${brand} order ${Object.values(prev).join(" · ")}` : null });
+    await request("order", { brand, ...pick }, `${BRAND[brand].name} · ${Object.values(pick).join(" · ")}`, stage);
+  });
+}
+
+// ---------- Idea 6: next episode, from the clip you just watched ----------
+async function nextEpisode(stage, a) {
+  const saga = state.saga && state.saga.clip === a.id ? state.saga : { clip: a.id, n: 1 };
+  if (saga.n >= 4) { toast(stage, "Season finale reached"); return; }
+  await request("episode", { brand: brandOf(a), parent: a.id, episode: saga.n + 1 }, `Episode ${saga.n + 1} · ${BRAND[brandOf(a)].name}`, stage);
+}
+
+// ---------- Idea 7: star in it ----------
+function selfieSheet(stage, a) {
+  const brand = brandOf(a);
+  const s = sheet(stage, `<h3>Star in the next ad</h3>
+    <label class="check"><input type="checkbox" id="consent-${esc(a.id)}"> <span>I'm 18+, this is me, and it's sent to Black Forest Labs for one render, then deleted.</span></label>
+    <input type="file" accept="image/jpeg,image/png" hidden>
+    <div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" data-pick disabled>Choose photo</button></div>`);
+  const c = $("input[type=checkbox]", s), pick = $("[data-pick]", s), file = $("input[type=file]", s);
+  c.onchange = () => pick.disabled = !c.checked;
   pick.onclick = () => file.click();
   file.onchange = async () => {
-    const f = file.files[0];
-    if (!f) return;
+    const f = file.files[0]; if (!f) return;
+    if (f.size > 8 * 1024 * 1024) { toast(stage, "Photo must be under 8 MB"); return; }
     const assets = await claude.use("assets");
-    if (!assets) { note.textContent = "Only the feed's owner can upload photos in this view."; return; }
-    if (f.size > 8 * 1024 * 1024) { note.textContent = "That photo is over 8 MB. Pick a smaller one."; return; }
-    pick.disabled = true; note.textContent = "Uploading…";
-    try {
-      const up = await assets.upload(f);
-      tap(a.id, "selfie upload");
-      await request("selfie", { selfie_asset: up.id }, { idea: "Idea 7 · Star in the sequel", title: "Starring you",
-        caption: "Your photo, as the lead of your next ad." }, stage);
-      note.textContent = "Sent. Your ad renders in a few minutes and appears at the top of the feed.";
-    } catch (e) { note.textContent = `Upload failed (${e.code || "error"}). Try a JPEG or PNG under 8 MB.`; pick.disabled = false; }
+    if (!assets) { toast(stage, "Only the feed owner can upload"); return; }
+    pick.disabled = true; pick.textContent = "Uploading…";
+    try { const up = await assets.upload(f); s.remove(); await request("selfie", { brand, selfie_asset: up.id }, `Starring you · ${BRAND[brand].name}`, stage); }
+    catch (e) { pick.disabled = false; pick.textContent = "Choose photo"; toast(stage, `Upload failed (${e.code || "error"})`); }
   };
 }
 
-// ---- Idea 8: playable with FLUX end cards ----
-function buildPlayable(stage, a) {
-  const colors = ["#e0a458", "#6b3e26", "#f3c623", "#6b3e26", "#e0a458"];
-  const names = ["bun", "patty", "cheese", "patty", "bun"];
-  stage.innerHTML = `<div class="game">
-    <div class="hud"><span>STACK THE SUTRO</span><span id="lvl">layer 1/5</span></div>
-    <div class="mover" id="mover"></div>
-    <div id="stack" style="display:flex;flex-direction:column-reverse;align-items:center;gap:2px;width:100%"></div>
-    <div class="plate"></div>
-    <button class="cta primary tap" id="drop">Tap to drop the ${names[0]}</button></div>`;
-  rail(stage, a);
-  const mover = $("#mover", stage), stack = $("#stack", stage), drop = $("#drop", stage), lvl = $("#lvl", stage);
-  let i = 0, x = 0, dir = 1, raf = 0, offsets = [];
-  const W = () => stage.clientWidth, LW = () => W() * 0.55;
-  const loop = () => { x += dir * W() * 0.012; if (x < 0 || x > W() - LW()) dir *= -1; mover.style.left = x + "px"; raf = requestAnimationFrame(loop); };
-  const reset = () => { mover.style.width = LW() + "px"; mover.style.background = colors[i]; x = 0; };
-  reset(); loop();
-  drop.onclick = () => {
-    const center = (W() - LW()) / 2, off = (x - center) / LW();
-    offsets.push(Math.abs(off));
-    const d = document.createElement("div");
-    d.className = "layer"; d.style.width = LW() + "px"; d.style.background = colors[i]; d.style.transform = `translateX(${off * LW()}px)`;
-    stack.appendChild(d);
-    i++;
-    if (i < 5) { lvl.textContent = `layer ${i + 1}/5`; drop.textContent = `Tap to drop the ${names[i]}`; reset(); return; }
-    cancelAnimationFrame(raf);
-    const avg = offsets.reduce((s, o) => s + o, 0) / offsets.length;
-    const outcome = avg < 0.08 ? "win" : avg < 0.2 ? "almost" : "retry";
-    tap(a.id, "outcome " + outcome);
-    saveState({ last_game: { outcome, avg_offset: +avg.toFixed(3) } });
-    const card = ads.find(x => x.id === "sutrostack__endcard_" + outcome);
-    const end = { ...a, id: a.id + "-end", game: a, overlays: [{ at: 2, until: 5, buttons: [{ label: "Play again", action: "replay" }] }] };
-    buildVideo(stage, end, card?.asset);
-    const v = $("video", stage); v.muted = !soundOn; v.play().catch(() => {});
-  };
-}
-
-// ---- requests, state, taps ----
-async function request(kind, payload, meta, stage) {
-  if (!db) { toast(stage, "The feed's data store is not available in this view, so it can't request a render."); return; }
+// ---------- requests, state, taps ----------
+async function request(kind, payload, title, stage) {
+  if (!db) { toast(stage, "Data store unavailable here"); return; }
   const ref = db.collection("requests").doc();
-  const body = { kind, payload, status: "queued", created_at: new Date().toISOString(), ...meta };
-  try { await ref.set(body); } catch (e) { toast(stage, `Couldn't save the request (${e.code}).`); return; }
-  toast(stage, "Queued. Your ad renders in a few minutes and appears at the top of the feed.");
-  if (mcp) {
-    try { await mcp.callTool("Claude Code Remote", "fire_trigger", { trigger_id: TRIGGER, text: `feed request ${ref.id} (${kind})` }); }
-    catch (e) { setStatus(`Request saved. Claude will pick it up on its next check (${e.code}).`); }
-  } else setStatus("Request saved. Claude will pick it up on its next check.");
+  try { await ref.set({ kind, payload, title, status: "queued", created_at: new Date().toISOString() }); }
+  catch (e) { toast(stage, `Couldn't queue (${e.code})`); return; }
+  toast(stage, "Rendering your ad · ~3 min");
+  if (mcp) mcp.callTool("Claude Code Remote", "fire_trigger", { trigger_id: TRIGGER, text: `feed request ${ref.id} (${kind})` }).catch(() => {});
 }
 
 async function saveState(patch) {
-  if (!db) return;
   const next = { ...state, ...patch };
-  if (patch.dropped_add) next.dropped = [...(state.dropped || []), patch.dropped_add].slice(-8);
-  delete next.dropped_add;
-  state = next; renderState();
-  try { await db.doc("state/viewer").set(next); } catch (e) { setStatus(`Couldn't save state (${e.code}).`); }
+  if (patch.drop) next.dropped = [...(state.dropped || []), patch.drop].slice(-8);
+  delete next.drop;
+  state = next; renderPanel();
+  if (db) try { await db.doc("state/viewer").set(next); } catch {}
 }
 
-let tapTimer = null, tapPending = {};
+let tapTimer = null, pending = {};
 function tap(post, action) {
-  const k = `${post} · ${action}`;
-  tapPending[k] = (tapPending[k] || 0) + 1;
+  const k = `${post} · ${action}`; pending[k] = (pending[k] || 0) + 1;
   clearTimeout(tapTimer);
-  tapTimer = setTimeout(async () => {  // one write per pause, not per tap
-    const taps = { ...(state.taps || {}) };
-    for (const [key, n] of Object.entries(tapPending)) taps[key] = (taps[key] || 0) + n;
-    tapPending = {};
-    await saveState({ taps });
-  }, 800);
+  tapTimer = setTimeout(() => { const taps = { ...(state.taps || {}) }; for (const [key, n] of Object.entries(pending)) taps[key] = (taps[key] || 0) + n; pending = {}; saveState({ taps }); }, 800);
 }
 
-function renderState() {
-  const k = [["viewer", "SoMa · weekday lunch"], ["weather", "68°F mostly sunny (NWS)"]];
-  if (state.order) k.push(["order", `${state.order.bun} · ${state.order.cheese} · ${state.order.extra}`]);
-  if (state.saga) k.push(["saga", `episode ${state.saga.n} · ${state.saga.clip}`]);
-  if (state.last_game) k.push(["game", `${state.last_game.outcome} (offset ${state.last_game.avg_offset})`]);
-  $("#kept").innerHTML = k.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
-  const d = state.dropped || [];
-  $("#dropped").innerHTML = d.length ? d.map(x => `<s>${esc(x)}</s>`).join("") : '<span class="empty">Nothing dropped yet.</span>';
-  const t = Object.entries(state.taps || {}).sort((a, b) => b[1] - a[1]).slice(0, 10);
-  $("#taps").innerHTML = t.length ? t.map(([a, n]) => `<div>${esc(a)} <b>×${n}</b></div>`).join("") : '<span class="empty">No taps yet.</span>';
+// ---------- state sheet ----------
+let panelOpen = false;
+function renderPanel() {
+  const busy = reqs.some(r => r.status === "queued" || r.status === "rendering");
+  $("#live").style.background = busy ? "var(--warn)" : "var(--teal)";
+  if (!panelOpen) return;
+  const kept = [["viewer", "SoMa · lunch · 68°F"]];
+  for (const [b, o] of Object.entries(state.orders || {})) kept.push([BRAND[b]?.name || b, Object.values(o).join(" · ")]);
+  if (state.saga) kept.push(["episode", `${state.saga.n} of ${state.saga.clip}`]);
+  if (state.last_game) kept.push(["game", `${state.last_game.outcome} (${state.last_game.brand})`]);
+  const r = [...reqs].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")).slice(0, 6);
+  const t = Object.entries(state.taps || {}).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  $(".panel").innerHTML = `
+    <h4>Kept</h4><dl class="kv">${kept.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+    <h4>Dropped</h4><div class="list">${(state.dropped || []).length ? state.dropped.map(d => `<s>${esc(d)}</s>`).join("") : '<span class="muted">Nothing yet</span>'}</div>
+    <h4>Renders</h4><div class="list">${r.length ? r.map(x => `<div class="req"><span>${esc(x.title || x.kind)}</span><span class="st ${esc(x.status)}">${esc(x.status)}</span></div>`).join("") : '<span class="muted">None yet</span>'}</div>
+    <h4>Taps</h4><div class="list">${t.length ? t.map(([k, n]) => `<div class="req"><span>${esc(k)}</span><b>${n}</b></div>`).join("") : '<span class="muted">None yet</span>'}</div>
+    <button class="btn" type="button" id="close-state">Close</button>`;
+  $("#close-state").onclick = closePanel;
 }
-
-function renderReqs() {
-  const r = [...reqs].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")).slice(0, 8);
-  $("#reqs").innerHTML = r.length ? r.map(x => `<div class="req"><span>${esc(x.title || x.kind)}${x.reason ? `<br><small class="muted">${esc(x.reason)}</small>` : ""}</span><span class="pill ${esc(x.status)}">${esc(x.status)}</span></div>`).join("")
-    : '<span class="empty">Tap an action in the feed. Renders take a few minutes.</span>';
+function openPanel() {
+  panelOpen = true;
+  document.body.insertAdjacentHTML("beforeend", '<div class="scrim"></div><section class="panel glass light" role="dialog" aria-label="State"></section>');
+  $(".scrim").onclick = closePanel; renderPanel();
 }
+function closePanel() { panelOpen = false; $(".scrim")?.remove(); $(".panel")?.remove(); }
+$("#open-state").onclick = openPanel;
 
-function setStatus(t) { $("#status").textContent = t; }
-
-// Autoplay the post in view, muted until the viewer asks for sound.
+// Autoplay whichever post is in view.
 let io = null;
 function observe() {
   io?.disconnect();
   io = new IntersectionObserver(es => es.forEach(e => {
     const v = $("video", e.target); if (!v) return;
-    if (e.isIntersecting && e.intersectionRatio > 0.6) { v.muted = !soundOn; v.play().catch(() => {}); } else v.pause();
-  }), { threshold: [0, 0.6, 1] });
+    if (e.isIntersecting && e.intersectionRatio > .6) { if (!e.target.classList.contains("frozen")) { v.muted = !soundOn; v.play().catch(() => {}); } } else v.pause();
+  }), { threshold: [0, .6, 1] });
   document.querySelectorAll(".stage").forEach(s => io.observe(s));
 }
 
 (async function start() {
   db = await claude.use("db");
   mcp = await claude.use("mcp");
-  if (!db) { setStatus("This view can't reach the feed's data store."); return; }
-  db.collection("ads").orderBy("order").onSnapshot(s => { ads = s.docs.map(d => ({ id: d.id, ...d.data() })); setStatus(`${ads.filter(a => !a.hidden).length} ads · every clip is a real FLUX 3 render`); renderFeed(); },
-    e => setStatus(`Feed stopped updating (${e.code}). Reload to reconnect.`));
-  db.collection("requests").onSnapshot(s => { reqs = s.docs.map(d => ({ id: d.id, ...d.data() })); renderReqs(); renderFeed(); },
-    e => setStatus(`Requests stopped updating (${e.code}). Reload to reconnect.`));
-  db.doc("state/viewer").onSnapshot(s => { if (s.exists) { state = { taps: {}, ...s.data() }; renderState(); } });
+  if (!db) { $("#feed").innerHTML = '<p class="muted">This view can’t reach the feed’s data.</p>'; return; }
+  db.collection("ads").orderBy("order").onSnapshot(s => { ads = s.docs.map(d => ({ id: d.id, ...d.data() })); renderFeed(); });
+  db.collection("requests").onSnapshot(s => { reqs = s.docs.map(d => ({ id: d.id, ...d.data() })); renderFeed(); renderPanel(); });
+  db.doc("state/viewer").onSnapshot(s => { if (s.exists) { state = { taps: {}, ...s.data() }; renderPanel(); } });
 })();
 </script>

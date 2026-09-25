@@ -178,6 +178,14 @@
       "voice": "an upbeat, playful narrator, American English",
       "language": "English",
       "music": "bouncy arcade-style chiptune mixed with hip hop drums"
+    },
+    "playable_cafe": {
+      "who": "no people on screen except a barista's hands",
+      "where": "a bright, airy coffee bar with tall windows and wood counters",
+      "when": "morning",
+      "voice": "a warm, playful narrator, American English",
+      "language": "English",
+      "music": "light bouncy lo-fi with a playful marimba"
     }
   },
   "variants": [
@@ -432,6 +440,54 @@
           ],
           "shot": "a sourdough smash burger tumbles apart in slow motion, bun, patty and cheese bouncing comically onto the counter",
           "vo": "Messy! Try again, or let us stack it."
+        }
+      ]
+    },
+    {
+      "id": "sightglass__endcard_win",
+      "product": "sightglass",
+      "persona": "playable_cafe",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "a perfect latte art rosetta blooms in a white ceramic cup in slow motion, steam rising in window light, triumphant",
+          "vo": "Perfect pour. Come taste the real one."
+        }
+      ]
+    },
+    {
+      "id": "sightglass__endcard_almost",
+      "product": "sightglass",
+      "persona": "playable_cafe",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "a latte art heart forms slightly lopsided in a white ceramic cup, a barista's hand gives the cup a little nudge, playful near miss",
+          "vo": "So close. Our baristas nail it."
+        }
+      ]
+    },
+    {
+      "id": "sightglass__endcard_retry",
+      "product": "sightglass",
+      "persona": "playable_cafe",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "milk overflows the rim of a white ceramic cup in slow motion and spills across a wooden bar, comic timing",
+          "vo": "Spilled it! Try again, or let us pour."
         }
       ]
     }
