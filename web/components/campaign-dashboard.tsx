@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   CheckCircle2,
+  Clapperboard,
   CircleDot,
   FlaskConical,
   RefreshCw,
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -242,6 +244,16 @@ export function CampaignDashboard() {
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
+          <Link
+            href="/feed"
+            className={buttonVariants({
+              variant: "outline",
+              size: "lg",
+            })}
+          >
+            <Clapperboard aria-hidden="true" />
+            Open demo feed
+          </Link>
           <Button
             variant="outline"
             size="lg"

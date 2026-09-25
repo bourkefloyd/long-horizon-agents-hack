@@ -1,0 +1,554 @@
+{
+  "_about": "Spec (unofficial) hyper-personalized video ads for real San Francisco brands, for a public hackathon experiment. Not affiliated with or endorsed by any brand named here. Facts in hero shots and lines come from the linked sources; no offers or prices are invented. render.py compiles product + persona + variant into one FLUX 3 prompt (POST /v1/flux-3-video, mode t2v). Audio (music, SFX, dialogue) is controlled only through prompt text; dialogue in double quotes is spoken.",
+  "defaults": {
+    "mode": "t2v",
+    "duration": 10,
+    "aspect_ratio": "9:16",
+    "resolution": "hd",
+    "generate_audio": true
+  },
+  "products": {
+    "sightglass": {
+      "name": "Sightglass Coffee",
+      "category": "specialty coffee roaster, flagship roastery and coffee bar at 270 7th St, SoMa",
+      "sources": [
+        "https://sightglasscoffee.com/pages/sightglass-san-francisco-soma"
+      ],
+      "look": "bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field",
+      "hero": "inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light",
+      "sfx": "the low rumble of a coffee roaster, beans crackling, a cup set down on a wooden bar",
+      "sonic_logo": "a soft two-note upright bass pluck on the final frame",
+      "cta": "270 7th St, SoMa"
+    },
+    "tartine": {
+      "name": "Tartine Bakery",
+      "category": "Mission bakery at 600 Guerrero St, known for morning buns, croissants and country bread",
+      "sources": [
+        "https://tartinebakery.com/san-francisco/bakery",
+        "https://en.wikipedia.org/wiki/Tartine"
+      ],
+      "look": "warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing",
+      "hero": "a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it",
+      "sfx": "a crackling crust, a paper bag rustling open",
+      "sonic_logo": "a warm three-note acoustic guitar figure on the final frame",
+      "cta": "600 Guerrero St"
+    },
+    "bi_rite_creamery": {
+      "name": "Bi-Rite Creamery",
+      "category": "small-batch ice cream shop at 3692 18th St by Dolores Park, open since 2006, famous for Salted Caramel",
+      "sources": [
+        "https://www.prnewswire.com/news-releases/bi-rite-creamery-celebrates-20-years-of-creating-community-one-scoop-at-a-time-302843747.html"
+      ],
+      "look": "sun-drenched summer look, saturated colors, playful handheld energy, lens flare",
+      "hero": "a scoop of glossy salted caramel ice cream pressed into a cone, a caramel ribbon folding through it, slow motion",
+      "sfx": "a scoop scraping, a cone crunch, distant happy crowd chatter",
+      "sonic_logo": "a bright ukulele strum on the final frame",
+      "cta": "18th St at Dolores Park"
+    },
+    "dandelion": {
+      "name": "Dandelion Chocolate",
+      "category": "bean-to-bar chocolate factory and cafe at 740 Valencia St since 2012",
+      "sources": [
+        "https://www.dandelionchocolate.com/pages/valencia-street"
+      ],
+      "look": "rich cocoa-brown and cream palette, cozy evening interior light, macro texture on chocolate",
+      "hero": "a thick single-origin hot chocolate poured into a small cup, cocoa beans and a snapped chocolate bar on the counter, chocolate makers working in the background",
+      "sfx": "a crisp chocolate snap, a thick velvety pour, a quiet cafe murmur",
+      "sonic_logo": "a gentle Rhodes piano chord on the final frame",
+      "cta": "740 Valencia St"
+    },
+    "boudin": {
+      "name": "Boudin Bakery",
+      "category": "San Francisco sourdough bakery founded in 1849, still baking from its original mother dough",
+      "sources": [
+        "https://boudinbakery.com/our-story/"
+      ],
+      "look": "moody silver-blue fog look with warm bakery amber highlights, documentary texture",
+      "hero": "a golden sourdough loaf scored and pulled from the oven, crust crackling, then torn open to reveal an airy tangy crumb",
+      "sfx": "foghorns in the distance, an oven door creaking open, crust crackling as it cools",
+      "sonic_logo": "a low foghorn note blending into a warm brass chord on the final frame",
+      "cta": "Since 1849"
+    },
+    "sutro_stack": {
+      "name": "Sutro Stack",
+      "category": "fictional San Francisco burger shop, invented for this experiment (no real brand)",
+      "sources": [],
+      "look": "punchy social-feed look, fast cuts, saturated warm colors, crisp commercial food lighting",
+      "hero": "a juicy double smash burger on a toasted sourdough bun, crispy lacy beef edges, melted cheddar dripping, grilled onions, pickles and garlic aioli, slow-motion clean product close-up",
+      "sfx": "phone notification pings, swipe whooshes, a sizzle on a flat-top grill, a crunchy first bite",
+      "sonic_logo": "a short upbeat five-note whistle-and-horn sting on the final frame",
+      "cta": "Grab a Sutro Stack today"
+    }
+  },
+  "personas": {
+    "soma_founder": {
+      "who": "a startup founder in her early thirties in a black blazer, holding a laptop",
+      "where": "a SoMa street lined with brick warehouses, the Bay Bridge visible at the end of the block",
+      "when": "7 AM on demo day, cool marine layer burning off",
+      "voice": "a focused, confident female voice, American English",
+      "language": "English",
+      "music": "minimal electronic beat with a steady ticking pulse, building tension"
+    },
+    "n_judah_commuter": {
+      "who": "a software engineer in his late twenties in a rain shell with earbuds and a backpack",
+      "where": "a stop in the Inner Sunset as a light-rail streetcar pulls up, fog rolling down Irving Street",
+      "when": "7:45 AM, thick gray summer fog",
+      "voice": "a dry, easygoing young male voice, American English",
+      "language": "English",
+      "music": "mellow lo-fi hip hop beat with muted keys and rain ambience"
+    },
+    "ocean_beach_surfer": {
+      "who": "a surfer in her thirties in a dripping black wetsuit, board under her arm",
+      "where": "Ocean Beach, gray surf and a long empty shoreline, a vintage camper van parked on the Great Highway",
+      "when": "6:30 AM, cold fog, pale light",
+      "voice": "a laid-back, warm female voice, American English",
+      "language": "English",
+      "music": "reverb-drenched surf rock guitar, slow and dreamy"
+    },
+    "dolores_park_crew": {
+      "who": "a group of four friends in their twenties with a picnic blanket and a speaker",
+      "where": "the sloped lawn of Dolores Park with the downtown skyline behind, palm trees, crowds",
+      "when": "sunny Sunday afternoon",
+      "voice": "an upbeat, playful young female voice, American English",
+      "language": "English",
+      "music": "sunny indie pop with hand claps and bright guitar"
+    },
+    "mission_family_es": {
+      "who": "a mom in her thirties walking with her eight-year-old son in a school uniform and backpack",
+      "where": "a Mission District sidewalk past colorful murals and papel picado",
+      "when": "3:30 PM, after school, golden afternoon sun",
+      "voice": "a warm, affectionate female voice speaking Mexican Spanish",
+      "language": "Spanish",
+      "music": "light, joyful cumbia with accordion and soft percussion"
+    },
+    "new_transplant": {
+      "who": "a woman in her mid-twenties who just moved to San Francisco, underdressed in a thin jacket, arms wrapped around herself",
+      "where": "a waterfront pier with sea lions barking and the Golden Gate Bridge half-hidden in fog",
+      "when": "a cold July afternoon, fog pouring over the hills",
+      "voice": "a wry, amused young female voice, American English",
+      "language": "English",
+      "music": "quirky pizzicato strings with a light marching snare"
+    },
+    "fog_narrator": {
+      "who": "a thick, slow bank of fog seen from above, rolling between SoMa rooftops and brick warehouses",
+      "where": "the skies over SoMa, the Bay Bridge disappearing into gray",
+      "when": "8 AM on a gray summer morning",
+      "voice": "a deep, theatrical, slightly smug male voice, as if the fog itself is talking",
+      "language": "English",
+      "music": "playful low woodwinds and a bouncy tuba, comedic and sly"
+    },
+    "soma_lunch": {
+      "who": "office workers on a weekday lunch break",
+      "where": "SoMa, San Francisco: brick warehouses, glass offices, Bay Bridge in the distance",
+      "when": "weekday lunch hour, mostly sunny and warm",
+      "voice": "an energetic, friendly young narrator with fast social-media pacing, American English",
+      "language": "English",
+      "music": "upbeat trending-style hip hop beat with snappy hi-hats and a bass drop at the reveal",
+      "data": [
+        {
+          "kind": "location",
+          "fact": "viewer is in SoMa",
+          "source": "targeting input"
+        },
+        {
+          "kind": "time",
+          "fact": "weekday lunch hour",
+          "source": "targeting input"
+        },
+        {
+          "kind": "weather",
+          "fact": "mostly sunny, 68°F at noon",
+          "source": "https://api.weather.gov/gridpoints/MTR/85,105/forecast/hourly",
+          "retrieved_at": "2026-09-25",
+          "expires_at": "2026-09-25T15:00-07:00"
+        },
+        {
+          "kind": "local_headline",
+          "fact": "viral SF story: a prediction market's charity arm hired a former FTX figure and had spent FTX money",
+          "source": "https://sfstandard.com/2026/09/23/caroline-ellison-new-job-ftx-manifund/",
+          "retrieved_at": "2026-09-25",
+          "expires_at": "2026-09-30"
+        }
+      ]
+    },
+    "playable_player": {
+      "who": "no people on screen",
+      "where": "a sunny San Francisco burger counter",
+      "when": "lunchtime",
+      "voice": "an upbeat, playful narrator, American English",
+      "language": "English",
+      "music": "bouncy arcade-style chiptune mixed with hip hop drums"
+    },
+    "playable_cafe": {
+      "who": "no people on screen except a barista's hands",
+      "where": "a bright, airy coffee bar with tall windows and wood counters",
+      "when": "morning",
+      "voice": "a warm, playful narrator, American English",
+      "language": "English",
+      "music": "light bouncy lo-fi with a playful marimba"
+    }
+  },
+  "variants": [
+    {
+      "id": "sightglass__soma_founder",
+      "product": "sightglass",
+      "persona": "soma_founder",
+      "tension": "she mouths her pitch to herself on the sidewalk, checks her phone, eight missed messages, exhales hard",
+      "turn": "she steps into the roastery and waits at the bar",
+      "payoff": "she walks out, cup in hand, shoulders back, striding toward the city with a small smile",
+      "lines": [
+        "Demo day. Four minutes to make it count.",
+        "Sightglass. Roasted right here on 7th Street."
+      ],
+      "overlays": [
+        {
+          "at": 6.5,
+          "until": 10,
+          "buttons": [
+            {
+              "label": "Watch the pitch",
+              "action": "branch",
+              "to": "sightglass__soma_founder__pitch"
+            },
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sightglass__n_judah_commuter",
+      "product": "sightglass",
+      "persona": "n_judah_commuter",
+      "tension": "the streetcar doors close just as he reaches them, he sighs as fog swirls around him",
+      "turn": "later, downtown, he ducks out of the fog into the bright roastery",
+      "payoff": "he holds the warm cup in both hands by the window, fogged glass, finally awake",
+      "lines": [
+        "Missed the train. Found the fog.",
+        "Sightglass. Worth the walk from the stop."
+      ],
+      "overlays": [
+        {
+          "at": 6.5,
+          "until": 10,
+          "buttons": [
+            {
+              "label": "See the roaster",
+              "action": "branch",
+              "to": "sightglass__n_judah_commuter__roast"
+            },
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tartine__ocean_beach_surfer",
+      "product": "tartine",
+      "persona": "ocean_beach_surfer",
+      "tension": "she jogs out of cold gray surf, shivering, peels down her wetsuit hood",
+      "turn": "wrapped in a towel on the back bumper of the van, she opens a warm paper bag",
+      "payoff": "she bites into the morning bun, eyes closed, sugar on her lips, waves rolling behind her",
+      "lines": [
+        "Fifty-five degree water. Worth it.",
+        "Tartine morning bun. The real reward."
+      ]
+    },
+    {
+      "id": "tartine__dolores_park_crew",
+      "product": "tartine",
+      "persona": "dolores_park_crew",
+      "tension": "the friends spread a blanket on the slope and realize nobody brought food, groans and laughs",
+      "turn": "one friend jogs up holding a big round country loaf and a pastry box",
+      "payoff": "they tear the bread and pass it around, skyline behind, everyone talking at once",
+      "lines": [
+        "Who was on bread duty?",
+        "Tartine. Around the corner from the park."
+      ]
+    },
+    {
+      "id": "bi_rite__dolores_park_crew",
+      "product": "bi_rite_creamery",
+      "persona": "dolores_park_crew",
+      "tension": "the sun beats down on the park, the friends fan themselves, one points toward 18th Street",
+      "turn": "they stand in a long cheerful line outside a small ice cream shop",
+      "payoff": "back on the hill, four cones clink together in a toast, the city glittering behind",
+      "lines": [
+        "Hottest Sunday of the year. You know where the line is.",
+        "Bi-Rite Creamery. Twenty years on 18th Street."
+      ]
+    },
+    {
+      "id": "bi_rite__mission_family_es",
+      "product": "bi_rite_creamery",
+      "persona": "mission_family_es",
+      "tension": "the boy drags his feet, shows his mom a test paper with a gold star, looks up hopefully",
+      "turn": "she smiles and they turn the corner onto 18th Street",
+      "payoff": "sitting on a bench, the boy with ice cream on his nose, both laughing",
+      "lines": [
+        "Una estrella de oro merece algo especial.",
+        "Bi-Rite Creamery. Aquí, en la calle 18."
+      ]
+    },
+    {
+      "id": "dandelion__soma_founder",
+      "product": "dandelion",
+      "persona": "soma_founder",
+      "tension": "evening, she leaves a glass office building, phone buzzing with a message that reads like good news, she stops and laughs in disbelief",
+      "turn": "she steps into a warm chocolate cafe on Valencia Street",
+      "payoff": "she raises the cup in a quiet solo toast, city lights in the window",
+      "lines": [
+        "They said yes.",
+        "Dandelion Chocolate. Bean to bar, on Valencia since 2012."
+      ]
+    },
+    {
+      "id": "boudin__new_transplant",
+      "product": "boudin",
+      "persona": "new_transplant",
+      "tension": "she shivers in the fog, looks at her phone showing 58 degrees in July, looks at the camera in betrayal",
+      "turn": "she follows the smell of bread through a bakery doorway",
+      "payoff": "she holds a torn sourdough loaf, steam rising, finally grinning at the fog",
+      "lines": [
+        "Nobody told me July would be this cold.",
+        "Boudin. San Francisco sourdough since 1849. The fog is part of the recipe."
+      ]
+    },
+    {
+      "id": "sightglass__fog_narrator",
+      "product": "sightglass",
+      "persona": "fog_narrator",
+      "tension": "the fog swallows the tops of buildings; people on the sidewalk below zip up their jackets and hunch their shoulders",
+      "turn": "the fog presses up against the tall windows of a bright roastery, curling against the glass as if peering in",
+      "payoff": "a woman steps out onto the sidewalk holding a warm cup, steam from the coffee rising and mixing with the fog around her",
+      "lines": [
+        "Morning. It's me, the fog. Yes, again.",
+        "Sightglass on 7th Street. Even I stop by."
+      ],
+      "overlays": [
+        {
+          "at": 3,
+          "until": 10,
+          "buttons": [
+            {
+              "label": "Burn off the fog",
+              "action": "branch",
+              "to": "sightglass__fog_narrator__sun"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sutrostack__soma_lunch_headline",
+      "product": "sutro_stack",
+      "persona": "soma_lunch",
+      "shots": [
+        {
+          "t": [
+            0,
+            2
+          ],
+          "shot": "fast social-feed style montage of San Francisco lunch-hour street energy in sunny SoMa: brick warehouses, Bay Bridge in the distance, people on the sidewalk glancing at phones that light up, surprised reactions, quick whip pans",
+          "text": "San Francisco is talking.",
+          "vo": "San Francisco's feed is all over a viral local headline."
+        },
+        {
+          "t": [
+            2,
+            4
+          ],
+          "shot": "abstract, stylized news-feed cards sliding past fast on a phone screen: shapes, a crypto coin icon, a briefcase icon, surprised emoji reactions, blurred unreadable text, no logos, no real faces, no names",
+          "text": "Viral headline. New craving.",
+          "vo": "From the headline everyone is sharing to the lunch everyone knows..."
+        },
+        {
+          "t": [
+            4,
+            7
+          ],
+          "shot": "smash cut to a sizzling flat-top grill and a warm, craveable burger reveal: a double smash burger on a toasted sourdough bun, crispy beef edges, melted cheddar dripping, slow-motion clean product close-up",
+          "text": "New craving unlocked.",
+          "vo": "...make your next lunch a Sutro Stack."
+        },
+        {
+          "t": [
+            7,
+            10
+          ],
+          "shot": "hero product shot of the sourdough smash burger on a table in bright sunshine against a sunny San Francisco backdrop with painted houses and blue sky, then it holds still for an end card with empty space at the top for text",
+          "text": "Grab a Sutro Stack today.",
+          "vo": "Grab a Sutro Stack today."
+        }
+      ],
+      "caption_at": [
+        0,
+        3.33,
+        5.88,
+        7.42
+      ]
+    },
+    {
+      "id": "sutrostack__endcard_win",
+      "product": "sutro_stack",
+      "persona": "playable_player",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "the camera pushes in on a perfectly stacked sourdough smash burger as confetti falls and cheese drips in slow motion, triumphant",
+          "vo": "Perfect stack! Come get the real one."
+        }
+      ]
+    },
+    {
+      "id": "sutrostack__endcard_almost",
+      "product": "sutro_stack",
+      "persona": "playable_player",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "a slightly leaning sourdough smash burger wobbles and a hand catches it just in time, playful near-miss energy",
+          "vo": "So close. The real one stacks itself."
+        }
+      ]
+    },
+    {
+      "id": "sutrostack__endcard_retry",
+      "product": "sutro_stack",
+      "persona": "playable_player",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "a sourdough smash burger tumbles apart in slow motion, bun, patty and cheese bouncing comically onto the counter",
+          "vo": "Messy! Try again, or let us stack it."
+        }
+      ]
+    },
+    {
+      "id": "sightglass__endcard_win",
+      "product": "sightglass",
+      "persona": "playable_cafe",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "a perfect latte art rosetta blooms in a white ceramic cup in slow motion, steam rising in window light, triumphant",
+          "vo": "Perfect pour. Come taste the real one."
+        }
+      ]
+    },
+    {
+      "id": "sightglass__endcard_almost",
+      "product": "sightglass",
+      "persona": "playable_cafe",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "a latte art heart forms slightly lopsided in a white ceramic cup, a barista's hand gives the cup a little nudge, playful near miss",
+          "vo": "So close. Our baristas nail it."
+        }
+      ]
+    },
+    {
+      "id": "sightglass__endcard_retry",
+      "product": "sightglass",
+      "persona": "playable_cafe",
+      "duration": 5,
+      "shots": [
+        {
+          "t": [
+            0,
+            5
+          ],
+          "shot": "milk overflows the rim of a white ceramic cup in slow motion and spills across a wooden bar, comic timing",
+          "vo": "Spilled it! Try again, or let us pour."
+        }
+      ]
+    }
+  ],
+  "continuations": [
+    {
+      "id": "sightglass__soma_founder__pitch",
+      "parent": "sightglass__soma_founder",
+      "duration": 5,
+      "prompt": "Continue the same shot and character. She walks into a packed demo-day room, sets the coffee cup down on the podium, looks up at the audience and smiles. Same music continues and resolves. She says: \"Okay. Let's begin.\"",
+      "overlays": [
+        {
+          "at": 3,
+          "until": 5,
+          "buttons": [
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sightglass__n_judah_commuter__roast",
+      "parent": "sightglass__n_judah_commuter",
+      "duration": 5,
+      "prompt": "Continue into the roastery behind him: a macro shot of freshly roasted coffee beans cascading out of a drum roaster into a cooling tray, stirring arms turning, smoke curling in window light. Sound of the roaster rumbling and beans crackling. The same narrator says: \"Roasted right here on 7th Street.\"",
+      "overlays": [
+        {
+          "at": 3,
+          "until": 5,
+          "buttons": [
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sightglass__fog_narrator__sun",
+      "parent": "sightglass__fog_narrator",
+      "duration": 5,
+      "prompt": "Continue the same scene. The fog rapidly burns off and pulls back, bright sun floods the SoMa street, the woman with the coffee cup tilts her face up to the sun and smiles. The music swells into a bright brass flourish. The fog voice grumbles, fading away: \"Fine. Enjoy your coffee outside.\"",
+      "overlays": [
+        {
+          "at": 3,
+          "until": 5,
+          "buttons": [
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
