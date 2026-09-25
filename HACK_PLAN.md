@@ -1,6 +1,6 @@
 # Hack plan: Long Horizon Agents Hackathon
 
-Friday 25 September 2026, San Francisco. Links: [Event](https://tokensand.com/horizonagentshack) · [docs/research/](docs/research/).
+Friday 25 September 2026, San Francisco. Links: [Event](https://tokensand.com/horizonagentshack) · [docs/research/](docs/research/) · Demo: [API](https://demo---lh-campaign-service-row663omlq-uc.a.run.app) · [Web](https://demo---lh-web-row663omlq-uc.a.run.app).
 
 ## Goal
 
