@@ -36,7 +36,7 @@ jobs:
     uses: ./.github/workflows/lh-target.yml
     with:
       target: nimble
-      issue_number: ${{ inputs.issue_number || 0 }}
+      issue_number: ${{ inputs.issue_number }}
       instruction: ${{ inputs.instruction || '' }}
       model: ${{ inputs.model || 'composer-2.5' }}
     secrets: inherit
