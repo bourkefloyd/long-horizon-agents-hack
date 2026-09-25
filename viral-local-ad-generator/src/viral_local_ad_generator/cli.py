@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .bfl_client import BFLClient
 from .config import load_settings
-from .nimble_client import NimbleClient
+from .nimble_client import NimbleClient, mock_stories
 from .pipeline import (
     discover_outlets,
     discover_stories,
@@ -15,8 +15,10 @@ from .pipeline import (
     load_outlets,
     load_stories,
     run_pipeline,
+    select_stories,
     write_run_artifacts,
 )
+from .staging import load_campaign_record, stage_campaign_variants
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -29,6 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_discover_news_parser(subparsers)
     add_generate_ad_parser(subparsers)
     add_generate_video_parser(subparsers)
+    add_stage_cdn_parser(subparsers)
     return parser
 
 
@@ -88,6 +91,26 @@ def add_generate_video_parser(subparsers: argparse._SubParsersAction[argparse.Ar
     parser.add_argument("--output", required=True, type=Path, help="Output folder for video artifacts.")
     parser.add_argument("--poll", action="store_true", help="Poll BFL generation jobs until ready or failed.")
     parser.add_argument("--download-media", action="store_true", help="Also download completed BFL videos into OUTPUT/videos.")
+
+
+def add_stage_cdn_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    parser = subparsers.add_parser(
+        "stage-cdn",
+        help="Generate scripts for a website campaign record and stage them under STAGING/<campaign_id>/<variant>/.",
+    )
+    parser.add_argument(
+        "--campaign-record",
+        required=True,
+        type=Path,
+        help="Campaign record: a JSON file or an issue body containing a fenced ```json block (id, brief, geo, dims...).",
+    )
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--stories", type=Path, help="Path to stories.json from discover-news.")
+    source.add_argument("--mock-news", action="store_true", help="Use mock stories instead of saved discovery.")
+    parser.add_argument("--output", required=True, type=Path, help="Output folder for run artifacts (not staged).")
+    parser.add_argument("--staging", required=True, type=Path, help="Staging root, normally cdn/staging.")
+    parser.add_argument("--max-stories", type=int, default=1, help="Maximum number of local stories to use.")
+    parser.add_argument("--max-videos", type=int, default=3, help="Maximum number of variants to stage.")
 
 
 def main() -> None:
@@ -186,6 +209,24 @@ def main() -> None:
             download_media=args.download_media,
         )
         print(f"Saved video job artifacts to {args.output}")
+        return
+
+    if args.command == "stage-cdn":
+        record = load_campaign_record(args.campaign_record)
+        stories = mock_stories(record.geo) if args.mock_news else load_stories(args.stories)
+        stories = select_stories(stories, count=args.max_stories)
+        if not stories:
+            parser.error("No brand-safe stories available to stage.")
+        concepts = generate_ads_from_stories(
+            campaign_script=record.brief,
+            market=record.geo,
+            stories=stories,
+            output_dir=args.output,
+            max_videos=args.max_videos,
+        )
+        write_run_artifacts(args.output, record.geo, stories, concepts)
+        variant_dirs = stage_campaign_variants(record, stories, concepts, args.staging)
+        print(f"Staged {len(variant_dirs)} variants under {args.staging / record.id}")
 
 
 if __name__ == "__main__":
