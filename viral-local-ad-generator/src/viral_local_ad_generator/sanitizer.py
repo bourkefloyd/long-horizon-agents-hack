@@ -35,14 +35,10 @@ def sanitize_story_for_ad(market: str, story: NewsStory) -> SanitizedStory:
         reference = f"{market}'s business-money dispute and unexpected-hire moment"
         notes.append("legal_and_financial_names_neutralized")
     elif any(term in text for term in ("lawsuit", "foreclosure", "scandal", "detained", "ice")):
-        topic = _generic_topic_from_title(story.title)
-        frame = f"a {market} local moment about {topic}"
-        reference = f"{market}'s local moment about {topic}"
+        frame, reference = _headline_frame(market, story.title)
         notes.append("sensitive_terms_generalized")
     else:
-        topic = _generic_topic_from_title(story.title)
-        frame = f"a {market} local moment about {topic}"
-        reference = f"{market}'s local moment about {topic}"
+        frame, reference = _headline_frame(market, story.title)
         notes.append("publisher_suffix_removed")
 
     frame, reference, fallback_note = _enforce_brand_safe_story_text(market, frame, reference)
@@ -59,10 +55,24 @@ def sanitize_story_for_ad(market: str, story: NewsStory) -> SanitizedStory:
     )
 
 
+def _headline_frame(market: str, title: str) -> tuple[str, str]:
+    """Quote the cleaned headline instead of splicing it into a sentence.
+
+    Headlines are full clauses ("San Francisco celebrates culture of lowriding"), so "a local
+    moment about <headline>" never read as one sentence. Quoting keeps hooks and voiceover lines
+    grammatical whatever the headline shape is.
+    """
+    topic = _generic_topic_from_title(title)
+    frame = f'a {market} local moment behind the headline "{topic}"'
+    reference = f'the headline "{topic}"'
+    return frame, reference
+
+
 def _generic_topic_from_title(title: str) -> str:
     topic = re.sub(r"\s+[|-]\s+.*$", "", title).strip()
     topic = re.sub(r"\s+[–—]\s+.*$", "", topic).strip()
     topic = re.sub(r"\s+", " ", topic)
+    topic = topic.strip(' .!"\u201c\u201d')
     return topic or "a local community moment"
 
 
