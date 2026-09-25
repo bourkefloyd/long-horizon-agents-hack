@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Compile product x persona ad scripts into FLUX 3 video prompts and optionally render them.
 
+Clips that already exist in out/ are skipped unless --force.
+
 Dry run (default) prints each compiled request and an estimated cost. --submit sends
 them to POST https://api.bfl.ai/v1/flux-3-video, polls until Ready, and downloads the
 MP4 to content/ads/out/ (result URLs expire, so download right away).
@@ -10,9 +12,12 @@ Key: read from BLACK_FOREST (or BFL_API_KEY). Never commit it.
     python3 content/ads/render.py                         # dry run, all variants
     python3 content/ads/render.py --only hush__indie_dev  # one variant
     python3 content/ads/render.py --submit --draft        # render drafts (cheaper)
+    python3 content/ads/render.py --submit --continuations --only sightglass__fog_narrator
+                                                          # clip + the clip its button branches to
 """
 
 import argparse
+import base64
 import json
 import os
 import sys
@@ -24,6 +29,8 @@ HERE = Path(__file__).resolve().parent
 API = "https://api.bfl.ai/v1/flux-3-video"
 # USD per second at hd for t2v, from BFL's published price table; draft is about a third.
 USD_PER_SEC_HD = 0.17
+# Terminal statuses from BFL's video quickstart; anything else (Pending, Reasoning, Generating) is in progress.
+DONE = {"Ready", "Request Moderated", "Content Moderated", "Error", "Task not found"}
 
 
 def compile_prompt(product, persona, variant, duration, aspect_ratio):
@@ -85,24 +92,69 @@ def find_url(obj):
     return None
 
 
-def render(variant, body, key, out_dir):
+def submit(item_id, body, key, out_dir):
+    """Submit once. The polling URL is saved to out/<id>.job.json so a rerun resumes instead of paying again."""
+    job_file = out_dir / f"{item_id}.job.json"
+    if job_file.exists():
+        poll = json.loads(job_file.read_text())["polling_url"]
+        print(f"  resuming {item_id}", flush=True)
+        return poll
     job = call(API, key, body)
-    poll = job["polling_url"]
-    print(f"  submitted {variant['id']} -> {job.get('id')}", flush=True)
+    job_file.write_text(json.dumps({"id": job.get("id"), "polling_url": job["polling_url"]}))
+    print(f"  submitted {item_id} -> {job.get('id')}", flush=True)
+    return job["polling_url"]
+
+
+def wait(item_id, poll, body, key, out_dir):
     while True:
         time.sleep(5)
-        res = call(poll, key)
+        try:
+            res = call(poll, key)
+        except OSError as e:  # transient network error: keep polling, the job is still running
+            print(f"  {item_id} poll error, retrying: {e}", file=sys.stderr)
+            continue
         status = res.get("status")
+        if status not in DONE:
+            continue
+        (out_dir / f"{item_id}.job.json").unlink(missing_ok=True)
         if status == "Ready":
             url = find_url(res.get("result"))
-            dest = out_dir / f"{variant['id']}.mp4"
+            if not url:
+                print(f"  {item_id} ready but no URL in result: {res}", file=sys.stderr)
+                return False
+            dest = out_dir / f"{item_id}.mp4"
             urllib.request.urlretrieve(url, dest)
-            (out_dir / f"{variant['id']}.json").write_text(json.dumps({"request": body, "result": res}, indent=2))
+            meta = {"request": {k: v for k, v in body.items() if k != "start_video"}, "result": res}
+            (out_dir / f"{item_id}.json").write_text(json.dumps(meta, indent=2))
             print(f"  saved {dest}")
-            return
-        if status not in ("Pending", "Processing", "Queued", "Task not found"):
-            print(f"  {variant['id']} failed: {status} {res}", file=sys.stderr)
-            return
+            return True
+        print(f"  {item_id} ended {status}: {res.get('details')}. Error: resubmit. Moderated: reword.",
+              file=sys.stderr)
+        return False
+
+
+def render_batch(jobs, key, out_dir):
+    """Submit every job first so BFL runs them in parallel, then poll each."""
+    polls = [(item_id, submit(item_id, body, key, out_dir), body) for item_id, body in jobs]
+    for item_id, poll, body in polls:
+        wait(item_id, poll, body, key, out_dir)
+
+
+def continuation_body(c, d, out_dir, draft):
+    """v2v: extend the parent clip. The parent MP4 must already be rendered."""
+    parent = out_dir / f"{c['parent']}.mp4"
+    body = {
+        "mode": "v2v",
+        "prompt": c["prompt"],
+        "start_video": base64.b64encode(parent.read_bytes()).decode(),
+        "duration": c.get("duration", 5),
+        "aspect_ratio": d["aspect_ratio"],
+        "resolution": d["resolution"],
+        "generate_audio": d["generate_audio"],
+    }
+    if draft:
+        body["draft"] = True
+    return body
 
 
 def main():
@@ -111,6 +163,9 @@ def main():
     ap.add_argument("--only", nargs="*", help="variant ids to include")
     ap.add_argument("--submit", action="store_true", help="call the BFL API (costs credits)")
     ap.add_argument("--draft", action="store_true", help="request draft quality (about a third of the cost)")
+    ap.add_argument("--continuations", action="store_true",
+                    help="also render the v2v clips that play after a button tap (continuation pricing is higher)")
+    ap.add_argument("--force", action="store_true", help="re-render clips that already exist in out/")
     args = ap.parse_args()
 
     data = json.loads(args.scripts.read_text())
@@ -129,9 +184,17 @@ def main():
         sys.exit("Set BLACK_FOREST (or BFL_API_KEY) in the environment.")
     out_dir = HERE / "out"
     out_dir.mkdir(exist_ok=True)
-    for v, body in reqs:
-        render(v, body, key, out_dir)
 
+    todo = [(v["id"], b) for v, b in reqs if args.force or not (out_dir / f"{v['id']}.mp4").exists()]
+    render_batch(todo, key, out_dir)
+
+    if args.continuations:
+        ids = {v["id"] for v, _ in reqs}
+        conts = [c for c in data.get("continuations", [])
+                 if c["parent"] in ids and (out_dir / f"{c['parent']}.mp4").exists()
+                 and (args.force or not (out_dir / f"{c['id']}.mp4").exists())]
+        render_batch([(c["id"], continuation_body(c, data["defaults"], out_dir, args.draft)) for c in conts],
+                     key, out_dir)
 
 if __name__ == "__main__":
     main()

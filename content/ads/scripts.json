@@ -1,6 +1,5 @@
 {
   "_about": "Spec (unofficial) hyper-personalized video ads for real San Francisco brands, for a public hackathon experiment. Not affiliated with or endorsed by any brand named here. Facts in hero shots and lines come from the linked sources; no offers or prices are invented. render.py compiles product + persona + variant into one FLUX 3 prompt (POST /v1/flux-3-video, mode t2v). Audio (music, SFX, dialogue) is controlled only through prompt text; dialogue in double quotes is spoken.",
-
   "defaults": {
     "mode": "t2v",
     "duration": 10,
@@ -8,12 +7,13 @@
     "resolution": "hd",
     "generate_audio": true
   },
-
   "products": {
     "sightglass": {
       "name": "Sightglass Coffee",
       "category": "specialty coffee roaster, flagship roastery and coffee bar at 270 7th St, SoMa",
-      "sources": ["https://sightglasscoffee.com/pages/sightglass-san-francisco-soma"],
+      "sources": [
+        "https://sightglasscoffee.com/pages/sightglass-san-francisco-soma"
+      ],
       "look": "bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field",
       "hero": "inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light",
       "sfx": "the low rumble of a coffee roaster, beans crackling, a cup set down on a wooden bar",
@@ -23,7 +23,10 @@
     "tartine": {
       "name": "Tartine Bakery",
       "category": "Mission bakery at 600 Guerrero St, known for morning buns, croissants and country bread",
-      "sources": ["https://tartinebakery.com/san-francisco/bakery", "https://en.wikipedia.org/wiki/Tartine"],
+      "sources": [
+        "https://tartinebakery.com/san-francisco/bakery",
+        "https://en.wikipedia.org/wiki/Tartine"
+      ],
       "look": "warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing",
       "hero": "a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it",
       "sfx": "a crackling crust, a paper bag rustling open",
@@ -33,7 +36,9 @@
     "bi_rite_creamery": {
       "name": "Bi-Rite Creamery",
       "category": "small-batch ice cream shop at 3692 18th St by Dolores Park, open since 2006, famous for Salted Caramel",
-      "sources": ["https://www.prnewswire.com/news-releases/bi-rite-creamery-celebrates-20-years-of-creating-community-one-scoop-at-a-time-302843747.html"],
+      "sources": [
+        "https://www.prnewswire.com/news-releases/bi-rite-creamery-celebrates-20-years-of-creating-community-one-scoop-at-a-time-302843747.html"
+      ],
       "look": "sun-drenched summer look, saturated colors, playful handheld energy, lens flare",
       "hero": "a scoop of glossy salted caramel ice cream pressed into a cone, a caramel ribbon folding through it, slow motion",
       "sfx": "a scoop scraping, a cone crunch, distant happy crowd chatter",
@@ -43,7 +48,9 @@
     "dandelion": {
       "name": "Dandelion Chocolate",
       "category": "bean-to-bar chocolate factory and cafe at 740 Valencia St since 2012",
-      "sources": ["https://www.dandelionchocolate.com/pages/valencia-street"],
+      "sources": [
+        "https://www.dandelionchocolate.com/pages/valencia-street"
+      ],
       "look": "rich cocoa-brown and cream palette, cozy evening interior light, macro texture on chocolate",
       "hero": "a thick single-origin hot chocolate poured into a small cup, cocoa beans and a snapped chocolate bar on the counter, chocolate makers working in the background",
       "sfx": "a crisp chocolate snap, a thick velvety pour, a quiet cafe murmur",
@@ -53,7 +60,9 @@
     "boudin": {
       "name": "Boudin Bakery",
       "category": "San Francisco sourdough bakery founded in 1849, still baking from its original mother dough",
-      "sources": ["https://boudinbakery.com/our-story/"],
+      "sources": [
+        "https://boudinbakery.com/our-story/"
+      ],
       "look": "moody silver-blue fog look with warm bakery amber highlights, documentary texture",
       "hero": "a golden sourdough loaf scored and pulled from the oven, crust crackling, then torn open to reveal an airy tangy crumb",
       "sfx": "foghorns in the distance, an oven door creaking open, crust crackling as it cools",
@@ -61,7 +70,6 @@
       "cta": "Since 1849"
     }
   },
-
   "personas": {
     "soma_founder": {
       "who": "a startup founder in her early thirties in a black blazer, holding a laptop",
@@ -110,9 +118,16 @@
       "voice": "a wry, amused young female voice, American English",
       "language": "English",
       "music": "quirky pizzicato strings with a light marching snare"
+    },
+    "fog_narrator": {
+      "who": "a thick, slow bank of fog seen from above, rolling between SoMa rooftops and brick warehouses",
+      "where": "the skies over SoMa, the Bay Bridge disappearing into gray",
+      "when": "8 AM on a gray summer morning",
+      "voice": "a deep, theatrical, slightly smug male voice, as if the fog itself is talking",
+      "language": "English",
+      "music": "playful low woodwinds and a bouncy tuba, comedic and sly"
     }
   },
-
   "variants": [
     {
       "id": "sightglass__soma_founder",
@@ -124,6 +139,24 @@
       "lines": [
         "Demo day. Four minutes to make it count.",
         "Sightglass. Roasted right here on 7th Street."
+      ],
+      "overlays": [
+        {
+          "at": 6.5,
+          "until": 10,
+          "buttons": [
+            {
+              "label": "Watch the pitch",
+              "action": "branch",
+              "to": "sightglass__soma_founder__pitch"
+            },
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
       ]
     },
     {
@@ -136,6 +169,24 @@
       "lines": [
         "Missed the train. Found the fog.",
         "Sightglass. Worth the walk from the stop."
+      ],
+      "overlays": [
+        {
+          "at": 6.5,
+          "until": 10,
+          "buttons": [
+            {
+              "label": "See the roaster",
+              "action": "branch",
+              "to": "sightglass__n_judah_commuter__roast"
+            },
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
       ]
     },
     {
@@ -208,6 +259,90 @@
       "lines": [
         "Nobody told me July would be this cold.",
         "Boudin. San Francisco sourdough since 1849. The fog is part of the recipe."
+      ]
+    },
+    {
+      "id": "sightglass__fog_narrator",
+      "product": "sightglass",
+      "persona": "fog_narrator",
+      "tension": "the fog swallows the tops of buildings; people on the sidewalk below zip up their jackets and hunch their shoulders",
+      "turn": "the fog presses up against the tall windows of a bright roastery, curling against the glass as if peering in",
+      "payoff": "a woman steps out onto the sidewalk holding a warm cup, steam from the coffee rising and mixing with the fog around her",
+      "lines": [
+        "Morning. It's me, the fog. Yes, again.",
+        "Sightglass on 7th Street. Even I stop by."
+      ],
+      "overlays": [
+        {
+          "at": 3,
+          "until": 10,
+          "buttons": [
+            {
+              "label": "Burn off the fog",
+              "action": "branch",
+              "to": "sightglass__fog_narrator__sun"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "continuations": [
+    {
+      "id": "sightglass__soma_founder__pitch",
+      "parent": "sightglass__soma_founder",
+      "duration": 5,
+      "prompt": "Continue the same shot and character. She walks into a packed demo-day room, sets the coffee cup down on the podium, looks up at the audience and smiles. Same music continues and resolves. She says: \"Okay. Let's begin.\"",
+      "overlays": [
+        {
+          "at": 3,
+          "until": 5,
+          "buttons": [
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sightglass__n_judah_commuter__roast",
+      "parent": "sightglass__n_judah_commuter",
+      "duration": 5,
+      "prompt": "Continue into the roastery behind him: a macro shot of freshly roasted coffee beans cascading out of a drum roaster into a cooling tray, stirring arms turning, smoke curling in window light. Sound of the roaster rumbling and beans crackling. The same narrator says: \"Roasted right here on 7th Street.\"",
+      "overlays": [
+        {
+          "at": 3,
+          "until": 5,
+          "buttons": [
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sightglass__fog_narrator__sun",
+      "parent": "sightglass__fog_narrator",
+      "duration": 5,
+      "prompt": "Continue the same scene. The fog rapidly burns off and pulls back, bright sun floods the SoMa street, the woman with the coffee cup tilts her face up to the sun and smiles. The music swells into a bright brass flourish. The fog voice grumbles, fading away: \"Fine. Enjoy your coffee outside.\"",
+      "overlays": [
+        {
+          "at": 3,
+          "until": 5,
+          "buttons": [
+            {
+              "label": "Directions",
+              "action": "link",
+              "href": "https://www.google.com/maps/search/?api=1&query=Sightglass+Coffee+270+7th+St+San+Francisco"
+            }
+          ]
+        }
       ]
     }
   ]
