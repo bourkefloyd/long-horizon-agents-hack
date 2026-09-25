@@ -15,6 +15,8 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 
 - `web/` contains the Next.js App Router console, typed campaign contract, shadcn/ui primitives, API proxy routes, and Cloud Run container.
 - Deterministic web checks install from lockfile, lint, and build.
+- Long-horizon workflow, state contract, and this target's prompt exist.
+- workflow_dispatch reached the agent step (concurrency smoke test).
 
 ## Open
 
@@ -29,3 +31,4 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 ## Dropped
 
 - The scaffold decision and stub-check plan are complete and no longer need tracking.
+- Done line "first run has not happened"; superseded by successful agent run.
