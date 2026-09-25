@@ -53,6 +53,14 @@ async function responseMessage(response: Response) {
   }
 }
 
+async function fetchCampaignState() {
+  const response = await fetch("/api/campaigns/demo/state", {
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(await responseMessage(response));
+  return (await response.json()) as CampaignState;
+}
+
 export function CampaignDashboard() {
   const [campaign, setCampaign] = useState<CampaignState | null>(null);
   const [brief, setBrief] = useState<NextDayBrief | null>(null);
@@ -68,11 +76,7 @@ export function CampaignDashboard() {
     setError(null);
 
     try {
-      const response = await fetch("/api/campaigns/demo/state", {
-        cache: "no-store",
-      });
-      if (!response.ok) throw new Error(await responseMessage(response));
-      setCampaign((await response.json()) as CampaignState);
+      setCampaign(await fetchCampaignState());
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Campaign state is unavailable.",
@@ -83,8 +87,29 @@ export function CampaignDashboard() {
   }, []);
 
   useEffect(() => {
-    void loadCampaign();
-  }, [loadCampaign]);
+    let cancelled = false;
+
+    fetchCampaignState()
+      .then((state) => {
+        if (!cancelled) setCampaign(state);
+      })
+      .catch((caught: unknown) => {
+        if (!cancelled) {
+          setError(
+            caught instanceof Error
+              ? caught.message
+              : "Campaign state is unavailable.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const totalSignals = useMemo(() => {
     if (!campaign) return 0;
