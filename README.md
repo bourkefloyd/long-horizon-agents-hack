@@ -3,3 +3,5 @@
 Local working folder for the Long Horizon Agents Hack.
 
 Event: https://luma.com/horizonagentshack?tk=w2kKwY
+
+Team guide: [Long Horizon workflows](docs/LH_WORKFLOWS.md).

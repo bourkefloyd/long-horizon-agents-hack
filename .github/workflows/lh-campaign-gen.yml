@@ -1,4 +1,4 @@
-name: LH nimble
+name: LH campaign-gen
 
 # Thin target caller. Shared routing and execution live in lh-target.yml and
 # lh-run.yml; this file only declares triggers, manual inputs, and the target.
@@ -21,10 +21,10 @@ on:
         type: string
         default: ""
       model:
-        description: "Cursor CLI model slug"
+        description: "Cursor CLI model override (blank uses target config)"
         required: false
         type: string
-        default: composer-2.5
+        default: ""
 
 permissions:
   contents: write
@@ -35,8 +35,8 @@ jobs:
   route:
     uses: ./.github/workflows/lh-target.yml
     with:
-      target: nimble
+      target: campaign-gen
       issue_number: ${{ inputs.issue_number }}
       instruction: ${{ inputs.instruction || '' }}
-      model: ${{ inputs.model || 'composer-2.5' }}
+      model: ${{ inputs.model || '' }}
     secrets: inherit
