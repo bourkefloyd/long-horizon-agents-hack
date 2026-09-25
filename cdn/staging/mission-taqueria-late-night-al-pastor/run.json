@@ -1,0 +1,179 @@
+{
+ "campaign_id": "mission-taqueria-late-night-al-pastor",
+ "campaign_name": "Mission Taqueria Late Night Al Pastor",
+ "brief": "Late-night al pastor tacos carved fresh off the trompo until 2 AM, two blocks from the 24th St Mission BART. Order ahead on the link and skip the line after the show. CTA: Order ahead and skip the line.",
+ "market": "San Francisco Mission District",
+ "audience": "night-out crowd and late-shift workers, 21-35, leaving shows, bars and BART after 10 PM",
+ "generated_at": "2026-09-25T23:55:19+00:00",
+ "mode": "render-staged",
+ "discovery": {
+  "via": "staged",
+  "agent": "viral-local-ad-generator"
+ },
+ "stories": [],
+ "sanitized_stories": [],
+ "estimate_usd": {
+  "images": 0.139,
+  "videos": 5.1,
+  "total": 5.24,
+  "cap": null
+ },
+ "variants": [
+  {
+   "variant_id": "01-local-moment-hook",
+   "staged": true,
+   "id": "mission-taqueria-late-night-al-pastor-01-local-moment-hook",
+   "media_type": "video",
+   "hook": "San Francisco Mission District is already talking about this: the headline \"San Francisco celebrates culture of lowriding\"",
+   "cta": "Order ahead and skip the line",
+   "audience": "night-out crowd and late-shift workers, 21-35, leaving shows, bars and BART after 10 PM",
+   "authored_by": "viral-local-ad-generator",
+   "active": true,
+   "story": null,
+   "story_safe": null,
+   "prompts": {
+    "video": "A 10-second vertical 9:16 mobile video ad in 4 shots. Bright, clean, upbeat. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT 1 (0.0-2.0s): Fast social-feed style montage of recognizable San Francisco Mission District street energy, phones lighting up, and abstract local-update card visuals tied to the event topic.\nHARD CUT. SHOT 2 (2.0-4.0s): Quick abstract local-update cards slide by with no publisher logos, no real faces, and no private names; one card references: the headline \"San Francisco celebrates culture of lowriding\".\nHARD CUT. SHOT 3 (4.0-7.0s): Smash cut to an inviting taco reveal: marinated pork carved off a spinning trompo, a sliver of pineapple, warm corn tortillas, cilantro, onion, and salsa on a bright taqueria counter.\nHARD CUT. SHOT 4 (7.0-10.0s): Hero product shot against a bright San Francisco Mission District-inspired backdrop, then quick end-card with a simple CTA.\nAUDIO: upbeat modern soundtrack; a warm, friendly narrator in English. At 0 seconds the narrator says: \"San Francisco Mission District is already talking about this: the headline \"San Francisco celebrates culture of lowriding\"\". Then: San Francisco Mission District is talking about the headline \"San Francisco celebrates culture of lowriding\". When a local moment has everyone paying attention... ...make your next twist fresh al pastor tacos. Order ahead and skip the line",
+    "poster": "Vertical 9:16 poster photograph for a mobile ad: Hero product shot against a bright San Francisco Mission District-inspired backdrop, then quick end-card with a simple CTA. Editorial photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "d50d68d9-66c7-457d-9624-7f9a32ff0c53",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 434054,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "60541683-93c3-4aa3-adb1-4038e8c7dafe",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 170.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 10,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 6242084,
+     "file": "creative.mp4"
+    }
+   }
+  },
+  {
+   "variant_id": "02-commuter-craving",
+   "staged": true,
+   "id": "mission-taqueria-late-night-al-pastor-02-commuter-craving",
+   "media_type": "video",
+   "hook": "On the way across San Francisco Mission District, the local buzz meets a late-night taco craving.",
+   "cta": "Order ahead and skip the line",
+   "audience": "night-out crowd and late-shift workers, 21-35, leaving shows, bars and BART after 10 PM",
+   "authored_by": "viral-local-ad-generator",
+   "active": true,
+   "story": null,
+   "story_safe": null,
+   "prompts": {
+    "video": "A 10-second vertical 9:16 mobile video ad in 4 shots. Bright, clean, upbeat. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT 1 (0.0-2.0s): Fast social-feed style montage of recognizable San Francisco Mission District street energy, phones lighting up, and abstract local-update card visuals tied to the event topic.\nHARD CUT. SHOT 2 (2.0-4.0s): Quick abstract local-update cards slide by with no publisher logos, no real faces, and no private names; one card references: the headline \"San Francisco celebrates culture of lowriding\".\nHARD CUT. SHOT 3 (4.0-7.0s): Smash cut to an inviting taco reveal: marinated pork carved off a spinning trompo, a sliver of pineapple, warm corn tortillas, cilantro, onion, and salsa on a bright taqueria counter.\nHARD CUT. SHOT 4 (7.0-10.0s): Hero product shot against a bright San Francisco Mission District-inspired backdrop, then quick end-card with a simple CTA.\nAUDIO: upbeat modern soundtrack; a warm, friendly narrator in English. At 0 seconds the narrator says: \"On the way across San Francisco Mission District, the local buzz meets a late-night taco craving.\". Then: San Francisco Mission District is talking about the headline \"San Francisco celebrates culture of lowriding\". When a local moment has everyone paying attention... ...make your next twist fresh al pastor tacos. Order ahead and skip the line",
+    "poster": "Vertical 9:16 poster photograph for a mobile ad: Hero product shot against a bright San Francisco Mission District-inspired backdrop, then quick end-card with a simple CTA. Editorial photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "54eae217-4524-488c-ae42-99f57414e851",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 421707,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "b0565e53-84d1-4e14-9bc6-7c99123d1f14",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 170.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 10,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 6074648,
+     "file": "creative.mp4"
+    }
+   }
+  },
+  {
+   "variant_id": "03-late-night-payoff",
+   "staged": true,
+   "id": "mission-taqueria-late-night-al-pastor-03-late-night-payoff",
+   "media_type": "video",
+   "hook": "The local feed is moving fast. End the night with fresh al pastor tacos.",
+   "cta": "Order ahead and skip the line",
+   "audience": "night-out crowd and late-shift workers, 21-35, leaving shows, bars and BART after 10 PM",
+   "authored_by": "viral-local-ad-generator",
+   "active": true,
+   "story": null,
+   "story_safe": null,
+   "prompts": {
+    "video": "A 10-second vertical 9:16 mobile video ad in 4 shots. Bright, clean, upbeat. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT 1 (0.0-2.0s): Fast social-feed style montage of recognizable San Francisco Mission District street energy, phones lighting up, and abstract local-update card visuals tied to the event topic.\nHARD CUT. SHOT 2 (2.0-4.0s): Quick abstract local-update cards slide by with no publisher logos, no real faces, and no private names; one card references: the headline \"San Francisco celebrates culture of lowriding\".\nHARD CUT. SHOT 3 (4.0-7.0s): Smash cut to an inviting taco reveal: marinated pork carved off a spinning trompo, a sliver of pineapple, warm corn tortillas, cilantro, onion, and salsa on a bright taqueria counter.\nHARD CUT. SHOT 4 (7.0-10.0s): Hero product shot against a bright San Francisco Mission District-inspired backdrop, then quick end-card with a simple CTA.\nAUDIO: upbeat modern soundtrack; a warm, friendly narrator in English. At 0 seconds the narrator says: \"The local feed is moving fast. End the night with fresh al pastor tacos.\". Then: San Francisco Mission District is talking about the headline \"San Francisco celebrates culture of lowriding\". When a local moment has everyone paying attention... ...make your next twist fresh al pastor tacos. Order ahead and skip the line",
+    "poster": "Vertical 9:16 poster photograph for a mobile ad: Hero product shot against a bright San Francisco Mission District-inspired backdrop, then quick end-card with a simple CTA. Editorial photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "9b709b87-bc6a-45ce-bfb2-e7f2bcc51612",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 446855,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "34365d3f-fe71-431a-929d-5f4fb71df9b6",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 170.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 10,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 5544662,
+     "file": "creative.mp4"
+    }
+   }
+  }
+ ],
+ "liquid_qa": "skipped",
+ "cost": {
+  "quoted_credits": 13.5,
+  "settled_credits": 523.5,
+  "settled_usd": 5.235,
+  "credits_before": 7217.0,
+  "credits_after": 6693.5,
+  "spent_by_balance_usd": 5.235
+ }
+}
