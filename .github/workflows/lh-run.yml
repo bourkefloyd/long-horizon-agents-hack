@@ -229,10 +229,10 @@ jobs:
         run: |
           N=$(git status --short | wc -l | tr -d ' ')
           # Content milestones: staged ad variants per campaign, then a per-area file count.
-          CONTENT=$(git status --short --porcelain -- cdn/staging 2>/dev/null \
+          CONTENT=$(git status --short --porcelain -uall -- cdn/staging 2>/dev/null \
             | awk '{ print $NF }' | awk -F/ '$1 == "cdn" && $2 == "staging" && NF >= 4 { print $3 "\t" $4 }' \
             | sort -u | awk -F'\t' '{ n[$1]++ } END { for (c in n) printf "%s%s: %d variant(s)", (out++ ? ", " : ""), c, n[c] }')
-          AREAS=$(git status --short | awk '{ print $NF }' \
+          AREAS=$(git status --short -uall | awk '{ print $NF }' \
             | awk -F/ '{ a = ($1 == ".lh" || $1 == "cdn") && NF > 2 ? $1 "/" $2 : $1; n[a]++ } END { for (k in n) printf "%s%s %d", (out++ ? ", " : ""), k, n[k] }')
           LINE="agent finished; ${N} file(s) changed"
           [ -n "$CONTENT" ] && LINE="${LINE} — generated ${CONTENT}"
