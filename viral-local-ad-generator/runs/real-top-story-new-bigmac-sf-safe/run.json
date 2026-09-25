@@ -1,0 +1,44 @@
+{
+  "market": "San Francisco",
+  "story_count": 1,
+  "concept_count": 1,
+  "stories": [
+    {
+      "title": "The effective altruists who won’t return FTX money just hired Sam Bankman-Fried’s ex",
+      "url": "https://sfstandard.com/2026/09/23/caroline-ellison-new-job-ftx-manifund/",
+      "source": "The San Francisco Standard",
+      "published_at": "2026-09-23",
+      "snippet": "The San Francisco Standard lists this as its current #1 Most Read story; the article reports on Manifund hiring Caroline Ellison and related FTX litigation.",
+      "relevance_score": 1.0,
+      "virality_score": 1.0,
+      "brand_safe": true,
+      "raw": {}
+    }
+  ],
+  "concepts": [
+    {
+      "story_title": "The effective altruists who won’t return FTX money just hired Sam Bankman-Fried’s ex",
+      "story_url": "https://sfstandard.com/2026/09/23/caroline-ellison-new-job-ftx-manifund/",
+      "variant_index": 1,
+      "angle": "local moment hook",
+      "hook": "San Francisco is already talking about this: a buzzy San Francisco tech-world story about an unexpected second act",
+      "script": "Open with a local-current-events setup: San Francisco is already talking about this: a buzzy San Francisco tech-world story about an unexpected second act. Transition quickly into the advertiser message: new bigmac for mcdonals. Keep it playful and avoid naming private individuals or implying the news subject endorses the product. Creative angle: local moment hook. End with a clear food CTA: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: a buzzy San Francisco tech-world story about an unexpected second act. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Open with a local-current-events setup: San Francisco is already talking about this: a buzzy San Francisco tech-world story about an unexpected second act. Transition quickly into the advertiser message: new bigmac for mcdonals. Keep it playful and avoid naming private individuals or implying the news subject endorses the product. Creative angle: local moment hook. End with a clear food CTA: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "mode": "t2v",
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: a buzzy San Francisco tech-world story about an unexpected second act. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Open with a local-current-events setup: San Francisco is already talking about this: a buzzy San Francisco tech-world story about an unexpected second act. Transition quickly into the advertiser message: new bigmac for mcdonals. Keep it playful and avoid naming private individuals or implying the news subject endorses the product. Creative angle: local moment hook. End with a clear food CTA: Grab a Big Mac today. Audio direction: Bright playful music, subtle social feed notification sounds, crisp friendly voiceover. Avoid: No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "resolution": "hd",
+        "generate_audio": true,
+        "safety_tolerance": 1,
+        "draft": false
+      },
+      "bfl_job": null
+    }
+  ]
+}
