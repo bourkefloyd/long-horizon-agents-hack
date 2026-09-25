@@ -218,6 +218,15 @@ run_status.failed
 
 If a run starts but fails before completion, the `run_status.failed` event includes the failed stage, error type, traceback, and a suggested fix. At the beginning of each new command, the CLI checks the previous local run log; if the previous run failed or never reached completion, it prints the suggested fix and logs a `preflight.previous_run.failure_detected` warning event before continuing.
 
+## Campaign Memory And Spend Guards
+
+Separately from the verbose run log, `run`, `generate-video`, and `stage-cdn` keep a compact per-campaign memory in the shared `agent_events` Tinybird datasource (see `../tinybird/README.md`; env `TINYBIRD_API_KEY`, `TINYBIRD_HOST`). One small event per stage: `run_started`, `nimble_query`, `story_ranked`, `script_generated`, `bfl_submit`, `bfl_ready`, `error`, `run_finished`, each with `campaign_id`, `variant_id` where it applies, and `cost_usd` when known (`NIMBLE_QUERY_COST_USD`, `BFL_VIDEO_COST_USD`).
+
+- `--campaign-id` sets the key (default: `LH_CAMPAIGN_ID`, the campaign file stem, or the output folder; `stage-cdn` uses the record id).
+- Any exception or non-2xx from Nimble or BFL emits an `error` event with the step and message, marks the run failed in `run_finished`, and halts before further spend. There are no retries and no next variant unless `--continue-on-error` is passed (per-variant BFL steps only; Nimble and brand-guard failures always halt).
+- At start the CLI reads prior events for the campaign and skips any variant that already reached `bfl_ready`, so re-runs do not re-spend. Skipped variants get `bfl_job.skipped = true` in `concepts.json`.
+- Without `TINYBIRD_API_KEY` nothing is sent, but the guards still apply.
+
 ## Current API Notes
 
 - Nimble search uses `POST https://sdk.nimbleway.com/v2/search` with `Authorization: Bearer $NIMBLE_API_KEY`.

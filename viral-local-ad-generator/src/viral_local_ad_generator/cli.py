@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 from typing import Any
 
+from .agent_memory import AgentMemory, PipelineHalt, create_memory
 from .bfl_client import BFLClient
 from .config import Settings, load_settings
 from .event_logger import PipelineLogger, suggest_fix_for_error
@@ -72,6 +74,20 @@ def add_run_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParse
         help="Also download completed BFL videos into OUTPUT/videos. Video URLs are saved to OUTPUT/video_links by default when polling finishes.",
     )
     parser.add_argument("--max-videos", type=int, default=None, help="Maximum number of video concepts/jobs to create.")
+    add_memory_args(parser)
+
+
+def add_memory_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--campaign-id",
+        default=None,
+        help="Campaign id for Tinybird event memory (default: LH_CAMPAIGN_ID, else the campaign file or output folder name).",
+    )
+    parser.add_argument(
+        "--continue-on-error",
+        action="store_true",
+        help="After a Nimble/BFL error is recorded, keep going with the next variant instead of halting the run.",
+    )
 
 
 def add_discover_news_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -95,6 +111,7 @@ def add_generate_video_parser(subparsers: argparse._SubParsersAction[argparse.Ar
     parser.add_argument("--output", required=True, type=Path, help="Output folder for video artifacts.")
     parser.add_argument("--poll", action="store_true", help="Poll BFL generation jobs until ready or failed.")
     parser.add_argument("--download-media", action="store_true", help="Also download completed BFL videos into OUTPUT/videos.")
+    add_memory_args(parser)
 
 
 def add_stage_cdn_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -138,6 +155,7 @@ def main() -> None:
         report_previous_failure(logger)
         logger.emit("cli", "start", {"args": args_to_dict(args)})
         logger.emit_run_started()
+        memory = start_memory(args, logger)
         try:
             campaign_script = args.campaign.read_text(encoding="utf-8")
             result = run_pipeline(
@@ -160,10 +178,12 @@ def main() -> None:
                 story_published_at=args.story_published_at,
                 story_snippet=args.story_snippet,
                 logger=logger,
+                memory=memory,
             )
         except Exception as error:
-            handle_failure(logger, error)
+            handle_failure(logger, error, memory)
             raise
+        finish_memory(memory, {"story_count": result["story_count"], "concept_count": result["concept_count"]})
         logger.emit_run_completed(result)
         logger.emit("cli", "finish", {"result": result})
         print(
@@ -257,6 +277,7 @@ def main() -> None:
         report_previous_failure(logger)
         logger.emit("cli", "start", {"args": args_to_dict(args)})
         logger.emit_run_started()
+        memory = start_memory(args, logger)
         try:
             concepts = load_concepts(args.concepts)
             generate_videos(
@@ -266,10 +287,12 @@ def main() -> None:
                 poll=args.poll,
                 download_media=args.download_media,
                 logger=logger,
+                memory=memory,
             )
         except Exception as error:
-            handle_failure(logger, error)
+            handle_failure(logger, error, memory)
             raise
+        finish_memory(memory, {"concept_count": len(concepts)})
         logger.emit_run_completed({"concept_count": len(concepts)})
         logger.emit("cli", "finish", {"concept_count": len(concepts)})
         print(f"Saved video job artifacts to {args.output}")
@@ -281,8 +304,10 @@ def main() -> None:
         report_previous_failure(logger)
         logger.emit("cli", "start", {"args": args_to_dict(args)})
         logger.emit_run_started()
+        memory: AgentMemory | None = None
         try:
             record = load_campaign_record(args.campaign_record)
+            memory = start_memory(args, logger, campaign_id=record.id)
             stories = mock_stories(record.geo) if args.mock_news else load_stories(args.stories)
             stories = select_stories(stories, count=args.max_stories)
             if not stories:
@@ -294,13 +319,15 @@ def main() -> None:
                 output_dir=args.output,
                 max_videos=args.max_videos,
                 logger=logger,
+                memory=memory,
             )
             write_run_artifacts(args.output, record.geo, stories, concepts, logger=logger)
             logger.emit("campaign_staging", "input", {"campaign_id": record.id, "staging_root": str(args.staging)})
             variant_dirs = stage_campaign_variants(record, stories, concepts, args.staging)
         except Exception as error:
-            handle_failure(logger, error)
+            handle_failure(logger, error, memory)
             raise
+        finish_memory(memory, {"variant_count": len(variant_dirs), "staged_under": str(args.staging / record.id)})
         logger.emit_run_completed({"campaign_id": record.id, "variant_count": len(variant_dirs)})
         logger.emit("cli", "finish", {"campaign_id": record.id, "variant_count": len(variant_dirs)})
         print(f"Staged {len(variant_dirs)} variants under {args.staging / record.id}")
@@ -341,8 +368,53 @@ def args_to_dict(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
-def handle_failure(logger: PipelineLogger, error: Exception) -> None:
+def campaign_id_for(args: argparse.Namespace) -> str:
+    explicit = getattr(args, "campaign_id", None) or os.getenv("LH_CAMPAIGN_ID", "")
+    if explicit:
+        return explicit
+    campaign_path = getattr(args, "campaign", None)
+    if isinstance(campaign_path, Path):
+        return campaign_path.stem
+    return Path(args.output).name
+
+
+def start_memory(args: argparse.Namespace, logger: PipelineLogger, campaign_id: str | None = None) -> AgentMemory:
+    memory = create_memory(
+        campaign_id or campaign_id_for(args),
+        run_id=logger.run_id[:12],
+        continue_on_error=bool(getattr(args, "continue_on_error", False)),
+    )
+    logger.context["agent_memory"] = {"enabled": memory.enabled, "campaign_id": memory.campaign_id}
+    skipped = sorted(memory.completed_variants())
+    memory.emit(
+        "run_started",
+        {
+            "command": str(args.command),
+            "market": getattr(args, "market", None),
+            "output_dir": str(args.output),
+            "continue_on_error": memory.continue_on_error,
+            "previously_ready_variants": skipped,
+        },
+    )
+    if skipped:
+        print(f"Agent memory: {len(skipped)} variant(s) already reached bfl_ready for {memory.campaign_id}; they will be skipped.")
+    return memory
+
+
+def finish_memory(memory: AgentMemory | None, summary: dict[str, Any]) -> None:
+    if memory is None:
+        return
+    memory.finish(summary)
+    if memory.failed:
+        print(f"Run finished with {len(memory.errors)} recorded error(s); see the `error` events for {memory.campaign_id}.", file=sys.stderr)
+
+
+def handle_failure(logger: PipelineLogger, error: Exception, memory: AgentMemory | None = None) -> None:
     logger.emit_run_failed(error)
+    if memory is not None:
+        if not isinstance(error, PipelineHalt) and not memory.failed:
+            memory.error("pipeline", error)
+        memory.finish()
     print(
         f"Run failed: {type(error).__name__}: {error}\nSuggested fix: {suggest_fix_for_error(error)}",
         file=sys.stderr,

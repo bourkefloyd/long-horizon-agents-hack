@@ -171,7 +171,8 @@ def detect_host(token: str | None = None, *, verbose: bool = False) -> str | Non
                     print(f"{host}{probe.split('?')[0]} -> {exc}", file=sys.stderr)
                 continue
             if verbose:
-                print(f"{host}{probe.split('?')[0]} -> {status} {text[:120]!r}", file=sys.stderr)
+                # Status only: Tinybird echoes the token inside 403 bodies.
+                print(f"{host}{probe.split('?')[0]} -> {status}", file=sys.stderr)
             if status == 200:
                 return host
     return None
