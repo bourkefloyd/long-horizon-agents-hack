@@ -26,17 +26,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { adManifest, type AdManifestItem } from "@/content/ads";
+import { localAdManifest, type AdManifestItem } from "@/content/ads";
 import type { CampaignState, EventType, VariantCounts } from "@/lib/types";
 
-const AD_DURATION_MS = 10_000;
-const EARLY_SKIP_MS = 2_500;
-const dwellEvents: { delay: number; event: EventType }[] = [
-  { delay: 2_500, event: "q25" },
-  { delay: 5_000, event: "q50" },
-  { delay: 7_500, event: "q75" },
-  { delay: AD_DURATION_MS, event: "complete" },
+const ads = localAdManifest.filter((ad) => ad.targeting.active);
+const adStyles = [
+  { brand: "Sightglass Coffee", from: "#071b2b", via: "#31515a", to: "#d5b887" },
+  { brand: "Tartine Bakery", from: "#15354a", via: "#df8d55", to: "#f6d991" },
+  { brand: "Bi-Rite Creamery", from: "#59284f", via: "#df5b78", to: "#ffcf8b" },
+  { brand: "Dandelion Chocolate", from: "#21120d", via: "#75452d", to: "#d9ad74" },
+  { brand: "Boudin Bakery", from: "#26343f", via: "#6e8791", to: "#e6b968" },
 ];
+type AdStyle = (typeof adStyles)[number];
+
+function dwellEventsFor(ad: AdManifestItem) {
+  const durationMs = (ad.duration_s ?? 10) * 1_000;
+  return [
+    { delay: durationMs * 0.25, event: "q25" as const },
+    { delay: durationMs * 0.5, event: "q50" as const },
+    { delay: durationMs * 0.75, event: "q75" as const },
+    { delay: durationMs, event: "complete" as const },
+  ];
+}
 
 type SignalStatus = {
   kind: "sending" | "accepted" | "error";
@@ -65,8 +76,10 @@ export function AdDemoFeed() {
   const visibilityRatios = useRef(new Map<number, number>());
   const emittedSignals = useRef(new Set<string>());
   const activeSession = useRef<{
+    campaignId: string;
     variant: string;
     startedAt: number;
+    earlySkipMs: number;
   } | null>(null);
   const dwellTimers = useRef<number[]>([]);
 
@@ -99,8 +112,12 @@ export function AdDemoFeed() {
   }, [loadState]);
 
   const emitSignal = useCallback(
-    async (variant: string, eventType: EventType) => {
-      const signalKey = `${variant}:${eventType}`;
+    async (
+      campaignId: string,
+      variant: string,
+      eventType: EventType,
+    ) => {
+      const signalKey = `${campaignId}:${variant}:${eventType}`;
       if (emittedSignals.current.has(signalKey)) return;
       emittedSignals.current.add(signalKey);
       setSignalStatuses((current) => ({
@@ -116,7 +133,7 @@ export function AdDemoFeed() {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            campaign_id: "demo",
+            campaign_id: campaignId,
             variant_id: variant,
             event_type: eventType,
             timestamp: new Date().toISOString(),
@@ -179,30 +196,32 @@ export function AdDemoFeed() {
   }, [activeIndex]);
 
   useEffect(() => {
-    const ad = adManifest[activeIndex];
+    const ad = ads[activeIndex];
     const previous = activeSession.current;
-    if (previous && previous.variant !== ad.variant) {
+    if (previous && previous.variant !== ad.variant_id) {
       const elapsed = performance.now() - previous.startedAt;
-      if (elapsed < EARLY_SKIP_MS) {
-        void emitSignal(previous.variant, "skip");
+      if (elapsed < previous.earlySkipMs) {
+        void emitSignal(previous.campaignId, previous.variant, "skip");
       }
     }
 
     for (const timer of dwellTimers.current) window.clearTimeout(timer);
     dwellTimers.current = [];
     activeSession.current = {
-      variant: ad.variant,
+      campaignId: ad.campaign_id,
+      variant: ad.variant_id,
       startedAt: performance.now(),
+      earlySkipMs: (ad.duration_s ?? 10) * 250,
     };
-    void emitSignal(ad.variant, "impression");
+    void emitSignal(ad.campaign_id, ad.variant_id, "impression");
 
-    for (const threshold of dwellEvents) {
+    for (const threshold of dwellEventsFor(ad)) {
       const timer = window.setTimeout(() => {
         if (
-          activeSession.current?.variant === ad.variant &&
+          activeSession.current?.variant === ad.variant_id &&
           document.visibilityState === "visible"
         ) {
-          void emitSignal(ad.variant, threshold.event);
+          void emitSignal(ad.campaign_id, ad.variant_id, threshold.event);
         }
       }, threshold.delay);
       dwellTimers.current.push(timer);
@@ -215,7 +234,7 @@ export function AdDemoFeed() {
   }, [activeIndex, emitSignal]);
 
   const scrollTo = useCallback((index: number) => {
-    const bounded = Math.max(0, Math.min(adManifest.length - 1, index));
+    const bounded = Math.max(0, Math.min(ads.length - 1, index));
     itemRefs.current[bounded]?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -263,7 +282,7 @@ export function AdDemoFeed() {
           <div>
             <p className="text-xs font-semibold tracking-wide">AD LAB</p>
             <p className="text-[10px] text-white/55">
-              {activeIndex + 1} / {adManifest.length}
+              {activeIndex + 1} / {ads.length}
             </p>
           </div>
         </div>
@@ -286,40 +305,46 @@ export function AdDemoFeed() {
         className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain scroll-smooth"
         aria-label="Ad demo feed"
       >
-        {adManifest.map((ad, index) => (
-          <section
-            key={ad.id}
-            ref={(element) => {
-              itemRefs.current[index] = element;
-            }}
-            data-index={index}
-            aria-label={`${ad.brand} ad, ${index + 1} of ${adManifest.length}`}
-            className="relative grid min-h-svh snap-start place-items-center gap-5 px-4 pb-10 pt-24 lg:grid-cols-[auto_minmax(22rem,27rem)] lg:gap-8 lg:px-10 lg:pb-8 lg:pt-20"
-          >
-            <div
-              className="absolute inset-0 opacity-35"
-              style={{
-                background: `radial-gradient(circle at 30% 30%, ${ad.accent.via}, transparent 36%), linear-gradient(145deg, ${ad.accent.from}, #071311 65%)`,
+        {ads.map((ad, index) => {
+          const style = adStyles[index % adStyles.length];
+          return (
+            <section
+              key={ad.id}
+              ref={(element) => {
+                itemRefs.current[index] = element;
               }}
-              aria-hidden="true"
-            />
+              data-index={index}
+              aria-label={`${style.brand} ad, ${index + 1} of ${ads.length}`}
+              className="relative grid min-h-svh snap-start place-items-center gap-5 px-4 pb-10 pt-24 lg:grid-cols-[auto_minmax(22rem,27rem)] lg:gap-8 lg:px-10 lg:pb-8 lg:pt-20"
+            >
+              <div
+                className="absolute inset-0 opacity-35"
+                style={{
+                  background: `radial-gradient(circle at 30% 30%, ${style.via}, transparent 36%), linear-gradient(145deg, ${style.from}, #071311 65%)`,
+                }}
+                aria-hidden="true"
+              />
 
-            <ScriptAdFrame
-              ad={ad}
-              active={index === activeIndex}
-              onCta={() => void emitSignal(ad.variant, "cta_tap")}
-            />
+              <ScriptAdFrame
+                ad={ad}
+                active={index === activeIndex}
+                style={style}
+                onCta={() =>
+                  void emitSignal(ad.campaign_id, ad.variant_id, "cta_tap")
+                }
+              />
 
-            <StateCard
-              ad={ad}
-              campaign={campaign}
-              loading={stateLoading}
-              error={stateError}
-              signalStatus={signalStatuses[ad.variant]}
-              onRetry={loadState}
-            />
-          </section>
-        ))}
+              <StateCard
+                ad={ad}
+                campaign={campaign}
+                loading={stateLoading}
+                error={stateError}
+                signalStatus={signalStatuses[ad.variant_id]}
+                onRetry={loadState}
+              />
+            </section>
+          );
+        })}
       </div>
 
       <div className="pointer-events-none fixed bottom-4 right-4 z-30 hidden flex-col gap-2 lg:flex">
@@ -338,7 +363,7 @@ export function AdDemoFeed() {
           variant="outline"
           className="pointer-events-auto rounded-full border-white/15 bg-black/40 text-white backdrop-blur-xl hover:bg-white/15"
           onClick={() => scrollTo(activeIndex + 1)}
-          disabled={activeIndex === adManifest.length - 1}
+          disabled={activeIndex === ads.length - 1}
           aria-label="Next ad"
         >
           <ArrowDown />
@@ -351,17 +376,19 @@ export function AdDemoFeed() {
 function ScriptAdFrame({
   ad,
   active,
+  style,
   onCta,
 }: {
   ad: AdManifestItem;
   active: boolean;
+  style: AdStyle;
   onCta: () => void;
 }) {
   return (
     <article
       className="relative z-10 aspect-[9/16] h-[min(72svh,46rem)] max-w-[88vw] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50"
       style={{
-        background: `linear-gradient(165deg, ${ad.accent.from} 0%, ${ad.accent.via} 52%, ${ad.accent.to} 115%)`,
+        background: `linear-gradient(165deg, ${style.from} 0%, ${style.via} 52%, ${style.to} 115%)`,
       }}
     >
       <div
@@ -380,7 +407,7 @@ function ScriptAdFrame({
 
       <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5">
         <Badge className="border-white/15 bg-black/25 text-white backdrop-blur-lg">
-          {ad.brand}
+          {style.brand}
         </Badge>
         <span className="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-white/75 backdrop-blur-lg">
           SCRIPT PREVIEW
@@ -399,11 +426,11 @@ function ScriptAdFrame({
       <div className="absolute inset-x-0 bottom-0 p-5">
         <div className="mb-5 border-l-2 border-white/45 pl-3">
           <p className="line-clamp-2 text-sm leading-5 text-white/78">
-            {ad.script.payoff}
+            {ad.script ?? "Script preview"}
           </p>
         </div>
         <p className="mb-3 font-mono text-[10px] tracking-wide text-white/55">
-          {ad.variant}
+          {ad.variant_id}
         </p>
         <Button
           size="lg"
@@ -473,11 +500,11 @@ function StateCard({
     );
   }
 
-  const counts: VariantCounts = campaign?.counts[ad.variant] ?? {};
-  const hasFoldedState = campaign?.variants.includes(ad.variant) ?? false;
+  const counts: VariantCounts = campaign?.counts[ad.variant_id] ?? {};
+  const hasFoldedState = campaign?.variants.includes(ad.variant_id) ?? false;
   const latestDecision = campaign?.decisions.at(-1);
   const decision = latestDecision
-    ? latestDecision.winner_variant_id === ad.variant
+    ? latestDecision.winner_variant_id === ad.variant_id
       ? "Keep this variant"
       : `Keep ${latestDecision.winner_variant_id ?? "collecting data"}`
     : "No decision yet";
@@ -514,11 +541,13 @@ function StateCard({
               "Awaiting first fold"
             )}
           </Badge>
-          <span className="font-mono text-[10px] text-white/45">campaign/demo</span>
+          <span className="font-mono text-[10px] text-white/45">
+            campaign/{ad.campaign_id}
+          </span>
         </div>
         <CardTitle className="text-lg">Variant state</CardTitle>
         <CardDescription className="truncate font-mono text-xs text-white/55">
-          {ad.variant}
+          {ad.variant_id}
         </CardDescription>
       </CardHeader>
       <CardContent>

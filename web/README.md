@@ -17,7 +17,9 @@ requests through its own route handlers, avoiding browser CORS coupling.
 Open [`/feed`](http://localhost:3000/feed) for the vertical ad demo. The five
 examples are script-backed previews derived from `content/ads/scripts.json`;
 the source content describes generated videos but does not include the media
-files or stable hosted URLs.
+files or stable hosted URLs. `web/content/ads.ts` uses the shared CDN manifest
+field names and is the local fallback. Once `web/lib/ads.ts` lands, the feed
+should call `fetchAdManifest()` first and fall back to this local array.
 
 Each visible ad emits one impression per browser session. Script dwell is
 treated as a 10-second creative, with q25/q50/q75/complete signals at
