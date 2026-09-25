@@ -44,9 +44,9 @@ const adStyles = [
 ];
 type AdStyle = (typeof adStyles)[number];
 
-/** Vertical creative fills the viewport below the feed chrome. */
+/** Vertical creative fills the viewport below the feed chrome. A percentage height collapses here because the parent sizes to this frame. */
 const adViewportClass =
-  "relative z-10 aspect-[9/16] h-[min(calc(100svh-5.5rem),100%)] w-auto max-h-[calc(100svh-5.5rem)] max-w-[min(100%,calc((100svh-5.5rem)*9/16))] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50";
+  "relative z-10 aspect-[9/16] h-[calc(100svh-5.5rem)] w-auto max-w-full overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/50";
 
 const brandByPrefix: Record<string, AdStyle> = {
   sightglass: adStyles[0],
@@ -325,7 +325,9 @@ export function AdDemoFeed() {
     function onKeyDown(event: KeyboardEvent) {
       if (
         event.target instanceof HTMLElement &&
-        event.target.closest("button, a, input, textarea, select")
+        event.target.closest(
+          "button, a, input, textarea, select, aside",
+        )
       ) {
         return;
       }
@@ -364,8 +366,8 @@ export function AdDemoFeed() {
   const activeAd = ads[activeIndex];
 
   return (
-    <main className="grid h-svh grid-cols-1 bg-[#071311] text-white lg:grid-cols-[minmax(0,1fr)_min(26rem,34vw)]">
-      <div className="relative min-h-0 overflow-hidden">
+    <main className="grid h-svh grid-cols-1 grid-rows-[minmax(0,1fr)] overflow-hidden bg-[#071311] text-white lg:grid-cols-[minmax(0,1fr)_min(26rem,34vw)]">
+      <div className="relative h-full min-h-0 overflow-hidden">
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/15 bg-black/40 p-1.5 pr-4 shadow-xl backdrop-blur-xl">
           <Link
@@ -418,7 +420,7 @@ export function AdDemoFeed() {
       </header>
 
       <div
-        className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain scroll-smooth pt-[4.25rem]"
+        className="absolute inset-0 z-0 overflow-y-auto overscroll-y-contain scroll-pt-[4.25rem] pt-[4.25rem] scroll-smooth lg:snap-y lg:snap-mandatory"
         aria-label="Ad experience"
       >
         {ads.map((ad, index) => {
@@ -432,7 +434,7 @@ export function AdDemoFeed() {
               }}
               data-index={index}
               aria-label={`${style.brand} ad, ${index + 1} of ${ads.length}`}
-              className="relative flex min-h-[calc(100svh-4.25rem)] snap-start flex-col lg:min-h-[calc(100svh-4.25rem)]"
+              className="relative flex min-h-[calc(100svh-4.25rem)] flex-col lg:snap-start"
             >
               <div
                 className="pointer-events-none absolute inset-0 opacity-35"
@@ -464,7 +466,7 @@ export function AdDemoFeed() {
                   </div>
                 </div>
 
-                <div className="space-y-4 px-4 pb-8 lg:hidden">
+                <div className="shrink-0 space-y-4 px-4 pb-8 lg:hidden">
                   <StateCard
                     ad={ad}
                     campaign={campaign}
@@ -486,7 +488,7 @@ export function AdDemoFeed() {
         })}
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 right-4 z-30 hidden flex-col gap-2 lg:flex lg:right-[calc(min(26rem,34vw)+1rem)]">
+      <div className="pointer-events-none absolute top-1/2 right-4 z-30 hidden -translate-y-1/2 flex-col gap-2 lg:flex lg:right-[calc(min(26rem,34vw)+1rem)]">
         <Button
           size="icon"
           variant="outline"
@@ -511,7 +513,8 @@ export function AdDemoFeed() {
       </div>
 
       <aside
-        className="hidden min-h-0 flex-col gap-4 overflow-y-auto border-l border-white/10 bg-[#050b0a]/90 p-4 lg:flex"
+        tabIndex={0}
+        className="hidden h-full min-h-0 flex-col gap-4 overflow-y-auto overscroll-y-contain border-l border-white/10 bg-[#050b0a]/90 p-4 [&>*]:shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/70 lg:flex"
         aria-label="Ad state and generation"
       >
         <div>
