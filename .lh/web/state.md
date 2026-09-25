@@ -15,7 +15,8 @@ Mock adapters for ad platforms and video generation; real interfaces defined.
 
 ## Done
 
-- Long-horizon workflow, state contract, and this target's prompt exist (first run has not happened).
+- Long-horizon workflow, state contract, and this target's prompt exist.
+- workflow_dispatch reached the agent step (concurrency smoke test).
 
 ## Open
 
@@ -29,4 +30,4 @@ Mock adapters for ad platforms and video generation; real interfaces defined.
 
 ## Dropped
 
-- Nothing yet.
+- Done line "first run has not happened"; superseded by successful agent run.
