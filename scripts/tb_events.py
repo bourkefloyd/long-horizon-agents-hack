@@ -147,17 +147,33 @@ def summary(campaign_id: str) -> list[dict[str, Any]]:
     return _pipe("campaign_summary", {"campaign_id": campaign_id})
 
 
-def detect_host(token: str | None = None) -> str | None:
-    """Return the first region host that accepts the token, or None."""
+PROBES = (
+    "/v0/sql?" + urllib.parse.urlencode({"q": "SELECT 1 FORMAT JSON"}),
+    "/v0/datasources",
+    "/v0/pipes",
+    "/v0/tokens",
+)
+
+
+def detect_host(token: str | None = None, *, verbose: bool = False) -> str | None:
+    """Return the first region host where any read probe accepts the token, or None.
+
+    Tokens carry different scopes, so several endpoints are tried per host. Only
+    status codes and short error bodies are printed; never the token.
+    """
     token = token or _token()
-    query = urllib.parse.urlencode({"q": "SELECT 1 FORMAT JSON"})
     for host in REGION_HOSTS:
-        try:
-            status, _ = _request("GET", f"{host}/v0/sql?{query}", token=token, timeout=10)
-        except (OSError, urllib.error.URLError):
-            continue
-        if status == 200:
-            return host
+        for probe in PROBES:
+            try:
+                status, text = _request("GET", f"{host}{probe}", token=token, timeout=10)
+            except (OSError, urllib.error.URLError) as exc:
+                if verbose:
+                    print(f"{host}{probe.split('?')[0]} -> {exc}", file=sys.stderr)
+                continue
+            if verbose:
+                print(f"{host}{probe.split('?')[0]} -> {status} {text[:120]!r}", file=sys.stderr)
+            if status == 200:
+                return host
     return None
 
 
@@ -194,7 +210,7 @@ def _cli(argv: list[str]) -> int:
         return 0
     command, args = argv[0], argv[1:]
     if command == "detect-host":
-        host = detect_host()
+        host = detect_host(verbose="--verbose" in args)
         if host is None:
             print("no Tinybird region accepted TINYBIRD_API_KEY", file=sys.stderr)
             return 1
