@@ -13,8 +13,8 @@ on:
       issue_number:
         description: "Issue to work on (0 = manual run, no issue comment)"
         required: false
-        type: number
-        default: 0
+        type: string
+        default: "0"
       instruction:
         description: "One-shot instruction for this run"
         required: false
