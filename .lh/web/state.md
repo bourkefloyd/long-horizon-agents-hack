@@ -2,7 +2,8 @@
 
 ## Goal
 
-Maintain a responsive Next.js campaign console where an operator can inspect bounded variant counts, A/A noise, decisions, dropped events, and the next-day creative brief, with reliable API states and accessible controls.
+Maintain a responsive Next.js campaign console where an operator can inspect bounded variant counts, A/A noise, decisions,
+dropped events, and the next-day creative brief, with reliable API states and accessible controls.
 
 ## Current plan
 
