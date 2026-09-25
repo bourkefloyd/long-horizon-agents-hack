@@ -2,8 +2,8 @@
 
 ## Goal
 
-Maintain a responsive Next.js campaign console where an operator can inspect bounded variant counts, A/A noise, decisions,
-dropped events, and the next-day creative brief, with reliable API states and accessible controls.
+Maintain a responsive Next.js campaign console titled LH Marketing where an operator can inspect bounded variant counts,
+A/A noise, decisions, dropped events, and the next-day creative brief, with reliable API states and accessible controls.
 
 ## Current plan
 
@@ -13,10 +13,10 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 
 ## Done
 
+- Document title is LH Marketing; the feed route uses the root title template so its tab reads Ad Demo Feed · LH Marketing.
 - `web/` contains the Next.js App Router console, typed campaign contract, shadcn/ui primitives, API proxy routes, and Cloud Run container.
 - Deterministic web checks install from lockfile, lint, and build.
-- Long-horizon workflow, state contract, and this target's prompt exist.
-- workflow_dispatch reached the agent step (concurrency smoke test).
+- Long-horizon workflow, state contract, and this target's prompt exist; workflow_dispatch reached the agent step.
 
 ## Open
 
@@ -24,11 +24,12 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 
 ## Decisions
 
+- Issue #39 sets the browser title to LH Marketing; a title template keeps child routes branded without a second product name.
 - Mock ad platform and video generation behind adapters; the loop must run with zero external calls.
 - A/A results are always shown next to A/B so the operator can see the noise floor.
 - Browser actions use same-origin Next.js route handlers, which proxy to the configured campaign service.
 
 ## Dropped
 
-- The scaffold decision and stub-check plan are complete and no longer need tracking.
-- Done line "first run has not happened"; superseded by successful agent run.
+- Nimble and campaign-gen run logs do not change the web console and are safe to forget here.
+- The scaffold decision, stub-check plan, and "first run has not happened" note are complete.

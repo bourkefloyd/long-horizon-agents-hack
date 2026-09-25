@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { AdDemoFeed } from "@/components/ad-demo-feed";
 
 export const metadata: Metadata = {
-  title: "Ad Demo Feed · Long Horizon",
+  title: "Ad Demo Feed",
   description:
     "Swipe through vertical ad concepts while campaign signals become compact state.",
 };
