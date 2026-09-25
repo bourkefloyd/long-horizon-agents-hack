@@ -4,13 +4,23 @@
     python3 scripts/generate-content.py --dry-run                     # plan and cost estimate only
     python3 scripts/generate-content.py --brief "Tartine morning buns for Dolores Park weekends"
     python3 scripts/generate-content.py --variants 4 --videos 2 --max-usd 5
+    python3 scripts/generate-content.py --campaign tartine-weekend-buns --from-service   # website campaign
+    python3 scripts/generate-content.py --campaign-file campaign.json                    # record or issue body
 
 Reuses Aayush's modules in content/ads (nimble.py for discovery, scripts.json for brand facts,
 personas and authored stories, render.py for the BFL call and result parsing) and Thomas's
-viral-local-ad-generator (brand-safety scoring, story ranking, brand guard, built-in stories).
+viral-local-ad-generator (outlet discovery, brand-safety scoring, story ranking, story
+sanitizer, brand guard, built-in stories, campaign record contract).
 
-Discovery order: Nimble (NIMBLE_API_KEY) -> live rows in content/ads/facts.json -> Thomas's
-built-in stories. Media: one 9:16 poster per variant via /v1/flux-2-pro, a 5 s 9:16 hd
+Campaign records: the website's campaigns (service GET /campaigns/<id>, or the ```json block in a
+`Campaign: <name>` task issue) carry id, name, brief, geo, audience and dims. --from-service or
+--campaign-file loads one; brief, market and audience then come from the record and the campaign
+id is the record id, so the feed can filter by it (/feed?campaign=<id>).
+
+Discovery order: Nimble local outlets -> stories restricted to those outlets -> Nimble open news
+search -> live rows in content/ads/facts.json -> Thomas's built-in stories. Every story is passed
+through the sanitizer so scripts and run.json carry an ad-safe frame instead of publisher, private
+or third-party names. Media: one 9:16 poster per variant via /v1/flux-2-pro, a 5 s 9:16 hd
 FLUX 3 video for the top --videos variants via /v1/flux-3-video. Everything is estimated
 against BFL's published prices before anything is submitted; over --max-usd aborts.
 
@@ -33,6 +43,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -46,13 +57,20 @@ import render  # noqa: E402  (content/ads/render.py)
 from viral_local_ad_generator.brand_guard import find_famous_brand_terms  # noqa: E402
 from viral_local_ad_generator.models import NewsStory  # noqa: E402
 from viral_local_ad_generator.nimble_client import (  # noqa: E402
+    NimbleClient,
     is_brand_safe,
     mock_stories,
     normalize_nimble_results,
 )
 from viral_local_ad_generator.pipeline import select_stories  # noqa: E402
+from viral_local_ad_generator.sanitizer import sanitize_story_for_ad  # noqa: E402
+from viral_local_ad_generator.staging import CampaignRecord, load_campaign_record  # noqa: E402
 
 API_BASE = os.environ.get("BFL_API_BASE", "https://api.bfl.ai").rstrip("/")
+NIMBLE_BASE = os.environ.get("NIMBLE_BASE_URL", "https://sdk.nimbleway.com").rstrip("/")
+CAMPAIGN_SERVICE_URL = os.environ.get(
+    "CAMPAIGN_SERVICE_URL", "https://lh-campaign-service-row663omlq-uc.a.run.app"
+).rstrip("/")
 VIDEO_ENDPOINT = f"{API_BASE}/v1/flux-3-video"
 IMAGE_ENDPOINT = f"{API_BASE}/v1/flux-2-pro"
 CREDITS_ENDPOINT = f"{API_BASE}/v1/credits"
@@ -146,10 +164,32 @@ def story_from_fact(row):
                      brand_safe=is_brand_safe(title, snippet, row.get("source", "")))
 
 
+def discover_via_outlets(market, count, max_outlets=8):
+    """Thomas's staged flow: find the market's own outlets, then only take stories they published.
+    Returns (stories, provenance) or (None, reason)."""
+    client = NimbleClient(os.environ["NIMBLE_API_KEY"], NIMBLE_BASE)
+    outlets = client.search_local_news_outlets(market, limit=max_outlets)
+    if not outlets:
+        return None, "no local outlets found"
+    stories = client.search_recent_local_news(market, limit=12, outlets=outlets)
+    picked = select_stories(stories, count)
+    if not picked:
+        return None, f"{len(outlets)} outlets, {len(stories)} outlet stories, none brand-safe"
+    return picked, {"via": "nimble-outlets", "outlets": [{"name": o.name, "domain": o.domain, "url": o.url} for o in outlets],
+                    "returned": len(stories), "brand_safe": sum(s.brand_safe for s in stories)}
+
+
 def discover(market, count):
     """Returns (stories, provenance). Never raises: every layer falls through to the next."""
     query = f"{market} viral local news this week"
     if os.environ.get("NIMBLE_API_KEY"):
+        try:
+            picked, prov = discover_via_outlets(market, count)
+            if picked:
+                return picked, prov
+            log(f"discovery: outlet-restricted search gave nothing ({prov}); trying open news search")
+        except Exception as e:  # network, auth, shape: the open search below still works
+            log(f"discovery: outlet discovery failed ({e}); trying open news search")
         try:
             res = nimble.search(query, "news", 8, "week")
             stories = normalize_nimble_results(res)
@@ -182,6 +222,38 @@ def short_topic(story, limit=60):
     return t if len(t) <= limit else t[:limit].rsplit(" ", 1)[0] + "…"
 
 
+def sanitized(market, story):
+    """Ad-safe frame and reference for a story: no publisher, private-person or third-party brand names."""
+    s = sanitize_story_for_ad(market, story)
+    return {"frame": s.sanitized_frame, "reference": s.sanitized_reference, "notes": s.sanitization_notes}
+
+
+# ---------------------------------------------------------------- campaign records
+
+def fetch_campaign_record(campaign_id):
+    """Read a website campaign from the campaign service and validate it against the generator contract."""
+    url = f"{CAMPAIGN_SERVICE_URL}/campaigns/{urllib.parse.quote(campaign_id, safe='')}"
+    try:
+        with urllib.request.urlopen(url, timeout=30) as r:
+            payload = json.load(r)
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f"campaign service returned HTTP {e.code} for {campaign_id!r}") from e
+    except urllib.error.URLError as e:
+        raise SystemExit(f"campaign service unreachable at {url}: {e.reason}") from e
+    return CampaignRecord.from_dict(payload)
+
+
+def apply_campaign_record(a, record):
+    """A campaign record wins over the flag defaults so the feed can filter by the website's id."""
+    a.campaign = record.id
+    a.brief = record.brief
+    a.market = record.geo
+    a.campaign_name = record.name or record.id
+    a.campaign_audience = record.audience.strip() or None
+    a.brief_ref = record.issue_url
+    log(f"campaign record: {record.id} ({a.campaign_name}) market={record.geo!r} audience={record.audience!r}")
+
+
 # ---------------------------------------------------------------- variants
 
 def pick_product(brief, data):
@@ -196,7 +268,7 @@ def slug(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
 
-def build_variants(brief, data, n, stories):
+def build_variants(brief, data, n, stories, market=MARKET):
     product_key = pick_product(brief, data)
     product = data["products"][product_key]
     authored = {v["persona"]: v for v in data["variants"] if v["product"] == product_key and "lines" in v}
@@ -218,6 +290,7 @@ def build_variants(brief, data, n, stories):
             "persona": persona, "hook": hook, "cta": CTA_FOR.get(product_key, f"Visit {product['name']}"),
             "beats": (tension, turn, payoff), "authored_by": authored_by,
             "story": story.to_dict() if story else None,
+            "story_safe": sanitized(market, story) if story else None,
             "audience": PERSONA_LABEL.get(persona_key, persona_key.replace("_", " ")),
         })
     return product_key, out
@@ -249,11 +322,19 @@ def poster_prompt(v):
 def script_text(v):
     p, per = v["product"], v["persona"]
     tension, turn, payoff = v["beats"]
-    s = v["story"]
-    local = (f"Local moment: {s['title']} ({s['source'] or 'local news'}; {s['url']})" if s
-             else "Local moment: none attached")
+    s, safe = v["story"], v.get("story_safe")
+    # The sanitized reference is what sits next to the brand; the URL stays for provenance only.
+    if s and safe:
+        local = f"Local moment: {safe['reference']} (source: {s['url']})"
+    elif s:
+        local = f"Local moment: {s['title']} ({s['source'] or 'local news'}; {s['url']})"
+    else:
+        local = "Local moment: none attached"
+    header = [f"{p['name']} x {v['audience']} - {VIDEO_SECONDS}-second vertical ad"]
+    if v.get("campaign_name"):
+        header.append(f"Campaign: {v['campaign_name']} ({v['campaign_id']})")
     return "\n".join([
-        f"{p['name']} x {v['audience']} - {VIDEO_SECONDS}-second vertical ad",
+        *header,
         f"Brief: {v['brief']}",
         local,
         "",
@@ -404,6 +485,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--brief", default="Sightglass Coffee pour-over for the people who make San Francisco run before 8 AM")
     ap.add_argument("--campaign", default=None, help="campaign id (default local-news-YYYYMMDD)")
+    ap.add_argument("--from-service", action="store_true",
+                    help="load brief, market and audience for --campaign from the campaign service ($CAMPAIGN_SERVICE_URL)")
+    ap.add_argument("--campaign-file", type=Path, default=None,
+                    help="campaign record JSON, or a task-issue body with a ```json block; overrides --brief/--campaign/--market")
     ap.add_argument("--variants", type=int, default=4)
     ap.add_argument("--videos", type=int, default=2, help="how many of the top variants get a FLUX 3 video")
     ap.add_argument("--max-usd", type=float, default=5.0)
@@ -412,6 +497,22 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="discover, write the plan, estimate cost; call nothing paid")
     ap.add_argument("--timeout-minutes", type=float, default=40)
     a = ap.parse_args()
+    a.campaign_name, a.campaign_audience, a.brief_ref = None, None, None
+
+    if a.campaign_file and a.from_service:
+        sys.exit("use either --campaign-file or --from-service, not both")
+    if a.campaign_file:
+        try:
+            apply_campaign_record(a, load_campaign_record(a.campaign_file))
+        except (ValueError, OSError) as e:
+            sys.exit(f"--campaign-file: {e}")
+    elif a.from_service:
+        if not a.campaign:
+            sys.exit("--from-service needs --campaign <id>")
+        try:
+            apply_campaign_record(a, fetch_campaign_record(a.campaign))
+        except ValueError as e:
+            sys.exit(f"campaign service record is not usable: {e}")
 
     today = dt.datetime.now(dt.timezone.utc)
     campaign = a.campaign or f"local-news-{today:%Y%m%d}"
@@ -423,10 +524,15 @@ def main():
     data = json.loads((ADS / "scripts.json").read_text())
     stories, provenance = discover(a.market, a.variants)
     log(f"discovery via {provenance['via']}: " + " | ".join(short_topic(s) for s in stories))
+    for s in stories:
+        safe = sanitized(a.market, s)
+        log(f"  sanitized: {safe['reference']} [{', '.join(safe['notes'])}]")
 
-    product_key, variants = build_variants(a.brief, data, a.variants, stories)
+    product_key, variants = build_variants(a.brief, data, a.variants, stories, a.market)
     for v in variants:
         v["brief"] = a.brief
+        v["campaign_id"] = campaign
+        v["campaign_name"] = a.campaign_name
         v["prompts"] = {"video": video_prompt(v), "poster": poster_prompt(v)}
         blocked = set()
         for text in (v["hook"], v["cta"], v["prompts"]["video"], v["prompts"]["poster"]):
@@ -447,14 +553,18 @@ def main():
 
     campaign_dir = a.staging / campaign
     campaign_dir.mkdir(parents=True, exist_ok=True)
-    run = {"campaign_id": campaign, "brief": a.brief, "market": a.market, "generated_at": today.isoformat(timespec="seconds"),
+    run = {"campaign_id": campaign, "campaign_name": a.campaign_name, "brief": a.brief, "market": a.market,
+           "audience": a.campaign_audience, "generated_at": today.isoformat(timespec="seconds"),
            "discovery": provenance, "stories": [s.to_dict() for s in stories],
+           "sanitized_stories": [sanitized(a.market, s) for s in stories],
            "estimate_usd": {"images": img_usd, "videos": vid_usd, "total": est, "cap": a.max_usd},
            "variants": [], "liquid_qa": None}
 
     if a.dry_run:
         for v in variants:
-            run["variants"].append({k: v[k] for k in ("variant_id", "hook", "cta", "audience", "authored_by", "story", "prompts")})
+            run["variants"].append({k: v[k] for k in ("variant_id", "hook", "cta", "audience", "authored_by", "story",
+                                                      "story_safe", "prompts")})
+            run["variants"][-1]["script"] = script_text(v)
         (campaign_dir / "run.json").write_text(json.dumps(run, indent=1, ensure_ascii=False) + "\n")
         log(f"dry run: wrote {campaign_dir / 'run.json'}; nothing submitted")
         return
@@ -555,6 +665,8 @@ def main():
         (vdir / "script.txt").write_text(script_text(v) + "\n")
         text_verdict = (qa.get(v["variant_id"], {}).get("text") or {})
         active = text_verdict.get("ok", True) is not False
+        # Persona label first, then the campaign's own audience line so the feed shows both.
+        audience = [v["audience"]] + ([a.campaign_audience] if a.campaign_audience else [])
         meta = {
             "id": f"{campaign}-{slug(v['variant_id'])}",
             "hook": v["hook"], "cta": v["cta"],
@@ -562,9 +674,9 @@ def main():
             "media_file": "creative.mp4" if has_video else "poster.jpg",
             "script_file": "script.txt",
             "aspect": "9:16",
-            "targeting": {"audience": [v["audience"]], "geo": ["US"], "weight": 2 if has_video else 1, "active": active},
+            "targeting": {"audience": audience, "geo": ["US"], "weight": 2 if has_video else 1, "active": active},
             "source": {"agent": "scripts/generate-content.py", "generated_at": today.isoformat(timespec="seconds").replace("+00:00", "Z"),
-                       "brief_ref": v["story"]["url"] if v["story"] and v["story"].get("url") else a.brief},
+                       "brief_ref": a.brief_ref or (v["story"]["url"] if v["story"] and v["story"].get("url") else a.brief)},
         }
         if has_poster:
             meta["poster_file"] = "poster.jpg"
@@ -574,7 +686,8 @@ def main():
         published += 1
         run["variants"].append({"variant_id": v["variant_id"], "staged": True, "id": meta["id"], "media_type": meta["media_type"],
                                 "hook": v["hook"], "cta": v["cta"], "audience": v["audience"], "authored_by": v["authored_by"],
-                                "active": active, "story": v["story"], "prompts": v["prompts"], "render": r})
+                                "active": active, "story": v["story"], "story_safe": v.get("story_safe"),
+                                "prompts": v["prompts"], "render": r})
 
     after = credits(key)
     settled = sum(float(e.get("settled_credits") or e.get("quoted_credits") or 0) for r in results.values() for e in r.values())
