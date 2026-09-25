@@ -1,0 +1,6 @@
+{
+  "include": [
+    "tinybird/**/*.datasource",
+    "tinybird/**/*.pipe"
+  ]
+}

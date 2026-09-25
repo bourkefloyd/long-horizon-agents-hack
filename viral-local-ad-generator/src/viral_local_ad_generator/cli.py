@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
+import sys
+from typing import Any
 
 from .bfl_client import BFLClient
-from .config import load_settings
+from .config import Settings, load_settings
+from .event_logger import PipelineLogger, suggest_fix_for_error
 from .nimble_client import NimbleClient, mock_stories
 from .pipeline import (
     discover_outlets,
@@ -129,27 +133,39 @@ def main() -> None:
             parser.error("Use either --dry-run or --generate, not both.")
         if not args.dry_run and not args.generate:
             parser.error("Choose --dry-run to plan or --generate to submit BFL jobs.")
-        campaign_script = args.campaign.read_text(encoding="utf-8")
-        result = run_pipeline(
-            campaign_script=campaign_script,
-            market=args.market,
-            output_dir=args.output,
-            nimble_client=nimble_client,
-            bfl_client=bfl_client,
-            use_mock_news=args.mock_news,
-            dry_run=args.dry_run,
-            generate=args.generate,
-            poll=args.poll,
-            download_media=args.download_media,
-            max_stories=args.max_stories,
-            max_outlets=args.max_outlets,
-            max_videos=args.max_videos,
-            story_title=args.story_title,
-            story_url=args.story_url,
-            story_source=args.story_source,
-            story_published_at=args.story_published_at,
-            story_snippet=args.story_snippet,
-        )
+        logger = create_logger(args.output, settings, args)
+        attach_logger(logger, nimble_client, bfl_client)
+        report_previous_failure(logger)
+        logger.emit("cli", "start", {"args": args_to_dict(args)})
+        logger.emit_run_started()
+        try:
+            campaign_script = args.campaign.read_text(encoding="utf-8")
+            result = run_pipeline(
+                campaign_script=campaign_script,
+                market=args.market,
+                output_dir=args.output,
+                nimble_client=nimble_client,
+                bfl_client=bfl_client,
+                use_mock_news=args.mock_news,
+                dry_run=args.dry_run,
+                generate=args.generate,
+                poll=args.poll,
+                download_media=args.download_media,
+                max_stories=args.max_stories,
+                max_outlets=args.max_outlets,
+                max_videos=args.max_videos,
+                story_title=args.story_title,
+                story_url=args.story_url,
+                story_source=args.story_source,
+                story_published_at=args.story_published_at,
+                story_snippet=args.story_snippet,
+                logger=logger,
+            )
+        except Exception as error:
+            handle_failure(logger, error)
+            raise
+        logger.emit_run_completed(result)
+        logger.emit("cli", "finish", {"result": result})
         print(
             f"Created {result['concept_count']} ad concepts from {result['story_count']} stories. "
             f"Artifacts saved to {args.output}"
@@ -157,76 +173,288 @@ def main() -> None:
         return
 
     if args.command == "discover-outlets":
-        outlets = discover_outlets(
-            market=args.market,
-            output_dir=args.output,
-            nimble_client=nimble_client,
-            max_outlets=args.max_outlets,
-        )
+        logger = create_logger(args.output, settings, args)
+        attach_logger(logger, nimble_client, bfl_client)
+        report_previous_failure(logger)
+        logger.emit("cli", "start", {"args": args_to_dict(args)})
+        logger.emit_run_started()
+        try:
+            outlets = discover_outlets(
+                market=args.market,
+                output_dir=args.output,
+                nimble_client=nimble_client,
+                max_outlets=args.max_outlets,
+                logger=logger,
+            )
+        except Exception as error:
+            handle_failure(logger, error)
+            raise
+        logger.emit_run_completed({"outlet_count": len(outlets)})
+        logger.emit("cli", "finish", {"outlet_count": len(outlets)})
         print(f"Saved {len(outlets)} outlets to {args.output / 'outlets.json'}")
         return
 
     if args.command == "discover-news":
-        outlets = load_outlets(args.outlets) if args.outlets else None
-        stories = discover_stories(
-            market=args.market,
-            output_dir=args.output,
-            nimble_client=nimble_client,
-            use_mock_news=args.mock_news,
-            max_stories=args.max_stories,
-            max_outlets=args.max_outlets,
-            outlets=outlets,
-            story_title=args.story_title,
-            story_url=args.story_url,
-            story_source=args.story_source,
-            story_published_at=args.story_published_at,
-            story_snippet=args.story_snippet,
-        )
+        logger = create_logger(args.output, settings, args)
+        attach_logger(logger, nimble_client, bfl_client)
+        report_previous_failure(logger)
+        logger.emit("cli", "start", {"args": args_to_dict(args)})
+        logger.emit_run_started()
+        try:
+            outlets = load_outlets(args.outlets) if args.outlets else None
+            stories = discover_stories(
+                market=args.market,
+                output_dir=args.output,
+                nimble_client=nimble_client,
+                use_mock_news=args.mock_news,
+                max_stories=args.max_stories,
+                max_outlets=args.max_outlets,
+                outlets=outlets,
+                story_title=args.story_title,
+                story_url=args.story_url,
+                story_source=args.story_source,
+                story_published_at=args.story_published_at,
+                story_snippet=args.story_snippet,
+                logger=logger,
+            )
+        except Exception as error:
+            handle_failure(logger, error)
+            raise
+        logger.emit_run_completed({"story_count": len(stories)})
+        logger.emit("cli", "finish", {"story_count": len(stories)})
         print(f"Saved {len(stories)} stories to {args.output / 'stories.json'}")
         return
 
     if args.command == "generate-ad":
-        stories = load_stories(args.stories)
-        campaign_script = args.campaign.read_text(encoding="utf-8")
-        concepts = generate_ads_from_stories(
-            campaign_script=campaign_script,
-            market=args.market,
-            stories=stories,
-            output_dir=args.output,
-            max_videos=args.max_videos,
-        )
-        write_run_artifacts(args.output, args.market, stories, concepts)
+        logger = create_logger(args.output, settings, args)
+        attach_logger(logger, nimble_client, bfl_client)
+        report_previous_failure(logger)
+        logger.emit("cli", "start", {"args": args_to_dict(args)})
+        logger.emit_run_started()
+        try:
+            stories = load_stories(args.stories)
+            campaign_script = args.campaign.read_text(encoding="utf-8")
+            concepts = generate_ads_from_stories(
+                campaign_script=campaign_script,
+                market=args.market,
+                stories=stories,
+                output_dir=args.output,
+                max_videos=args.max_videos,
+                logger=logger,
+            )
+            result = write_run_artifacts(args.output, args.market, stories, concepts, logger=logger)
+        except Exception as error:
+            handle_failure(logger, error)
+            raise
+        logger.emit_run_completed(result)
+        logger.emit("cli", "finish", {"result": result})
         print(f"Saved {len(concepts)} ad concepts to {args.output / 'concepts.json'}")
         return
 
     if args.command == "generate-video":
-        concepts = load_concepts(args.concepts)
-        generate_videos(
-            concepts=concepts,
-            output_dir=args.output,
-            bfl_client=bfl_client,
-            poll=args.poll,
-            download_media=args.download_media,
-        )
+        logger = create_logger(args.output, settings, args)
+        attach_logger(logger, nimble_client, bfl_client)
+        report_previous_failure(logger)
+        logger.emit("cli", "start", {"args": args_to_dict(args)})
+        logger.emit_run_started()
+        try:
+            concepts = load_concepts(args.concepts)
+            generate_videos(
+                concepts=concepts,
+                output_dir=args.output,
+                bfl_client=bfl_client,
+                poll=args.poll,
+                download_media=args.download_media,
+                logger=logger,
+            )
+        except Exception as error:
+            handle_failure(logger, error)
+            raise
+        logger.emit_run_completed({"concept_count": len(concepts)})
+        logger.emit("cli", "finish", {"concept_count": len(concepts)})
         print(f"Saved video job artifacts to {args.output}")
         return
 
     if args.command == "stage-cdn":
-        record = load_campaign_record(args.campaign_record)
-        stories = mock_stories(record.geo) if args.mock_news else load_stories(args.stories)
-        stories = select_stories(stories, count=args.max_stories)
-        if not stories:
-            parser.error("No brand-safe stories available to stage.")
-        concepts = generate_ads_from_stories(
-            campaign_script=record.brief,
-            market=record.geo,
-            stories=stories,
-            output_dir=args.output,
-            max_videos=args.max_videos,
-        )
-        write_run_artifacts(args.output, record.geo, stories, concepts)
-        variant_dirs = stage_campaign_variants(record, stories, concepts, args.staging)
+        logger = create_logger(args.output, settings, args)
+        attach_logger(logger, nimble_client, bfl_client)
+        report_previous_failure(logger)
+        logger.emit("cli", "start", {"args": args_to_dict(args)})
+        logger.emit_run_started()
+        try:
+            record = load_campaign_record(args.campaign_record)
+            stories = mock_stories(record.geo) if args.mock_news else load_stories(args.stories)
+            stories = select_stories(stories, count=args.max_stories)
+            if not stories:
+                raise ValueError("No brand-safe stories available to stage.")
+            concepts = generate_ads_from_stories(
+                campaign_script=record.brief,
+                market=record.geo,
+                stories=stories,
+                output_dir=args.output,
+                max_videos=args.max_videos,
+                logger=logger,
+            )
+            write_run_artifacts(args.output, record.geo, stories, concepts, logger=logger)
+            logger.emit("campaign_staging", "input", {"campaign_id": record.id, "staging_root": str(args.staging)})
+            variant_dirs = stage_campaign_variants(record, stories, concepts, args.staging)
+        except Exception as error:
+            handle_failure(logger, error)
+            raise
+        logger.emit_run_completed({"campaign_id": record.id, "variant_count": len(variant_dirs)})
+        logger.emit("cli", "finish", {"campaign_id": record.id, "variant_count": len(variant_dirs)})
         print(f"Staged {len(variant_dirs)} variants under {args.staging / record.id}")
+
+def create_logger(output_dir: Path, settings: Settings, args: argparse.Namespace) -> PipelineLogger:
+    return PipelineLogger(
+        output_dir=output_dir,
+        command=str(args.command),
+        tinybird_token=settings.tinybird_token,
+        tinybird_base_url=settings.tinybird_base_url,
+        tinybird_datasource=settings.tinybird_datasource,
+        context={
+            "args": args_to_dict(args),
+            "tinybird_enabled": bool(settings.tinybird_token),
+            "tinybird_base_url": settings.tinybird_base_url,
+            "tinybird_datasource": settings.tinybird_datasource,
+            "api_key_presence": {
+                "nimble": bool(settings.nimble_api_key),
+                "bfl": bool(settings.bfl_api_key),
+                "tinybird": bool(settings.tinybird_token),
+            },
+        },
+    )
+
+
+def attach_logger(logger: PipelineLogger, nimble_client: NimbleClient, bfl_client: BFLClient) -> None:
+    nimble_client.logger = logger
+    bfl_client.logger = logger
+
+
+def args_to_dict(args: argparse.Namespace) -> dict[str, Any]:
+    payload: dict[str, Any] = {}
+    for key, value in vars(args).items():
+        if isinstance(value, Path):
+            payload[key] = str(value)
+        else:
+            payload[key] = value
+    return payload
+
+
+def handle_failure(logger: PipelineLogger, error: Exception) -> None:
+    logger.emit_run_failed(error)
+    print(
+        f"Run failed: {type(error).__name__}: {error}\nSuggested fix: {suggest_fix_for_error(error)}",
+        file=sys.stderr,
+    )
+
+
+def report_previous_failure(logger: PipelineLogger) -> None:
+    previous = find_previous_run_status(Path("runs"))
+    if not previous or not previous["failed"]:
+        return
+    logger.emit(
+        "preflight.previous_run",
+        "failure_detected",
+        previous,
+        status="warning",
+    )
+    print(
+        "Previous ad-generator run did not complete cleanly.\n"
+        f"Previous run: {previous['log_path']}\n"
+        f"Reason: {previous['reason']}\n"
+        f"Suggested fix: {previous['suggested_fix']}",
+        file=sys.stderr,
+    )
+
+
+def find_previous_run_status(runs_dir: Path) -> dict[str, Any] | None:
+    if not runs_dir.exists():
+        return None
+    candidates = [
+        path
+        for path in runs_dir.glob("*/logs/ad_gen_events.ndjson")
+        if path.exists()
+    ]
+    if not candidates:
+        return None
+    latest = max(candidates, key=lambda path: path.stat().st_mtime)
+    return analyze_run_log(latest)
+
+
+def analyze_run_log(path: Path) -> dict[str, Any]:
+    events = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            events.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    if not events:
+        return {
+            "failed": True,
+            "log_path": str(path),
+            "run_id": "",
+            "reason": "Log exists but contains no readable events.",
+            "suggested_fix": "Open the log file and verify the run process had permission to write complete NDJSON events.",
+        }
+    run_id = str(events[-1].get("run_id", ""))
+    if run_id:
+        events = [event for event in events if str(event.get("run_id", "")) == run_id]
+    failed_events = [event for event in events if event.get("status") == "error" or event.get("event_type") == "failed"]
+    if failed_events:
+        event = failed_events[-1]
+        payload = parse_payload(event)
+        error_text = payload.get("error") or payload.get("detail") or payload.get("error_type") or "Logged error event."
+        return {
+            "failed": True,
+            "log_path": str(path),
+            "run_id": run_id,
+            "reason": f"{event.get('stage')}.{event.get('event_type')}: {error_text}",
+            "suggested_fix": payload.get("suggested_fix") or suggest_fix_for_error(str(error_text)),
+            "failed_stage": event.get("stage"),
+        }
+    started = any(event.get("stage") == "run_status" and event.get("event_type") == "started" for event in events)
+    completed = any(event.get("stage") == "run_status" and event.get("event_type") == "completed" for event in events)
+    cli_finished = any(event.get("stage") == "cli" and event.get("event_type") == "finish" for event in events)
+    if started and (not completed or not cli_finished):
+        last_event = events[-1]
+        return {
+            "failed": True,
+            "log_path": str(path),
+            "run_id": run_id,
+            "reason": f"Run started but did not emit completion markers. Last event was {last_event.get('stage')}.{last_event.get('event_type')}.",
+            "suggested_fix": "Inspect the last event in the log. If it stopped during bfl.poll, poll the saved BFL polling_url or rerun generate-video; otherwise rerun with the same output folder and check stderr.",
+            "last_stage": last_event.get("stage"),
+            "last_event_type": last_event.get("event_type"),
+        }
+    if not started and not cli_finished:
+        last_event = events[-1]
+        return {
+            "failed": True,
+            "log_path": str(path),
+            "run_id": run_id,
+            "reason": f"Legacy run did not emit cli.finish. Last event was {last_event.get('stage')}.{last_event.get('event_type')}.",
+            "suggested_fix": "Inspect the last event in the log and rerun the same command if the expected artifacts are missing.",
+            "last_stage": last_event.get("stage"),
+            "last_event_type": last_event.get("event_type"),
+        }
+    return {
+        "failed": False,
+        "log_path": str(path),
+        "run_id": run_id,
+        "reason": "Previous run completed cleanly.",
+        "suggested_fix": "",
+    }
+
+
+def parse_payload(event: dict[str, Any]) -> dict[str, Any]:
+    try:
+        payload = json.loads(str(event.get("payload_json") or "{}"))
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, dict) else {}
 
 
 if __name__ == "__main__":
