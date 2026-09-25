@@ -105,6 +105,9 @@
   .score { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 110px); left: 50%; transform: translateX(-50%); border-radius: 22px; padding: 10px 18px; display: flex; flex-direction: column; align-items: center; z-index: 4; animation: rise .3s ease-out; }
   .score b { font: 800 34px/1 var(--round); color: var(--teal); font-variant-numeric: tabular-nums; }
   .score span { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .cup { position: relative; width: 150px; height: 200px; border-radius: 0 0 48px 48px; overflow: hidden; background: rgba(255,255,255,.3); border: 3px solid rgba(255,255,255,.92); box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+  .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; }
+  .line { position: absolute; left: -8px; right: -8px; border-top: 2px dashed #fff; transition: bottom .3s; }
   .plate { width: 70%; height: 8px; border-radius: 4px; background: rgba(255,255,255,.85); }
 
   /* State sheet (page level) */
@@ -148,8 +151,8 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 const BRAND = {
   sutro: { name: "Sutro Stack", note: "fictional", title: "Stack the burger",
     layers: [["bun", "#e3a857"], ["patty", "#6d3f26"], ["cheese", "#f2c230"], ["patty", "#6d3f26"], ["top bun", "#e3a857"]], menu: { bun: ["sourdough", "brioche", "sesame"], cheese: ["cheddar", "pepper jack", "swiss"], extra: ["grilled onions", "jalapeños", "bacon"] } },
-  sightglass: { name: "Sightglass", note: "spec ad", title: "Build the latte",
-    layers: [["cup", "#d6e2e4"], ["ice", "#bfe3ee"], ["espresso", "#4a2c1d"], ["milk", "#efe2cf"], ["foam", "#fbf8f2"]], menu: { drink: ["latte", "cortado", "cold brew"], milk: ["whole", "oat", "none"], temp: ["hot", "iced"] } }
+  sightglass: { name: "Sightglass", note: "spec ad", title: "Pour the latte",
+    pours: [["espresso", "#4a2c1d"], ["milk", "#e7d3b8"], ["foam", "#fbf8f2"]], menu: { drink: ["latte", "cortado", "cold brew"], milk: ["whole", "oat", "none"], temp: ["hot", "iced"] } }
 };
 
 let db = null, mcp = null, ads = [], reqs = [], state = { taps: {} }, soundOn = false;
@@ -165,7 +168,8 @@ const brandOf = a => a.brand || (String(a.id).startsWith("sightglass") ? "sightg
 function renderFeed() {
   const mine = reqs.filter(r => r.status === "ready" && (r.asset || r.file))
     .sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""))
-    .map(r => ({ id: r.clip || r.id, key: "req-" + r.id, brand: r.payload?.brand || "sutro", asset: r.asset, file: r.file, forYou: true }));
+    .map(r => ({ id: r.clip || r.id, key: "req-" + r.id, brand: r.payload?.brand || "sutro", asset: r.asset, file: r.file, forYou: true,
+                 story: r.payload?.story || r.payload?.parent, episode: r.payload?.episode }));
   const items = [...mine, ...ads.filter(a => !a.hidden).map(a => ({ ...a, key: a.id }))];
   const feed = $("#feed"), want = new Set(items.map(i => i.key));
   for (const [k, el] of posts) if (!want.has(k)) { el.remove(); posts.delete(k); }
@@ -246,7 +250,7 @@ function startGame(stage, a) {
   stage.classList.add("frozen");
   const brand = brandOf(a), g = document.createElement("div"); g.className = "game";
   stage.appendChild(g);
-  stackGame(g, stage, BRAND[brand], (outcome, score) => {
+  (BRAND[brand].pours ? pourGame : stackGame)(g, stage, BRAND[brand], (outcome, score) => {
     tap(a.id, "game " + outcome);
     const best = Math.max(score, (state.best || {})[brand] || 0);
     saveState({ last_game: { brand, outcome, score }, best: { ...(state.best || {}), [brand]: best } });
@@ -285,6 +289,41 @@ function stackGame(g, stage, cfg, done) {
   };
 }
 
+// Three pours into one cup. Hold to pour, let go at the dashed line. Each pour scores 0-100 by how close
+// it stops to the line; spilling past it scores 0. Back-to-back near-perfect pours add a combo bonus.
+function pourGame(g, stage, cfg, done) {
+  const P = cfg.pours, targets = [.34, .68, .9].map(t => t + (Math.random() - .5) * .08);
+  g.innerHTML = `<div class="hud glass">${esc(cfg.title)} · <b class="pts">0</b></div><div class="flash"></div>
+    <div class="cup">${P.map((_, k) => `<div class="fill" data-k="${k}"></div>`).join("")}<div class="line"></div></div>
+    <button class="go glass tint press">Hold to pour ${esc(P[0][0])}</button>`;
+  const cup = $(".cup", g), line = $(".line", g), go = $(".go", g), pts = $(".pts", g), flash = $(".flash", g);
+  const fills = [...g.querySelectorAll(".fill")];
+  let i = 0, base = 0, level = 0, raf = 0, pouring = false, total = 0, combo = 0, locked = false;
+  const say = (t, cls) => { flash.textContent = t; flash.className = "flash show " + (cls || ""); setTimeout(() => flash.className = "flash", 650); };
+  const setLine = () => { line.style.bottom = targets[i] * 100 + "%"; fills[i].style.background = P[i][1]; fills[i].style.bottom = base * 100 + "%"; };
+  const step = () => { if (!pouring) return; level = Math.min(1.02, level + .0045 + i * .0012); fills[i].style.height = (level - base) * 100 + "%"; if (level >= 1.02) stop(); else raf = requestAnimationFrame(step); };
+  const start = e => { e.preventDefault(); if (locked) return; pouring = true; step(); };
+  const stop = () => {
+    if (!pouring) return; pouring = false; cancelAnimationFrame(raf); locked = true;
+    const miss = level - targets[i];
+    let p = miss > .05 ? 0 : Math.max(0, Math.round(100 - Math.abs(miss) * 600));
+    if (Math.abs(miss) < .015) { combo++; p += 10 * combo; say(combo > 1 ? `Perfect ×${combo}` : "Perfect!", "good"); }
+    else { combo = 0; say(miss > .05 ? "Spill!" : p >= 70 ? "Nice" : "Short", miss > .05 ? "bad" : ""); }
+    total += p; pts.textContent = total;
+    base = Math.min(level, targets[i] + .05);
+    setTimeout(() => {
+      if (++i < P.length) { level = base; locked = false; go.textContent = "Hold to pour " + P[i][0]; setLine(); return; }
+      go.disabled = true;
+      const avg = total / P.length;
+      done(avg >= 80 ? "win" : avg >= 50 ? "almost" : "retry", total);
+    }, 600);
+  };
+  setLine();
+  go.addEventListener("pointerdown", start); go.addEventListener("pointerup", stop); go.addEventListener("pointerleave", stop); go.addEventListener("pointercancel", stop);
+  go.addEventListener("keydown", e => { if ((e.key === " " || e.key === "Enter") && !e.repeat) start(e); });
+  go.addEventListener("keyup", e => { if (e.key === " " || e.key === "Enter") stop(); });
+}
+
 // ---------- Idea 1: make it mine ----------
 function orderSheet(stage, a) {
   const brand = brandOf(a), menu = BRAND[brand].menu, cur = (state.orders || {})[brand] || {};
@@ -304,9 +343,9 @@ function orderSheet(stage, a) {
 
 // ---------- Idea 6: next episode, from the clip you just watched ----------
 async function nextEpisode(stage, a) {
-  const saga = state.saga && state.saga.clip === a.id ? state.saga : { clip: a.id, n: 1 };
+  const saga = state.saga && state.saga.clip === a.id ? state.saga : { clip: a.id, n: a.episode || 1, story: a.story || a.id };
   if (saga.n >= 4) { toast(stage, "Season finale reached"); return; }
-  await request("episode", { brand: brandOf(a), parent: a.id, episode: saga.n + 1 }, `Episode ${saga.n + 1} · ${BRAND[brandOf(a)].name}`, stage);
+  await request("episode", { brand: brandOf(a), parent: a.id, story: saga.story || a.story || a.id, episode: saga.n + 1 }, `Episode ${saga.n + 1} · ${BRAND[brandOf(a)].name}`, stage);
 }
 
 // ---------- Idea 7: star in it ----------
