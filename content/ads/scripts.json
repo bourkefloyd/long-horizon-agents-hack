@@ -1,0 +1,196 @@
+{
+  "_about": "Sample hyper-personalized video ad scripts for FLUX 3 video (POST /v1/flux-3-video, mode t2v). Products and brands are fictional. render.py compiles product + persona + variant into one prompt. Audio (music, SFX, dialogue) is controlled only through prompt text; dialogue in double quotes is spoken.",
+
+  "defaults": {
+    "mode": "t2v",
+    "duration": 10,
+    "aspect_ratio": "9:16",
+    "resolution": "hd",
+    "generate_audio": true
+  },
+
+  "products": {
+    "nightshift_cold_brew": {
+      "name": "Nightshift Cold Brew",
+      "category": "cold brew coffee concentrate, delivered",
+      "promise": "smooth caffeine that meets you whatever time your day starts",
+      "look": "warm cinematic look, shallow depth of field, amber and teal grade, 35mm film grain",
+      "hero": "a matte black glass bottle labeled NIGHTSHIFT pours dark cold brew over ice in a clear glass, slow motion, condensation beading",
+      "sfx": "ice cracking as the coffee hits it, a soft glass clink",
+      "sonic_logo": "a two-note low marimba sting on the final frame",
+      "cta": "First bottle free"
+    },
+    "ridgeline_trail": {
+      "name": "Ridgeline Trail Runner",
+      "category": "lightweight trail running shoe",
+      "promise": "grip that keeps up with you on any trail",
+      "look": "bright natural daylight, handheld documentary feel, saturated greens and warm earth tones",
+      "hero": "close-up of a bright orange trail shoe landing on wet rock and gripping, mud flicking off the lugs in slow motion",
+      "sfx": "crunch of gravel, a firm rubber grip squeak on rock, birdsong",
+      "sonic_logo": "a bright rising two-note guitar harmonic on the final frame",
+      "cta": "Free returns on first trail"
+    },
+    "pocketwise": {
+      "name": "Pocketwise",
+      "category": "budgeting and invoicing app",
+      "promise": "knowing exactly where your money is, without a spreadsheet",
+      "look": "clean modern look, soft natural window light, pastel mint and cream palette, crisp focus",
+      "hero": "a phone screen showing a simple mint-green dashboard with one big balance number and a green checkmark animation, hand holding it, relaxed",
+      "sfx": "a soft cheerful notification chime, a relieved exhale",
+      "sonic_logo": "a light three-note glockenspiel chime on the final frame",
+      "cta": "Free for your first 90 days"
+    },
+    "hush_earbuds": {
+      "name": "Hush",
+      "category": "noise-cancelling wireless earbuds",
+      "promise": "your own quiet, anywhere",
+      "look": "moody cinematic look, high contrast, cool blue shadows with warm skin tones, anamorphic lens flares",
+      "hero": "macro shot of a small pearl-white earbud sliding into an ear, a subtle ripple of light around it",
+      "sfx": "chaotic ambient noise that cuts to near silence the instant the earbud is in",
+      "sonic_logo": "a soft airy synth swell on the final frame",
+      "cta": "Try 30 days, free returns"
+    }
+  },
+
+  "personas": {
+    "night_nurse": {
+      "who": "a tired ICU nurse in her forties wearing navy scrubs and a lanyard",
+      "where": "outside a city hospital staff exit",
+      "when": "7 AM, pale sunrise after a twelve-hour night shift",
+      "voice": "a calm, warm female narrator, American English",
+      "language": "English",
+      "music": "gentle lo-fi piano with soft vinyl crackle, slow tempo"
+    },
+    "indie_dev": {
+      "who": "a scrappy indie game developer in his mid-twenties wearing a hoodie",
+      "where": "a cluttered studio apartment lit by two monitors and a desk lamp",
+      "when": "2 AM, city lights outside the window",
+      "voice": "a relaxed, slightly wry young male voice, American English",
+      "language": "English",
+      "music": "driving retro synthwave with a steady pulse, moderate tempo"
+    },
+    "trail_parent": {
+      "who": "a dad in his thirties with a small daughter in a hiking backpack carrier",
+      "where": "a forested hillside trail with wet rocks and ferns",
+      "when": "Saturday morning, sun breaking through mist",
+      "voice": "an upbeat, friendly male narrator, American English",
+      "language": "English",
+      "music": "upbeat acoustic folk with hand claps and a stomping kick drum"
+    },
+    "freelance_designer_mx": {
+      "who": "a freelance graphic designer in her late twenties with a tote bag and colorful earrings",
+      "where": "a sunlit apartment with plants and a laptop covered in stickers, Mexico City",
+      "when": "late afternoon, golden light",
+      "voice": "a warm, confident female voice speaking Mexican Spanish",
+      "language": "Spanish",
+      "music": "light modern cumbia with electronic percussion, feel-good"
+    },
+    "commuter_student": {
+      "who": "a college student in his early twenties with a backpack and a textbook",
+      "where": "a packed, rattling subway car at rush hour",
+      "when": "8 AM, fluorescent light, crowd pressing in",
+      "voice": "a casual, slightly amused young male voice, American English",
+      "language": "English",
+      "music": "mellow lo-fi hip hop beat with muted keys"
+    }
+  },
+
+  "variants": [
+    {
+      "id": "coldbrew__night_nurse",
+      "product": "nightshift_cold_brew",
+      "persona": "night_nurse",
+      "tension": "she pushes through the staff exit door, squints at the sunrise, rubs her neck; everyone else on the street is starting their morning",
+      "turn": "at home, still in scrubs, she opens the fridge and pulls out the bottle",
+      "payoff": "she sits by the window with the glass, eyes closed, a small smile, the city waking up below",
+      "lines": [
+        "Your morning starts when your shift ends.",
+        "Nightshift. Smooth cold brew for whenever your day begins."
+      ]
+    },
+    {
+      "id": "coldbrew__indie_dev",
+      "product": "nightshift_cold_brew",
+      "persona": "indie_dev",
+      "tension": "he stares at a crashed build on screen, red error text, drops his head onto the desk",
+      "turn": "he spins his chair, grabs the bottle from a mini fridge and pours",
+      "payoff": "he takes a sip, cracks his knuckles, the game on screen finally runs, pixel-art character jumping",
+      "lines": [
+        "Two AM. One bug. Zero sleep.",
+        "Nightshift cold brew. Ship it tonight."
+      ]
+    },
+    {
+      "id": "trail__trail_parent",
+      "product": "ridgeline_trail",
+      "persona": "trail_parent",
+      "tension": "he hesitates at a slick muddy downhill section, his daughter pointing ahead excitedly",
+      "turn": "he steps down confidently onto the wet rock",
+      "payoff": "they reach a sunny overlook, the daughter laughing and clapping in the carrier",
+      "lines": [
+        "She says faster. The trail says careful.",
+        "Ridgeline. Grip for both of you."
+      ]
+    },
+    {
+      "id": "trail__freelance_designer_mx",
+      "product": "ridgeline_trail",
+      "persona": "freelance_designer_mx",
+      "tension": "she closes her laptop on a wall of client messages, grabs her shoes by the door",
+      "turn": "cut to her running up a pine-forest trail outside the city, breathing hard, smiling",
+      "payoff": "she stops on a ridge above the clouds, arms out, city far below",
+      "lines": [
+        "Los clientes pueden esperar.",
+        "Ridgeline. Tu escape empieza aquí."
+      ]
+    },
+    {
+      "id": "pocketwise__freelance_designer_mx",
+      "product": "pocketwise",
+      "persona": "freelance_designer_mx",
+      "tension": "she scrolls a messy spreadsheet on her laptop, sticky notes everywhere, sighs and taps her pen",
+      "turn": "she opens the app on her phone and taps once; the invoice sends",
+      "payoff": "a payment notification pops up, she does a little happy dance in her chair",
+      "lines": [
+        "¿Quién me debe? ¿Cuánto tengo?",
+        "Con Pocketwise, lo sabes en un toque."
+      ]
+    },
+    {
+      "id": "pocketwise__commuter_student",
+      "product": "pocketwise",
+      "persona": "commuter_student",
+      "tension": "squeezed in the subway car, he checks his banking app and winces, a group chat buzzes: who owes rent",
+      "turn": "he opens the app, taps split rent, three friends' avatars light up green",
+      "payoff": "he leans back against the pole, relaxed, bobbing his head to the beat",
+      "lines": [
+        "Rent's due. Three roommates. One of them is always late.",
+        "Pocketwise splits it. You keep the friends."
+      ]
+    },
+    {
+      "id": "hush__commuter_student",
+      "product": "hush_earbuds",
+      "persona": "commuter_student",
+      "tension": "the subway screeches, someone's phone blares, a baby cries, he tries to read his textbook and can't",
+      "turn": "he slips the earbuds in",
+      "payoff": "the car blurs softly around him, he reads calmly, page turning, a faint smile",
+      "lines": [
+        "Exam in an hour.",
+        "Hush. Your own quiet, anywhere."
+      ]
+    },
+    {
+      "id": "hush__indie_dev",
+      "product": "hush_earbuds",
+      "persona": "indie_dev",
+      "tension": "a neighbor's party thumps through the wall, sirens outside, his cat knocks a mug off the desk",
+      "turn": "he puts the earbuds in",
+      "payoff": "total focus, code scrolling fast, monitors reflecting in his glasses",
+      "lines": [
+        "Deadline's tomorrow. The neighbors don't care.",
+        "Hush. Find your flow."
+      ]
+    }
+  ]
+}
