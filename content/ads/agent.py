@@ -91,6 +91,64 @@ SCENE = {
 }
 NO_TEXT = "No on-screen text, captions, logos, signs or readable words."
 
+# ---- Create mode: a campaign brief from the feed's multiple-choice screens becomes one full ad per variant ----
+CATEGORY = {  # look + setting + hero for brands we have no scene for yet
+    "coffee": ("Bright airy look, soft morning window light, warm wood tones", "a bright neighborhood coffee shop", "a latte in a ceramic cup with latte art"),
+    "burger": ("Punchy social-feed look, saturated warm colors, crisp commercial food lighting", "a lively burger counter with a sizzling flat-top", "a juicy double smash burger with melted cheese"),
+    "bakery": ("Warm golden look, natural light, flaky pastry in macro detail", "a busy neighborhood bakery with trays fresh from the oven", "a flaky golden croissant torn open, steam rising"),
+    "ice cream": ("Sun-drenched summer look, saturated colors, playful handheld energy", "a small ice cream shop with a line out the door", "a glossy scoop of ice cream pressed into a cone"),
+    "other": ("Clean modern commercial look, soft natural light", "a friendly neighborhood shop", "the product in a clean hero close-up"),
+}
+AUDIENCE = {
+    "soma lunch": ("office workers on a weekday lunch break", "SoMa, with brick warehouses and the Bay Bridge in the distance"),
+    "mission brunch": ("friends meeting for weekend brunch", "a sunny Mission District street lined with murals"),
+    "n-judah commuters": ("a commuter with a backpack and earbuds", "a foggy Inner Sunset streetcar stop"),
+    "students": ("college students with laptops and backpacks", "a busy campus-side street in San Francisco"),
+    "wharf visitors": ("visitors taking in the city", "the waterfront near the piers with sea lions and fog"),
+}
+MOMENT = {"morning rush": "early morning, soft fog lifting", "lunch": "midday, bright sun", "after work": "golden hour, warm low light", "weekend": "a lazy sunny weekend afternoon"}
+MUSIC = {"lo-fi chill": "mellow lo-fi beat with muted keys", "upbeat hip hop": "upbeat hip hop beat with snappy hi-hats",
+         "indie acoustic": "bright indie acoustic guitar with hand claps", "cinematic swell": "cinematic strings building to a warm swell"}
+VOICE = {"warm narrator": "a warm, friendly narrator, American English", "energetic creator": "an energetic social-media creator talking to camera, American English",
+         "spanish narrator": "a warm narrator speaking Mexican Spanish", "music only": None}
+GOAL_LINE = {"foot traffic": "Come by today.", "online orders": "Order ahead in two taps.", "new item launch": "New on the menu.", "brand love": "Made for San Francisco."}
+FORMAT = {  # (shot one, shot two, shot three, hook line); {who} {where} {hero} filled in
+    "pov": ("first-person POV walking through {where}, a hand reaching toward the door", "POV close-up: {hero} slides across the counter toward the camera", "POV: the first taste, the city blurring happily in the background", "POV: you found your spot."),
+    "trend hook": ("fast social-feed montage in {where}: {who} glance at phones that light up and react with surprise", "abstract news-feed cards with icons and emoji sliding past, no readable words", "smash cut to {hero} in a slow-motion reveal", "San Francisco's feed is buzzing."),
+    "day in the life": ("{who} starting their day in {where}", "{who} stepping inside and being handed {hero}", "{who} sharing it with a friend, laughing", "A day in the life, made better."),
+    "asmr close-up": ("extreme macro of {hero} being made, every texture visible", "slow-motion detail: steam, drips and crumbs in window light", "a satisfying first bite or sip in close-up", ""),
+    "street interview": ("a friendly host with a microphone stops {who} in {where}", "the person tastes {hero} on the spot and their eyes light up", "they give the camera a big thumbs up as the host laughs", "Quick question: what's the best thing on this block?"),
+}
+
+
+def campaign_body(p, defaults):
+    """One variant of a Create-mode campaign as a full 10-second FLUX 3 ad."""
+    brand_key = p.get("brand_key")
+    if brand_key in SCENE:
+        sc = SCENE[brand_key]
+        look, place, hero = sc["look"], sc["place"], sc["hero"]
+    else:
+        look, place, hero = CATEGORY[p.get("category", "other")]
+    name = p.get("brand_name") or "the shop"
+    who, where = AUDIENCE[p["audience"]]
+    one, two, three, hook = (x.format(who=who, where=where, hero=hero) for x in FORMAT[p["format"]])
+    voice = VOICE[p["voice"]]
+    close = f"{name}. {GOAL_LINE[p['goal']]}"
+    if p["voice"] == "spanish narrator":
+        hook, close = "", f"{name}. Te esperamos."
+    lines = ""
+    if voice:
+        said = [f'At 0 seconds the narrator says: "{hook}"'] if hook else []
+        said.append(f'At 7 seconds the narrator says: "{close}"')
+        lines = f" Voiceover by {voice}. " + " ".join(said)
+    return {"aspect_ratio": defaults["aspect_ratio"], "resolution": defaults["resolution"], "generate_audio": True,
+            "mode": "t2v", "duration": 10, **({"draft": True} if p.get("quality") == "draft" else {}), "prompt": (
+        f"{look}. A 10-second vertical mobile video ad for {name}, set in {place}, {MOMENT[p['moment']]}. {NO_TEXT}\n"
+        f"SHOT ONE (0-3s): {one}.\n"
+        f"HARD CUT. SHOT TWO (3-7s): {two}.\n"
+        f"HARD CUT. SHOT THREE (7-10s): {three}.\n"
+        f"AUDIO: Music: {MUSIC[p['music']]}, ending on a short upbeat sting.{lines}")}
+
 
 def body_for(kind, p, defaults):
     base = {"aspect_ratio": defaults["aspect_ratio"], "resolution": defaults["resolution"], "generate_audio": True}
@@ -141,6 +199,8 @@ def body_for(kind, p, defaults):
             "the camera a thumbs up. Same person, same face, same shirt throughout.\n"
             f"AUDIO: Music: {sc['music']}. Sound effects: {sc['sfx']}. Voiceover by an energetic narrator, American "
             "English. At 6 seconds the narrator says: \"Looks good on you.\"")}
+    if kind == "campaign":
+        return campaign_body(p, defaults)
     raise ValueError(kind)
 
 

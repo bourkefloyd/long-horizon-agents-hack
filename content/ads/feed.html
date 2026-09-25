@@ -130,12 +130,38 @@
   .st.rendering { color: var(--warn); } .st.ready { color: var(--teal); background: var(--teal-soft); } .st.failed, .st.moderated { color: var(--bad); }
   .muted { color: var(--muted); }
   .note { color: var(--muted); font-size: 12px; margin: 0; }
+
+  /* Create mode: one multiple-choice question per screen. */
+  .create { position: fixed; inset: 0; z-index: 40; overflow-y: auto; background: radial-gradient(120% 60% at 50% 0%, var(--teal-soft) 0%, #fff 60%); color: var(--ink); }
+  .create .in { max-width: 480px; margin-inline: auto; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px); display: flex; flex-direction: column; gap: 18px; min-height: 100%; }
+  .create .head { display: flex; align-items: center; gap: 12px; }
+  .create .x, .create .back { border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; background: rgba(14,27,29,.06); color: var(--ink); }
+  .create .prog { flex: 1; height: 6px; border-radius: 3px; background: rgba(14,27,29,.08); overflow: hidden; }
+  .create .prog i { display: block; height: 100%; background: var(--teal); border-radius: 3px; transition: width .3s; }
+  .create .step { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--teal); margin: 8px 0 0; }
+  .create h2 { margin: 0; font: 700 26px/1.15 var(--round); letter-spacing: -.02em; text-wrap: balance; }
+  .create .opts { display: flex; flex-direction: column; gap: 10px; }
+  .create .opt { text-align: left; border-radius: 20px; padding: 15px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; color: var(--ink); }
+  .create .opt small { display: block; font-weight: 500; font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .create .opt.on { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .create .opt.on small { color: rgba(255,255,255,.85); }
+  .create .opt .tick { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(14,27,29,.2); flex: none; }
+  .create .opt.on .tick { border-color: #fff; background: #fff; box-shadow: inset 0 0 0 5px var(--teal); }
+  .create input[type=text] { width: 100%; border: 1px solid var(--line); border-radius: 16px; padding: 15px 16px; font: 600 17px var(--ui); color: var(--ink); background: #fff; }
+  .create .sum { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; }
+  .create .sum button { display: flex; justify-content: space-between; gap: 12px; border: 0; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.75); padding: 12px 16px; font-size: 14px; cursor: pointer; text-align: left; color: var(--ink); }
+  .create .sum button span { color: var(--muted); }
+  .create .sum button b { text-align: right; font-weight: 600; }
+  .create .cost { display: flex; justify-content: space-between; align-items: baseline; font-variant-numeric: tabular-nums; }
+  .create .cost b { font: 800 28px/1 var(--round); color: var(--teal); }
+  .create .spacer { flex: 1; }
 </style>
 
 <div class="wrap">
   <header class="top">
     <div class="logo glass light">fog<i>feed</i></div>
-    <button class="pillbtn glass light press" id="open-state" aria-haspopup="dialog"><span class="dot" id="live"></span>State</button>
+    <div class="row"><button class="pillbtn glass tint press" id="open-create" aria-haspopup="dialog">+ Create</button>
+    <button class="pillbtn glass light press" id="open-state" aria-haspopup="dialog"><span class="dot" id="live"></span>State</button></div>
   </header>
   <main class="feed" id="feed" aria-label="Ad feed"></main>
 </div>
@@ -175,7 +201,8 @@ function renderFeed() {
   const mine = reqs.filter(r => r.status === "ready" && (r.asset || r.file))
     .sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""))
     .map(r => ({ id: r.clip || r.id, key: "req-" + r.id, brand: r.payload?.brand || "sutro", asset: r.asset, file: r.file, forYou: true,
-                 story: r.payload?.story || r.payload?.parent, episode: r.payload?.episode }));
+                 story: r.payload?.story || r.payload?.parent, episode: r.payload?.episode,
+                 ...(r.kind === "campaign" ? { brand: r.payload.base, brandName: r.payload.brand_name, playable: r.payload.playable } : {}) }));
   const items = [...mine, ...ads.filter(a => !a.hidden).map(a => ({ ...a, key: a.id }))];
   const feed = $("#feed"), want = new Set(items.map(i => i.key));
   for (const [k, el] of posts) if (!want.has(k)) { el.remove(); posts.delete(k); }
@@ -195,7 +222,7 @@ function mount(stage, a, clip, afterEnd) {
   v.src = media(clip || a); v.muted = !soundOn; v.playsInline = true; v.preload = "metadata";
   stage.appendChild(v);
   stage.insertAdjacentHTML("beforeend", `
-    <div class="chip glass">${a.forYou ? "For you" : esc(b.name)} <small>${a.forYou ? esc(b.name) : esc(b.note)}</small></div>
+    <div class="chip glass">${a.forYou ? "For you" : esc(b.name)} <small>${a.forYou ? esc(a.brandName || b.name) : esc(b.note)}</small></div>
     ${a.warning ? `<div class="chip glass warn">${esc(a.warning)}</div>` : ""}
     ${a.score ? `<div class="score glass light"><b>${a.score.score}</b><span>${{ win: "Perfect stack", almost: "So close", retry: "Try again" }[a.score.outcome]} · best ${a.score.best}</span></div>` : ""}
     <button class="sound glass press" aria-label="Sound">${svg(soundOn ? "sound" : "mute")}</button>
@@ -232,13 +259,13 @@ function offer(stage, a, label = "Play") {
   $(".offer", stage)?.remove();
   const o = document.createElement("div"); o.className = "offer glass light";
   const title = BRAND[brandOf(a)].title;
-  o.innerHTML = `<b>${esc(title)}</b><div class="row"><button class="btn primary press" data-p>${esc(label)}</button><button class="btn press" data-o>Order</button></div>
+  o.innerHTML = `<b>${esc(a.playable === "none" ? (a.brandName || BRAND[brandOf(a)].name) : title)}</b><div class="row">${a.playable === "none" ? "" : `<button class="btn primary press" data-p>${esc(label)}</button>`}<button class="btn press" data-o>Order</button></div>
     <button class="btn press" data-n style="width:100%">Next · <span>5</span></button>`;
   stage.appendChild(o);
   let t = 5;
   const tick = setInterval(() => { t--; const sp = $("[data-n] span", o); if (sp) sp.textContent = t; if (t <= 0) { clearInterval(tick); o.remove(); goNext(stage); } }, 1000);
   o._stop = () => clearInterval(tick);
-  $("[data-p]", o).onclick = () => { o._stop(); o.remove(); tap(a.id, "end card play"); startGame(stage, a); };
+  if ($("[data-p]", o)) $("[data-p]", o).onclick = () => { o._stop(); o.remove(); tap(a.id, "end card play"); startGame(stage, a); };
   $("[data-n]", o).onclick = () => { o._stop(); o.remove(); goNext(stage); };
   $("[data-o]", o).onclick = () => { o._stop(); o.remove(); tap(a.id, "end card order"); orderSheet(stage, a); };
 }
@@ -426,7 +453,10 @@ async function request(kind, payload, title, stage) {
   try { await ref.set({ kind, payload, title, status: "queued", created_at: new Date().toISOString() }); }
   catch (e) { toast(stage, `Couldn't queue (${e.code})`); return; }
   toast(stage, "Rendering your ad · ~3 min");
-  if (mcp) mcp.callTool("Claude Code Remote", "fire_trigger", { trigger_id: TRIGGER, text: `feed request ${ref.id} (${kind})` }).catch(() => {});
+  if (!mcp) { ref.update({ wake_error: "mcp_unavailable" }).catch(() => {}); return; }
+  mcp.callTool("Claude Code Remote", "fire_trigger", { trigger_id: TRIGGER, text: `feed request ${ref.id} (${kind})` })
+    .then(() => ref.update({ woke: true }).catch(() => {}))
+    .catch(e => ref.update({ wake_error: String(e?.code || e?.message || e) }).catch(() => {}));
 }
 
 async function saveState(patch) {
@@ -454,6 +484,7 @@ function renderPanel() {
   const kept = [["viewer", "SoMa · lunch · 68°F"]];
   for (const [b, o] of Object.entries(state.orders || {})) kept.push([BRAND[b]?.name || b, Object.values(o).join(" · ")]);
   if (state.saga) kept.push(["episode", `${state.saga.n} of ${state.saga.clip}`]);
+  if (state.last_campaign) kept.push(["campaign", `${state.last_campaign.brand} · ${state.last_campaign.goal} · ${state.last_campaign.audience} · ${state.last_campaign.variants} ad(s)`]);
   if (state.last_game) kept.push(["last game", `${state.last_game.score ?? "-"} · ${state.last_game.outcome} (${BRAND[state.last_game.brand]?.name || state.last_game.brand})`]);
   for (const [b, v] of Object.entries(state.best || {})) kept.push([`best · ${BRAND[b]?.name || b}`, String(v)]);
   const r = [...reqs].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")).slice(0, 6);
@@ -474,6 +505,88 @@ function openPanel() {
 }
 function closePanel() { panelOpen = false; $(".scrim")?.remove(); $(".panel")?.remove(); }
 $("#open-state").onclick = openPanel;
+
+// ---------- Create mode: build a campaign brief from multiple-choice screens ----------
+const FORMATS = ["pov", "trend hook", "day in the life", "asmr close-up", "street interview"];
+const STEPS = [
+  { k: "brand", q: "Which brand?", o: [["sutro", "Sutro Stack", "Burger · fictional"], ["sightglass", "Sightglass", "Coffee · spec ad"], ["new", "A new brand", "Name it next"]] },
+  { k: "brand_name", q: "What's the brand called?", text: true, when: b => b.brand === "new" },
+  { k: "category", q: "What do they sell?", when: b => b.brand === "new", o: [["coffee", "Coffee"], ["burger", "Burgers"], ["bakery", "Bakery"], ["ice cream", "Ice cream"], ["other", "Something else"]] },
+  { k: "goal", q: "What should the campaign do?", o: [["foot traffic", "Bring people in", "Come by today"], ["online orders", "Drive orders", "Order ahead"], ["new item launch", "Launch something new", "New on the menu"], ["brand love", "Build brand love", "Made for SF"]] },
+  { k: "audience", q: "Who is it for?", o: [["soma lunch", "SoMa lunch crowd"], ["mission brunch", "Mission brunch"], ["n-judah commuters", "N-Judah commuters"], ["students", "Students"], ["wharf visitors", "Wharf visitors"]] },
+  { k: "moment", q: "When do they see it?", o: [["morning rush", "Morning rush"], ["lunch", "Lunch"], ["after work", "After work"], ["weekend", "Weekend"]] },
+  { k: "format", q: "What kind of ad?", o: [["pov", "POV", "First person, walk in"], ["trend hook", "Trend hook", "Riff on the local feed"], ["day in the life", "Day in the life"], ["asmr close-up", "ASMR close-up", "Macro textures, no talking"], ["street interview", "Street interview", "Host stops a local"]] },
+  { k: "music", q: "What does it sound like?", o: [["lo-fi chill", "Lo-fi chill"], ["upbeat hip hop", "Upbeat hip hop"], ["indie acoustic", "Indie acoustic"], ["cinematic swell", "Cinematic swell"]] },
+  { k: "voice", q: "Who's talking?", o: [["warm narrator", "Warm narrator"], ["energetic creator", "Energetic creator"], ["spanish narrator", "Spanish narrator"], ["music only", "No voice", "Music only"]] },
+  { k: "playable", q: "Which playable end card?", o: [["stack", "Stack it", "Tap to stack, scored"], ["pour", "Pour it", "Hold to pour, scored"], ["none", "No game"]] },
+  { k: "variants", q: "How many variants to test?", o: [["1", "One ad"], ["2", "Two ads", "A/B on format"], ["3", "Three ads", "A/B/C on format"]] },
+  { k: "quality", q: "Draft or full quality?", o: [["draft", "Draft", "About $0.60 per ad, faster"], ["hd", "Full HD", "About $1.70 per ad"]] },
+];
+const LABEL = Object.fromEntries(STEPS.flatMap(s => (s.o || []).map(([v, l]) => [s.k + ":" + v, l])));
+let brief = {}, stepIx = 0;
+const liveSteps = () => STEPS.filter(s => !s.when || s.when(brief));
+
+function openCreate() {
+  brief = {}; stepIx = 0;
+  document.body.insertAdjacentHTML("beforeend", '<section class="create" role="dialog" aria-label="Create a campaign"><div class="in"></div></section>');
+  document.querySelectorAll("video").forEach(v => v.pause());
+  renderCreate();
+}
+function closeCreate() { $(".create")?.remove(); observe(); }
+
+function renderCreate() {
+  const box = $(".create .in"), steps = liveSteps();
+  if (stepIx >= steps.length) return renderReview();
+  const st = steps[stepIx], pct = Math.round(stepIx / steps.length * 100);
+  box.innerHTML = `<div class="head"><button class="x press" type="button">Close</button><div class="prog"><i style="width:${pct}%"></i></div></div>
+    <p class="step">Step ${stepIx + 1} of ${steps.length}</p><h2>${esc(st.q)}</h2>
+    ${st.text ? `<input type="text" id="c-brand-name" maxlength="40" placeholder="e.g. Mission Loaf" value="${esc(brief[st.k] || "")}">
+      <button class="btn primary press" type="button" data-next>Continue</button>`
+    : `<div class="opts">${st.o.map(([v, l, sub]) => `<button class="opt glass light press ${brief[st.k] === v ? "on" : ""}" type="button" data-v="${esc(v)}"><span>${esc(l)}${sub ? `<small>${esc(sub)}</small>` : ""}</span><i class="tick"></i></button>`).join("")}</div>`}
+    <div class="spacer"></div>${stepIx ? '<button class="back press" type="button">Back</button>' : ""}`;
+  $(".x", box).onclick = closeCreate;
+  $(".back", box)?.addEventListener("click", () => { stepIx--; renderCreate(); });
+  box.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    brief[st.k] = b.dataset.v; b.classList.add("on");
+    setTimeout(() => { stepIx++; renderCreate(); }, 180);
+  });
+  const next = $("[data-next]", box), inp = $("#c-brand-name", box);
+  if (next) {
+    const go = () => { const v = inp.value.trim(); if (!v) { inp.focus(); return; } brief[st.k] = v; stepIx++; renderCreate(); };
+    next.onclick = go; inp.onkeydown = e => { if (e.key === "Enter") go(); }; inp.focus();
+  }
+}
+
+function briefName() { return brief.brand === "new" ? brief.brand_name : BRAND[brief.brand].name; }
+function renderReview() {
+  const box = $(".create .in"), steps = liveSteps(), n = +brief.variants, per = brief.quality === "draft" ? .6 : 1.7;
+  box.innerHTML = `<div class="head"><button class="x press" type="button">Close</button><div class="prog"><i style="width:100%"></i></div></div>
+    <p class="step">Review</p><h2>${esc(briefName())} campaign</h2>
+    <div class="sum glass light">${steps.map((st, i) => `<button type="button" data-i="${i}"><span>${esc(st.q)}</span><b>${esc(st.text ? brief[st.k] : LABEL[st.k + ":" + brief[st.k]])}</b></button>`).join("")}</div>
+    <div class="cost"><span class="muted">${n} ad${n > 1 ? "s" : ""} × $${per.toFixed(2)} · FLUX 3</span><b>$${(n * per).toFixed(2)}</b></div>
+    <div class="spacer"></div>
+    <button class="btn primary press" type="button" data-go>Generate campaign</button>`;
+  $(".x", box).onclick = closeCreate;
+  box.querySelectorAll(".sum button").forEach(b => b.onclick = () => { stepIx = +b.dataset.i; renderCreate(); });
+  $("[data-go]", box).onclick = generate;
+}
+
+async function generate() {
+  const box = $(".create .in"), n = +brief.variants;
+  const base = brief.brand !== "new" ? brief.brand : (brief.playable === "pour" || brief.category === "coffee" ? "sightglass" : "sutro");
+  const order = [brief.format, ...FORMATS.filter(f => f !== brief.format)];
+  $("[data-go]", box).disabled = true;
+  for (let i = 0; i < n; i++) {
+    const payload = { ...brief, brand_key: brief.brand, brand_name: briefName(), base, format: order[i], variant: i + 1, of: n };
+    await request("campaign", payload, `${briefName()} · ${LABEL["format:" + order[i]]}${n > 1 ? ` (${i + 1}/${n})` : ""}`, $(".create"));
+  }
+  saveState({ last_campaign: { brand: briefName(), goal: brief.goal, audience: brief.audience, variants: n } });
+  box.innerHTML = `<div class="spacer"></div><p class="step">Queued</p><h2>${n} ${esc(briefName())} ad${n > 1 ? "s are" : " is"} rendering</h2>
+    <p class="muted">Each takes a few minutes on FLUX 3 and lands at the top of the feed, with its playable end card and the same actions.</p>
+    <div class="spacer"></div><button class="btn primary press" type="button">Back to the feed</button>`;
+  $("button", box).onclick = closeCreate;
+}
+$("#open-create").onclick = openCreate;
 
 // Autoplay whichever post is in view.
 let io = null;
