@@ -2,22 +2,33 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .http import download_file, get_json, post_json
+
+if TYPE_CHECKING:
+    from .event_logger import PipelineLogger
 
 
 class BFLClient:
     def __init__(self, api_key: str, base_url: str) -> None:
         self.api_key = api_key
         self.base_url = base_url
+        self.logger: PipelineLogger | None = None
 
     def submit_flux3_video(self, payload: dict[str, Any]) -> dict[str, Any]:
         if not self.api_key:
             raise RuntimeError("BFL_API_KEY is required when --generate is used.")
 
-        return post_json(
-            f"{self.base_url}/v1/flux-3-video",
+        endpoint = f"{self.base_url}/v1/flux-3-video"
+        if self.logger:
+            self.logger.emit(
+                "bfl.submit",
+                "request",
+                {"endpoint": endpoint, "payload": payload},
+            )
+        response = post_json(
+            endpoint,
             headers={
                 "accept": "application/json",
                 "x-key": self.api_key,
@@ -26,12 +37,25 @@ class BFLClient:
             payload=payload,
             timeout=60,
         )
+        if self.logger:
+            self.logger.emit(
+                "bfl.submit",
+                "response",
+                {"response": response},
+            )
+        return response
 
     def poll(self, polling_url: str, timeout_seconds: int = 900, interval_seconds: float = 2.0) -> dict[str, Any]:
         deadline = time.time() + timeout_seconds
         while time.time() < deadline:
             result = get_json(polling_url, timeout=30)
             status = result.get("status")
+            if self.logger:
+                self.logger.emit(
+                    "bfl.poll",
+                    "response",
+                    {"polling_url": polling_url, "status": status, "response": result},
+                )
             if status in {"Ready", "Error", "Failed", "Request Moderated", "Content Moderated"}:
                 return result
             time.sleep(interval_seconds)
@@ -43,6 +67,12 @@ class BFLClient:
             raise RuntimeError("BFL result did not include a downloadable media URL.")
         output_path.parent.mkdir(parents=True, exist_ok=True)
         download_file(video_url, output_path)
+        if self.logger:
+            self.logger.emit(
+                "bfl.download",
+                "output",
+                {"video_url": video_url, "local_video_path": str(output_path)},
+            )
         return str(output_path)
 
 

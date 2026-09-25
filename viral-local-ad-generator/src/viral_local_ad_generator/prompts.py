@@ -34,11 +34,14 @@ def generate_video_concepts(
             story_reference=story_reference,
             hook=hook,
         )
+        script = edit_ad_script_for_event_language(script)
+        video_script = edit_ad_script_for_event_language(video_script)
         visual_prompt = make_visual_prompt(market, story_frame, angle, video_script)
+        visual_prompt = edit_ad_script_for_event_language(visual_prompt)
         audio_prompt = make_audio_prompt(angle)
         negative_prompt = (
-            "No logos from news outlets, no real public figures, no implying endorsement by the "
-            "news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, "
+            "No publisher logos, no real public figures, no implying endorsement by people connected to the "
+            "local moment, no tragedy, no crime scene, no politics, no medical emergency, no gore, "
             "no copyrighted characters, no distorted text, no famous brand references or logos."
         )
         payload = {
@@ -78,7 +81,8 @@ def make_script_story_reference(market: str, story: NewsStory) -> str:
 
 
 def make_campaign_info(campaign_script: str) -> dict[str, str]:
-    phrase = " ".join(campaign_script.split())[:220] or "the featured offer"
+    raw_phrase = " ".join(campaign_script.split())[:220] or "the featured offer"
+    phrase, requested_cta = split_campaign_and_cta(raw_phrase)
     lower = phrase.lower()
     cta = f"Try {phrase} today."
     if "game" in lower:
@@ -103,6 +107,14 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         product_shot = "fresh coffee reveal: warm cup, rich pour, gentle steam, and a clean cafe-counter close-up"
         product_energy = "Fresh coffee energy"
         craving = "coffee craving"
+    elif any(term in lower for term in ("pottery", "ceramic", "clay")):
+        product = "a date night pottery class"
+        product_shot = (
+            "hands shaping clay on a pottery wheel, warm studio lights, glazed mugs on a shelf, "
+            "aprons, soft laughter, and a cozy class table"
+        )
+        product_energy = "Date night, shaped by hand"
+        craving = "creative date-night plan"
     else:
         product = "featured offer"
         product_shot = "clean product reveal with appetizing lighting and a simple hero close-up"
@@ -114,8 +126,20 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         "product_shot": product_shot,
         "product_energy": product_energy,
         "craving": craving,
-        "cta": cta,
+    "cta": requested_cta or cta,
     }
+
+
+def split_campaign_and_cta(phrase: str) -> tuple[str, str]:
+    markers = ("call to action:", "cta:")
+    lower = phrase.lower()
+    for marker in markers:
+        if marker in lower:
+            index = lower.index(marker)
+            campaign_phrase = phrase[:index].strip(" .")
+            cta = phrase[index + len(marker) :].strip(" .")
+            return campaign_phrase or phrase, cta
+    return phrase, ""
 
 
 def make_hook(market: str, story_reference: str, campaign: dict[str, str], angle: str) -> str:
@@ -126,7 +150,7 @@ def make_hook(market: str, story_reference: str, campaign: dict[str, str], angle
     if angle == "fan celebration":
         return f"When {market} has something to talk about, make the break memorable."
     if angle == "quick lunch rescue":
-        return f"Everyone is chasing the story. You can still grab a fast local pick-me-up."
+        return f"Everyone is following the local buzz. You can still plan something memorable."
     return f"The local feed is moving fast. End the moment with something refreshing."
 
 
@@ -134,7 +158,7 @@ def make_short_script(campaign: dict[str, str], hook: str, angle: str) -> str:
     return (
         f"Open with a local-current-events setup: {hook}. "
         f"Transition quickly into the advertiser message: {campaign['phrase']}. "
-        "Keep it playful and avoid naming private individuals or implying the news subject endorses the product. "
+        "Keep it playful and avoid naming private individuals or implying anyone connected to the moment endorses the product. "
         f"Creative angle: {angle}. "
         f"End with a clear CTA: {campaign['cta']}"
     )
@@ -151,16 +175,16 @@ def make_10_second_video_script(
         [
             "10-second vertical video commercial script",
             f"Market: {market}",
-            f"Local news inspiration: {story_frame}",
-            f"Story content reference to use in the ad: {story_reference}",
+            f"Local event inspiration: {story_frame}",
+            f"Local event reference to use in the ad: {story_reference}",
             f"Campaign message: {campaign['phrase']}",
             "",
-            f"0.0-2.0s | Shot: Fast social-feed style montage of recognizable {market} street energy, phones lighting up, and abstract local-news card visuals tied to the story topic. | On-screen text: {market} is talking. | Voiceover: \"{market} is talking about {story_reference}.\"",
-            f"2.0-4.0s | Shot: Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: {story_reference}. | On-screen text: Local story. Fresh twist. | Voiceover: \"When the local story has everyone paying attention...\"",
-            f"4.0-7.0s | Shot: Smash cut to a craveable {campaign['product_shot']}. | On-screen text: {campaign['product_energy']}. | Voiceover: \"...make your next twist {campaign['product']}.\"",
+            f"0.0-2.0s | Shot: Fast social-feed style montage of recognizable {market} street energy, phones lighting up, and abstract local-update card visuals tied to the event topic. | On-screen text: {market} is talking. | Voiceover: \"{market} is talking about {story_reference}.\"",
+            f"2.0-4.0s | Shot: Quick abstract local-update cards slide by with no publisher logos, no real faces, and no private names; one card references: {story_reference}. | On-screen text: Local moment. Fresh twist. | Voiceover: \"When a local moment has everyone paying attention...\"",
+            f"4.0-7.0s | Shot: Smash cut to an inviting {campaign['product_shot']}. | On-screen text: {campaign['product_energy']}. | Voiceover: \"...make your next twist {campaign['product']}.\"",
             f"7.0-10.0s | Shot: Hero product shot against a bright {market}-inspired backdrop, then quick end-card with a simple CTA. | On-screen text: {campaign['cta']} | Voiceover: \"{campaign['cta']}\"",
             "",
-            "Brand-safety rules: reference the news story's actual topic and city clearly, but do not show real private people, do not recreate sensitive events, do not show publisher logos, do not use famous brand references, and do not imply endorsement by anyone in the story.",
+            "Brand-safety rules: reference the local event topic and city clearly, but do not show real private people, do not recreate sensitive events, do not show publisher logos, do not use famous brand references, and do not imply endorsement by anyone connected to the event.",
             f"Strategy note: {hook}",
         ]
     )
@@ -169,12 +193,12 @@ def make_10_second_video_script(
 def make_visual_prompt(market: str, story_frame: str, angle: str, video_script: str) -> str:
     return (
         "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, "
-        "fast readable visual storytelling, no on-screen news outlet logos. Create the video from this script. "
+        "fast readable visual pacing, no on-screen publisher logos. Create the video from this script. "
         f"Market: {market}. Local inspiration: {story_frame}. "
         f"Ad angle: {angle}. "
         "Scene: energetic local street-life montage, quick product close-up, happy everyday people, "
         "clear product payoff, tasteful local flavor without showing real private individuals or implying anyone "
-        "from the story endorses the product. "
+        "connected to the local moment endorses the product. "
         f"Script: {video_script}"
     )
 
@@ -185,3 +209,25 @@ def make_audio_prompt(angle: str) -> str:
     if angle == "commuter craving":
         return "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover."
     return "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover."
+
+
+def edit_ad_script_for_event_language(text: str) -> str:
+    replacements = {
+        "Local news inspiration": "Local event inspiration",
+        "Story content reference": "Local event reference",
+        "news story": "local event",
+        "news subject": "person connected to the local moment",
+        "local-news": "local-update",
+        "local news": "local updates",
+        "Local story": "Local moment",
+        "local story": "local moment",
+        "the story": "the local moment",
+        "storytelling": "visual pacing",
+        "story topic": "event topic",
+        "story endorses": "event endorses",
+        "from the story": "connected to the local moment",
+    }
+    edited = text
+    for old, new in replacements.items():
+        edited = edited.replace(old, new)
+    return edited
