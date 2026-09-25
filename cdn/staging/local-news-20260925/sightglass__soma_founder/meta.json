@@ -1,0 +1,26 @@
+{
+  "id": "local-news-20260925-sightglass-soma-founder",
+  "hook": "Demo day. Four minutes to make it count.",
+  "cta": "Find the roastery at 270 7th St",
+  "media_type": "video",
+  "media_file": "creative.mp4",
+  "script_file": "script.txt",
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "SoMa founders"
+    ],
+    "geo": [
+      "US"
+    ],
+    "weight": 2,
+    "active": true
+  },
+  "source": {
+    "agent": "scripts/generate-content.py",
+    "generated_at": "2026-09-25T21:43:31Z",
+    "brief_ref": "https://timesofindia.indiatimes.com/technology/tech-news/san-francisco-ai-startup-planned-to-open-hundred-plus-24-hour-cafes-then-a-top-executives-dating-post-went-viral-making-company-with-cafes-in-london-new-york-and-atlanta-junk-all-plans/articleshow/134489285.cms"
+  },
+  "poster_file": "poster.jpg",
+  "duration_s": 5
+}
