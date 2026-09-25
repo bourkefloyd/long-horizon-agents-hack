@@ -173,6 +173,34 @@ def _safe_error(text: str, token: str) -> str:
     return message[:100]
 
 
+def token_info(token: str | None = None) -> dict[str, Any]:
+    """Non-secret facts about the token: length, shape, whitespace, and JWT claims minus ids."""
+    raw = os.environ.get("TINYBIRD_API_KEY", "") if token is None else token
+    info: dict[str, Any] = {
+        "length": len(raw),
+        "stripped_length": len(raw.strip()),
+        "has_surrounding_whitespace": raw != raw.strip(),
+        "prefix": raw.strip()[:2],
+        "dots": raw.strip().count("."),
+        "looks_like_tinybird_jwt": raw.strip().startswith("p.") and raw.strip().count(".") >= 2,
+    }
+    parts = raw.strip().split(".")
+    if info["looks_like_tinybird_jwt"] and len(parts) >= 3:
+        import base64
+
+        try:
+            payload = parts[2] if parts[1] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" else parts[1]
+            padded = payload + "=" * (-len(payload) % 4)
+            claims = json.loads(base64.urlsafe_b64decode(padded))
+            info["claim_keys"] = sorted(claims)
+            for key in ("host", "region", "exp"):
+                if key in claims:
+                    info[f"claim_{key}"] = claims[key]
+        except (ValueError, UnicodeDecodeError):
+            info["claim_keys"] = "undecodable"
+    return info
+
+
 def detect_host(token: str | None = None, *, verbose: bool = False) -> str | None:
     """Return the first region host where any read probe accepts the token, or None.
 
@@ -227,7 +255,12 @@ def _cli(argv: list[str]) -> int:
         print(__doc__)
         return 0
     command, args = argv[0], argv[1:]
+    if command == "token-info":
+        print(json.dumps(token_info(), indent=2))
+        return 0
     if command == "detect-host":
+        if "--verbose" in args:
+            print("token info: " + json.dumps(token_info()), file=sys.stderr)
         host = detect_host(verbose="--verbose" in args)
         if host is None:
             print("no Tinybird region accepted TINYBIRD_API_KEY", file=sys.stderr)
