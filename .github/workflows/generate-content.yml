@@ -19,17 +19,22 @@ on:
         type: string
         default: "4"
       videos:
-        description: How many of the top variants get a 5 s FLUX 3 video
+        description: How many of the top variants get a FLUX 3 video (number or `all`)
         required: true
         type: string
         default: "2"
       max_usd:
-        description: Abort before submitting if the estimate exceeds this
+        description: Abort before submitting if the estimate exceeds this (0 = unlimited, estimate is only logged)
         required: true
         type: string
         default: "5"
       campaign:
         description: Campaign id (blank = local-news-YYYYMMDD)
+        required: false
+        type: string
+        default: ""
+      campaign_id:
+        description: Render posters/videos for variants already staged under cdn/staging/<campaign_id>/*/meta.json (skips discovery and scripts; overrides campaign/brief/from_service)
         required: false
         type: string
         default: ""
@@ -65,16 +70,24 @@ jobs:
           VIDEOS: ${{ inputs.videos }}
           MAX_USD: ${{ inputs.max_usd }}
           CAMPAIGN: ${{ inputs.campaign }}
+          RENDER_STAGED: ${{ inputs.campaign_id }}
           FROM_SERVICE: ${{ inputs.from_service }}
           BRIEF: ${{ inputs.brief }}
         run: |
           set -euo pipefail
           [[ "$VARIANTS" =~ ^[1-8]$ ]] || { echo "::error::variants must be 1-8"; exit 1; }
-          [[ "$VIDEOS" =~ ^[0-8]$ ]] || { echo "::error::videos must be 0-8"; exit 1; }
-          [[ "$MAX_USD" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::max_usd must be a number"; exit 1; }
-          if [[ -n "$CAMPAIGN" && ! "$CAMPAIGN" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-            echo "::error::campaign must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
-            exit 1
+          [[ "$VIDEOS" =~ ^([0-8]|all)$ ]] || { echo "::error::videos must be 0-8 or all"; exit 1; }
+          [[ "$MAX_USD" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::max_usd must be a number (0 = unlimited)"; exit 1; }
+          for id in "$CAMPAIGN" "$RENDER_STAGED"; do
+            if [[ -n "$id" && ! "$id" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+              echo "::error::campaign ids must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
+              exit 1
+            fi
+          done
+          if [[ -n "$RENDER_STAGED" ]]; then
+            [[ -d "cdn/staging/$RENDER_STAGED" ]] || { echo "::error::cdn/staging/$RENDER_STAGED does not exist on this ref"; exit 1; }
+            echo "CAMPAIGN_ID=${RENDER_STAGED}" >> "$GITHUB_ENV"
+            exit 0
           fi
           if [[ "$FROM_SERVICE" == "true" && -z "$CAMPAIGN" ]]; then
             echo "::error::from_service needs a campaign id"
@@ -95,6 +108,7 @@ jobs:
           LIQUID_VISION_BASE_URL: ${{ vars.LIQUID_VISION_BASE_URL }}
           BRIEF: ${{ inputs.brief }}
           FROM_SERVICE: ${{ inputs.from_service }}
+          RENDER_STAGED: ${{ inputs.campaign_id }}
           CAMPAIGN_SERVICE_URL: ${{ vars.CAMPAIGN_SERVICE_URL }}
           VARIANTS: ${{ inputs.variants }}
           VIDEOS: ${{ inputs.videos }}
@@ -107,13 +121,14 @@ jobs:
           fi
           # An unset repository variable arrives as an empty string; let the script use its default URL.
           [[ -n "$CAMPAIGN_SERVICE_URL" ]] || unset CAMPAIGN_SERVICE_URL
-          source_args=(--brief "$BRIEF")
-          if [[ "$FROM_SERVICE" == "true" ]]; then
-            source_args=(--from-service)
+          source_args=(--brief "$BRIEF" --campaign "$CAMPAIGN_ID")
+          if [[ -n "$RENDER_STAGED" ]]; then
+            source_args=(--render-staged "$RENDER_STAGED")
+          elif [[ "$FROM_SERVICE" == "true" ]]; then
+            source_args=(--from-service --campaign "$CAMPAIGN_ID")
           fi
           python scripts/generate-content.py \
             "${source_args[@]}" \
-            --campaign "$CAMPAIGN_ID" \
             --variants "$VARIANTS" \
             --videos "$VIDEOS" \
             --max-usd "$MAX_USD" \
