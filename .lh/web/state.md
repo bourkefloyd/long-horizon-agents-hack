@@ -15,11 +15,10 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 
 - `web/` contains the Next.js App Router console, typed campaign contract, shadcn/ui primitives, API proxy routes, and Cloud Run container.
 - Deterministic web checks install from lockfile, lint, and build.
-- Long-horizon workflow, state contract, and this target's prompt exist.
-- workflow_dispatch reached the agent step (concurrency smoke test).
-- Issue #42 router single-target test: this run updated state only; no campaign-gen work from this agent.
-- Document title is LH Marketing; the feed route uses the root title template so its tab reads Ad Demo Feed · LH Marketing.
 - Long-horizon workflow, state contract, and this target's prompt exist; workflow_dispatch reached the agent step.
+- Document title is LH Marketing; the feed route uses the root title template so its tab reads Ad Demo Feed · LH Marketing.
+- Issue #42 router single-target test: state-only update; no campaign-gen work from this agent.
+- Issue #53 status-comment test: state-only; one Done bullet recorded and nothing else changed.
 
 ## Open
 
@@ -30,12 +29,10 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 - Mock ad platform and video generation behind adapters; the loop must run with zero external calls.
 - A/A results are always shown next to A/B so the operator can see the noise floor.
 - Browser actions use same-origin Next.js route handlers, which proxy to the configured campaign service.
-- Issue #42 asked for a state-only update, so `web/` and `prompt.md` were left unchanged.
+- Issues #42 and #53 asked for state-only updates, so `web/` and `prompt.md` were left unchanged.
 
 ## Dropped
 
-- The scaffold decision and stub-check plan are complete and no longer need tracking.
-- Done line "first run has not happened"; superseded by successful agent run.
-- Other-target logs (campaign-gen #33, nimble #26, #19, and dispatch smoke) do not change web work.
-- Nimble and campaign-gen run logs do not change the web console and are safe to forget here.
 - The scaffold decision, stub-check plan, and "first run has not happened" note are complete.
+- Other-target logs (campaign-gen #33, nimble #26, #19, and dispatch smoke) do not change web work.
+- Duplicate Done lines for the workflow and the dispatch smoke were merged into one line.
