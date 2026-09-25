@@ -288,6 +288,10 @@ def bfl(url, key, body=None):
         raise RuntimeError(f"HTTP {e.code} from {url}: {detail[:800]}") from e
 
 
+class OutOfCredits(RuntimeError):
+    pass
+
+
 def credits(key):
     try:
         return bfl(CREDITS_ENDPOINT, key).get("credits")
@@ -307,6 +311,9 @@ def submit(url, key, body, label, retries=6):
             if "HTTP 429" in msg or "HTTP 503" in msg:  # nothing was created; wait and resubmit
                 time.sleep(20 * (attempt + 1))
                 continue
+            if "HTTP 402" in msg:
+                raise OutOfCredits(f"{label}: BFL account has insufficient credits. Top up at dashboard.bfl.ai "
+                                   "or rotate the BFL_API_KEY secret, then re-run.") from e
             raise
     raise RuntimeError(f"{label}: gave up submitting after repeated 429/503")
 
@@ -475,14 +482,24 @@ def main():
 
     # Submit everything first so BFL renders in parallel (6 tasks, well under the 24-task limit).
     jobs = []
-    for i, v in enumerate(variants):
-        img_body = {"prompt": v["prompts"]["poster"], "width": POSTER_W, "height": POSTER_H, "output_format": "jpeg",
-                    "safety_tolerance": 2}
-        jobs.append((v, "poster", img_body, submit(IMAGE_ENDPOINT, key, img_body, f"{v['variant_id']} poster")))
-        if i < a.videos:
-            vid_body = {"mode": "t2v", "prompt": v["prompts"]["video"], "aspect_ratio": "9:16", "duration": VIDEO_SECONDS,
-                        "resolution": RESOLUTION, "generate_audio": True, "safety_tolerance": 2}
-            jobs.append((v, "video", vid_body, submit(VIDEO_ENDPOINT, key, vid_body, f"{v['variant_id']} video")))
+    out_of_credits = None
+    try:
+        for i, v in enumerate(variants):
+            img_body = {"prompt": v["prompts"]["poster"], "width": POSTER_W, "height": POSTER_H, "output_format": "jpeg",
+                        "safety_tolerance": 2}
+            jobs.append((v, "poster", img_body, submit(IMAGE_ENDPOINT, key, img_body, f"{v['variant_id']} poster")))
+            if i < a.videos:
+                vid_body = {"mode": "t2v", "prompt": v["prompts"]["video"], "aspect_ratio": "9:16", "duration": VIDEO_SECONDS,
+                            "resolution": RESOLUTION, "generate_audio": True, "safety_tolerance": 2}
+                jobs.append((v, "video", vid_body, submit(VIDEO_ENDPOINT, key, vid_body, f"{v['variant_id']} video")))
+    except OutOfCredits as e:
+        out_of_credits = str(e)
+        log(f"::error::{out_of_credits}")
+        if not jobs:
+            run["error"] = out_of_credits
+            (campaign_dir / "run.json").write_text(json.dumps(run, indent=1, ensure_ascii=False) + "\n")
+            sys.exit(out_of_credits)
+        log(f"continuing with the {len(jobs)} tasks already paid for")
     quoted = sum(float(j.get("cost") or 0) for *_, j in jobs)
     log(f"all submitted; quoted total {quoted:.0f} credits (~${quoted / 100:.2f})")
 
@@ -518,6 +535,8 @@ def main():
                     qa.setdefault(v["variant_id"], {})["vision"] = {"error": str(e)}
                 log(f"liquid vision QA {v['variant_id']}: {qa[v['variant_id']]['vision']}")
     run["liquid_qa"] = qa or "skipped"
+    if out_of_credits:
+        run["error"] = out_of_credits
 
     published = 0
     for v in variants:
@@ -527,9 +546,10 @@ def main():
         has_poster = r.get("poster", {}).get("file") == "poster.jpg"
         if not (has_video or has_poster):
             log(f"{v['variant_id']}: no media rendered; not staged")
-            for f in vdir.glob("*"):
-                f.unlink()
-            vdir.rmdir()
+            if vdir.exists():
+                for f in vdir.glob("*"):
+                    f.unlink()
+                vdir.rmdir()
             run["variants"].append({"variant_id": v["variant_id"], "staged": False, "render": r})
             continue
         (vdir / "script.txt").write_text(script_text(v) + "\n")
