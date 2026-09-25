@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from .models import NewsStory, VideoAdConcept
+from .models import NewsStory, SanitizedStory, VideoAdConcept
+from .sanitizer import sanitize_story_for_ad
 
 
 ANGLES = [
@@ -12,10 +13,16 @@ ANGLES = [
 ]
 
 
-def generate_video_concepts(campaign_script: str, market: str, story: NewsStory) -> list[VideoAdConcept]:
+def generate_video_concepts(
+    campaign_script: str,
+    market: str,
+    story: NewsStory,
+    sanitized_story: SanitizedStory | None = None,
+) -> list[VideoAdConcept]:
     concepts: list[VideoAdConcept] = []
-    story_frame = make_ad_safe_story_frame(market, story)
-    story_reference = make_script_story_reference(market, story)
+    clean_story = sanitized_story or sanitize_story_for_ad(market, story)
+    story_frame = clean_story.sanitized_frame
+    story_reference = clean_story.sanitized_reference
     campaign = make_campaign_info(campaign_script)
     for index, angle in enumerate(ANGLES, start=1):
         hook = make_hook(market, story_reference, campaign, angle)
@@ -46,7 +53,7 @@ def generate_video_concepts(campaign_script: str, market: str, story: NewsStory)
         }
         concepts.append(
             VideoAdConcept(
-                story_title=story.title,
+                story_title=story_reference,
                 story_url=story.url,
                 variant_index=index,
                 angle=angle,
@@ -63,37 +70,11 @@ def generate_video_concepts(campaign_script: str, market: str, story: NewsStory)
 
 
 def make_ad_safe_story_frame(market: str, story: NewsStory) -> str:
-    text = f"{story.title} {story.snippet}".lower()
-    if any(term in text for term in ("raising cane", "taco bell", "in-n-out")):
-        return f"a {market} food-and-neighborhood story about a new restaurant opening near the waterfront"
-    if any(term in text for term in ("lantern stories", "chinatown", "grant avenue")):
-        return f"a {market} culture story about a Chinatown lantern display celebrating local history"
-    if any(term in text for term in ("usher", "gwen stefani", "dreamfest", "salesforce", "oracle")):
-        return f"a {market} entertainment story about a large benefit concert at a ballpark"
-    if any(term in text for term in ("ripley", "odditorium", "tourist attraction", "fisherman's wharf")):
-        return f"a {market} story about a longtime waterfront tourist attraction closing"
-    if any(term in text for term in ("ftx", "bankman-fried", "ellison", "crypto", "fraud")):
-        return f"a {market} tech-world story about disputed FTX money and an unexpected new hire"
-    if any(term in text for term in ("lawsuit", "foreclosure", "scandal", "detained", "ice")):
-        return f"a {market} local news story about {story.title}"
-    return story.title
+    return sanitize_story_for_ad(market, story).sanitized_frame
 
 
 def make_script_story_reference(market: str, story: NewsStory) -> str:
-    text = f"{story.title} {story.snippet}".lower()
-    if any(term in text for term in ("raising cane", "taco bell", "in-n-out")):
-        return f"{market}'s waterfront restaurant-opening story"
-    if any(term in text for term in ("lantern stories", "chinatown", "grant avenue")):
-        return f"{market}'s Chinatown lantern-display story"
-    if any(term in text for term in ("usher", "gwen stefani", "dreamfest", "salesforce", "oracle")):
-        return f"{market}'s large ballpark benefit-concert story"
-    if any(term in text for term in ("ripley", "odditorium", "tourist attraction", "fisherman's wharf")):
-        return f"{market}'s longtime waterfront attraction-closing story"
-    if any(term in text for term in ("ftx", "bankman-fried", "ellison", "crypto", "fraud")):
-        return f"{market}'s FTX-money dispute and unexpected-hire story"
-    if any(term in text for term in ("lawsuit", "foreclosure", "scandal", "detained", "ice")):
-        return f"{market}'s local story about {story.title}"
-    return f"{market}'s local story about {story.title}"
+    return sanitize_story_for_ad(market, story).sanitized_reference
 
 
 def make_campaign_info(campaign_script: str) -> dict[str, str]:
