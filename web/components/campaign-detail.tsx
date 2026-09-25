@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  PlaySquare,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 
 import { CampaignStatusBadge } from "@/components/campaign-status-badge";
 import { CampaignsPageShell } from "@/components/campaigns-page-shell";
@@ -146,6 +152,13 @@ export function CampaignDetail({ id }: { id: string }) {
       }
       actions={
         <>
+          <Link
+            href={`/feed?campaign=${encodeURIComponent(campaign.id)}`}
+            className={buttonVariants({ size: "lg", variant: "outline" })}
+          >
+            <PlaySquare aria-hidden="true" />
+            View feed
+          </Link>
           <Button
             variant="outline"
             size="lg"

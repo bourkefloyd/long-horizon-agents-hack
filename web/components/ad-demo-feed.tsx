@@ -13,6 +13,7 @@ import {
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -66,9 +67,19 @@ const brandByPrefix: Record<string, AdStyle> = {
   boudin: adStyles[4],
 };
 
-function brandForAd(ad: Ad, index: number): AdStyle {
+/**
+ * Known SF brands get their palette and name from the variant-id prefix;
+ * anything else keeps a rotating palette but is labelled with its campaign
+ * rather than a borrowed brand name.
+ */
+function brandForAd(ad: Ad, index: number, campaignLabel?: string): AdStyle {
   const prefix = ad.variant_id.split("__")[0] ?? "";
-  return brandByPrefix[prefix] ?? adStyles[index % adStyles.length];
+  const known = brandByPrefix[prefix];
+  if (known) return known;
+  return {
+    ...adStyles[index % adStyles.length],
+    brand: campaignLabel ?? ad.campaign_id,
+  };
 }
 
 function localFallbackAds(): Ad[] {
@@ -103,15 +114,26 @@ async function responseMessage(response: Response) {
   }
 }
 
-async function getCampaignState() {
-  const response = await fetch("/api/campaigns/demo/state", {
-    cache: "no-store",
-  });
+async function getCampaignState(campaignId: string) {
+  const response = await fetch(
+    `/api/campaigns/${encodeURIComponent(campaignId)}/state`,
+    { cache: "no-store" },
+  );
   if (!response.ok) throw new Error(await responseMessage(response));
   return (await response.json()) as CampaignState;
 }
 
-export function AdDemoFeed() {
+async function getCampaignName(campaignId: string) {
+  const response = await fetch(
+    `/api/campaigns/${encodeURIComponent(campaignId)}`,
+    { cache: "no-store" },
+  );
+  if (!response.ok) return null;
+  const body = (await response.json()) as { name?: string };
+  return body.name?.trim() || null;
+}
+
+export function AdDemoFeed({ campaignId }: { campaignId?: string }) {
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
   const visibilityRatios = useRef(new Map<number, number>());
   const emittedSignals = useRef(new Set<string>());
@@ -130,15 +152,27 @@ export function AdDemoFeed() {
   const [signalStatuses, setSignalStatuses] = useState<
     Record<string, SignalStatus>
   >({});
-  const [ads, setAds] = useState<Ad[]>([]);
+  const [allAds, setAllAds] = useState<Ad[]>([]);
   const [manifestSource, setManifestSource] = useState<"cdn" | "local">(
     "local",
   );
   const [manifestLoading, setManifestLoading] = useState(true);
   const [manifestError, setManifestError] = useState<string | null>(null);
+  const [campaignName, setCampaignName] = useState<string | null>(null);
   // Browsers only autoplay muted video; sound stays off until the viewer
   // opts in, then the choice follows them from ad to ad.
   const [soundOn, setSoundOn] = useState(false);
+
+  // The manifest is loaded once; the campaign filter is applied on top so a
+  // campaign with nothing published shows its own empty state instead of
+  // falling back to the bundled demo ads.
+  const ads = useMemo(
+    () =>
+      campaignId
+        ? allAds.filter((ad) => ad.campaign_id === campaignId)
+        : allAds,
+    [allAds, campaignId],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -153,13 +187,13 @@ export function AdDemoFeed() {
           throw new Error("CDN manifest returned zero active ads.");
         }
         if (!cancelled) {
-          setAds(active);
+          setAllAds(active);
           setManifestSource("cdn");
         }
       } catch (caught) {
         const fallback = localFallbackAds();
         if (!cancelled) {
-          setAds(fallback);
+          setAllAds(fallback);
           setManifestSource("local");
           setManifestError(
             caught instanceof Error
@@ -178,11 +212,29 @@ export function AdDemoFeed() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!campaignId) return;
+    let cancelled = false;
+    getCampaignName(campaignId)
+      .then((name) => {
+        if (!cancelled) setCampaignName(name);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [campaignId]);
+
+  // The state card reads the campaign that owns the visible ad, so counts
+  // line up with the variant on screen even when the feed mixes campaigns.
+  const stateCampaignId =
+    campaignId ?? ads[activeIndex]?.campaign_id ?? ads[0]?.campaign_id ?? "demo";
+
   const loadState = useCallback(async () => {
     setStateLoading(true);
     setStateError(null);
     try {
-      setCampaign(await getCampaignState());
+      setCampaign(await getCampaignState(stateCampaignId));
     } catch (caught) {
       setStateError(
         caught instanceof Error
@@ -192,7 +244,7 @@ export function AdDemoFeed() {
     } finally {
       setStateLoading(false);
     }
-  }, []);
+  }, [stateCampaignId]);
 
   useEffect(() => {
     void loadState();
@@ -364,6 +416,50 @@ export function AdDemoFeed() {
     );
   }
 
+  if (ads.length === 0 && campaignId) {
+    const campaignHref = `/campaigns/${encodeURIComponent(campaignId)}`;
+    return (
+      <main className="grid h-svh place-items-center bg-[#071311] px-6 text-center text-white">
+        <div className="flex max-w-sm flex-col items-center gap-4">
+          <p className="text-[10px] font-semibold tracking-[0.22em] text-white/45 uppercase">
+            {campaignName ?? campaignId}
+          </p>
+          <h1 className="text-xl font-semibold tracking-tight">
+            No ads published yet for this campaign
+          </h1>
+          <p className="text-sm leading-6 text-white/60">
+            Creative appears here once the campaign&apos;s variants are staged
+            and published to the CDN manifest.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link
+              href={campaignHref}
+              className={buttonVariants({
+                size: "lg",
+                className:
+                  "rounded-full bg-white text-zinc-950 hover:bg-white/90",
+              })}
+            >
+              <ArrowLeft aria-hidden="true" />
+              Back to campaign
+            </Link>
+            <Link
+              href="/feed"
+              className={buttonVariants({
+                size: "lg",
+                variant: "outline",
+                className:
+                  "rounded-full border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white",
+              })}
+            >
+              All ads
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (ads.length === 0) {
     return (
       <main className="grid h-svh place-items-center bg-[#071311] px-6 text-center text-white">
@@ -382,21 +478,28 @@ export function AdDemoFeed() {
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/15 bg-black/40 p-1.5 pr-4 shadow-xl backdrop-blur-xl">
           <Link
-            href="/"
+            href={
+              campaignId
+                ? `/campaigns/${encodeURIComponent(campaignId)}`
+                : "/"
+            }
             className={buttonVariants({
               variant: "ghost",
               size: "icon",
               className:
                 "rounded-full text-white hover:bg-white/15 hover:text-white",
             })}
-            aria-label="Back to campaign dashboard"
+            aria-label={
+              campaignId ? "Back to campaign" : "Back to campaign dashboard"
+            }
           >
             <ArrowLeft />
           </Link>
           <div>
             <p className="text-xs font-semibold tracking-wide">AD LAB</p>
-            <p className="text-[10px] text-white/55">
+            <p className="max-w-40 truncate text-[10px] text-white/55">
               {activeIndex + 1} / {ads.length}
+              {campaignId ? ` · ${campaignName ?? campaignId}` : ""}
             </p>
           </div>
           <Badge
@@ -435,7 +538,11 @@ export function AdDemoFeed() {
         aria-label="Ad experience"
       >
         {ads.map((ad, index) => {
-          const style = brandForAd(ad, index);
+          const style = brandForAd(
+            ad,
+            index,
+            campaignId === ad.campaign_id ? campaignName ?? undefined : undefined,
+          );
           const isActive = index === activeIndex;
           return (
             <section
@@ -460,7 +567,11 @@ export function AdDemoFeed() {
                   <div className="flex w-full max-w-xl flex-col items-center gap-2">
                     <ColumnHeading
                       title="Ad experience"
-                      detail="What the viewer sees · 9:16"
+                      detail={
+                        campaignId
+                          ? `${campaignName ?? campaignId} · 9:16`
+                          : "What the viewer sees · 9:16"
+                      }
                       className="w-[min(100%,calc((100svh-7.5rem)*9/16))]"
                     />
                     <AdCreativeFrame
