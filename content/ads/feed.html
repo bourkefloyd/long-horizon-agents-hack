@@ -15,8 +15,10 @@
     --round: -apple-system, "SF Pro Rounded", ui-rounded, system-ui, sans-serif;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html { scroll-snap-type: y proximity; }
-  body { background: var(--ground); color: var(--ink); font: 15px/1.4 var(--ui); padding-inline: 16px; }
+  /* Reels: one full-screen clip per swipe. The video is edge to edge by request; controls float on glass. */
+  html, body { height: 100%; }
+  html { scroll-snap-type: y mandatory; overscroll-behavior-y: contain; }
+  body { background: var(--ground); color: var(--ink); font: 15px/1.4 var(--ui); }
   button { font: inherit; color: inherit; }
   :focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 
@@ -39,28 +41,31 @@
   .press:active { transform: scale(.94); }
   @media (prefers-reduced-motion: reduce) { .press, .sheet, .toast { transition: none; animation: none; } }
 
-  .wrap { max-width: 440px; margin-inline: auto; padding-block: 0 32px; }
-  .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; justify-content: space-between; padding-block: 10px; background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .wrap { max-width: 480px; margin-inline: auto; }
+  .top { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 50%; transform: translateX(-50%); width: min(480px, 100%); padding-inline: 14px; z-index: 20; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+  .top > * { pointer-events: auto; }
+  .logo { border-radius: 999px; padding: 8px 14px; }
   .logo { font: 700 21px/1 var(--round); letter-spacing: -.02em; }
   .logo i { font-style: normal; color: var(--teal); }
   .pillbtn { border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
   .pillbtn.glass.light { color: var(--teal); }
   .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); margin-right: 6px; vertical-align: 1px; }
 
-  .feed { display: flex; flex-direction: column; gap: 18px; }
-  .post { scroll-snap-align: start; scroll-margin-top: 56px; }
-  .stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 9 / 16; max-height: calc(100svh - 80px); margin-inline: auto; border-radius: 26px; overflow: hidden; background: var(--teal-soft); }
+  .feed { display: flex; flex-direction: column; }
+  .post { scroll-snap-align: start; scroll-snap-stop: always; height: 100vh; height: 100svh; }
+  .stage { position: relative; width: 100%; max-width: 100%; height: 100%; overflow: hidden; background: #0c1516; }
+  @media (min-width: 520px) { .stage { border-radius: 0; box-shadow: 0 0 0 1px var(--line); } }
   .stage video { width: 100%; height: 100%; object-fit: cover; display: block; }
   .stage.frozen video { filter: blur(6px) saturate(.9); transform: scale(1.04); }
 
-  .chip { position: absolute; top: 12px; left: 12px; border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; max-width: calc(100% - 80px); }
+  .chip { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 62px); left: 12px; border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; max-width: calc(100% - 80px); }
   .chip small { font-weight: 500; opacity: .8; }
-  .chip.warn { top: 50px; font-size: 12px; font-weight: 500; }
-  .sound { position: absolute; top: 12px; right: 12px; width: 38px; height: 38px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; }
+  .chip.warn { top: calc(env(safe-area-inset-top, 0px) + 102px); font-size: 12px; font-weight: 500; }
+  .sound { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 62px); right: 12px; width: 38px; height: 38px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; }
   .sound svg, .bar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
   /* The same four actions on every post. */
-  .bar { position: absolute; left: 10px; right: 10px; bottom: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 6px; border-radius: 26px; z-index: 5; }
+  .bar { position: absolute; left: 10px; right: 10px; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 6px; border-radius: 26px; z-index: 5; }
   .bar button { border: 0; background: transparent; border-radius: 20px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; cursor: pointer; color: #fff; }
   .bar button:hover { background: rgba(255,255,255,.14); }
   .bar button.on { background: rgba(255,255,255,.9); color: var(--teal); }
@@ -84,20 +89,20 @@
   .btn.primary { background: var(--teal); color: #fff; }
   .btn:disabled { opacity: .45; cursor: default; }
   .check { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--muted); }
-  .toast { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); border-radius: 999px; padding: 9px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; z-index: 12; animation: rise .3s ease-out; }
+  .toast { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 110px); left: 50%; transform: translateX(-50%); border-radius: 999px; padding: 9px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; z-index: 12; animation: rise .3s ease-out; }
 
   /* Playable end card */
   .game { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 20px 170px; }
-  .game .hud { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .game .hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 110px); left: 50%; transform: translateX(-50%); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; }
   .game .go { position: absolute; left: 20px; right: 20px; bottom: 92px; border: 0; border-radius: 999px; padding: 14px; font-weight: 700; font-size: 16px; cursor: pointer; }
   .layer { height: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
-  .mover { position: absolute; top: 120px; height: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+  .mover { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 170px); height: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
   .stack { display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; width: 100%; }
   .flash { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%) scale(.8); opacity: 0; font: 800 30px/1 var(--round); color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.35); pointer-events: none; transition: opacity .2s, transform .25s; }
   .flash.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   .flash.good { color: #b8fff4; }
   .flash.bad { color: #ffd0cc; }
-  .score { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); border-radius: 22px; padding: 10px 18px; display: flex; flex-direction: column; align-items: center; z-index: 4; animation: rise .3s ease-out; }
+  .score { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 110px); left: 50%; transform: translateX(-50%); border-radius: 22px; padding: 10px 18px; display: flex; flex-direction: column; align-items: center; z-index: 4; animation: rise .3s ease-out; }
   .score b { font: 800 34px/1 var(--round); color: var(--teal); font-variant-numeric: tabular-nums; }
   .score span { font-size: 12px; color: var(--muted); font-weight: 600; }
   .plate { width: 70%; height: 8px; border-radius: 4px; background: rgba(255,255,255,.85); }
@@ -114,12 +119,12 @@
   .st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 8px; background: rgba(14,27,29,.06); white-space: nowrap; align-self: start; }
   .st.rendering { color: var(--warn); } .st.ready { color: var(--teal); background: var(--teal-soft); } .st.failed, .st.moderated { color: var(--bad); }
   .muted { color: var(--muted); }
-  .foot { color: var(--muted); font-size: 12px; text-align: center; padding-top: 18px; }
+  .foot { color: var(--muted); font-size: 12px; text-align: center; padding: 18px 16px 28px; scroll-snap-align: end; }
 </style>
 
 <div class="wrap">
   <header class="top">
-    <div class="logo">fog<i>feed</i></div>
+    <div class="logo glass light">fog<i>feed</i></div>
     <button class="pillbtn glass light press" id="open-state" aria-haspopup="dialog"><span class="dot" id="live"></span>State</button>
   </header>
   <main class="feed" id="feed" aria-label="Ad feed"></main>
@@ -148,14 +153,19 @@ const BRAND = {
 };
 
 let db = null, mcp = null, ads = [], reqs = [], state = { taps: {} }, soundOn = false;
+// Two homes for the same page: inside claude.ai (artifact db + assets) or on CloudFront (S3 files + /api Lambda).
+const HOSTED = typeof window.claude === "undefined";
+const media = c => c.asset ? "/_blob/" + c.asset : "media/" + c.file;
+const api = (path, body) => fetch("api/" + path, body === undefined ? { cache: "no-store" } :
+  { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then(async r => ({ ok: r.ok, data: await r.json().catch(() => ({})) }));
 const posts = new Map();
 const brandOf = a => a.brand || (String(a.id).startsWith("sightglass") ? "sightglass" : "sutro");
 
 // ---------- feed ----------
 function renderFeed() {
-  const mine = reqs.filter(r => r.status === "ready" && r.asset)
+  const mine = reqs.filter(r => r.status === "ready" && (r.asset || r.file))
     .sort((a, b) => (b.done_at || "").localeCompare(a.done_at || ""))
-    .map(r => ({ id: r.clip || r.id, key: "req-" + r.id, brand: r.payload?.brand || "sutro", asset: r.asset, forYou: true }));
+    .map(r => ({ id: r.clip || r.id, key: "req-" + r.id, brand: r.payload?.brand || "sutro", asset: r.asset, file: r.file, forYou: true }));
   const items = [...mine, ...ads.filter(a => !a.hidden).map(a => ({ ...a, key: a.id }))];
   const feed = $("#feed"), want = new Set(items.map(i => i.key));
   for (const [k, el] of posts) if (!want.has(k)) { el.remove(); posts.delete(k); }
@@ -168,11 +178,11 @@ function renderFeed() {
 }
 
 // A post = the clip + the same chrome every time: brand chip, sound, four actions.
-function mount(stage, a, assetOverride, afterEnd) {
+function mount(stage, a, clip, afterEnd) {
   stage.innerHTML = ""; stage.classList.remove("frozen");
   const b = BRAND[brandOf(a)];
   const v = document.createElement("video");
-  v.src = "/_blob/" + (assetOverride || a.asset); v.muted = !soundOn; v.playsInline = true; v.preload = "metadata";
+  v.src = media(clip || a); v.muted = !soundOn; v.playsInline = true; v.preload = "metadata";
   stage.appendChild(v);
   stage.insertAdjacentHTML("beforeend", `
     <div class="chip glass">${a.forYou ? "For you" : esc(b.name)} <small>${a.forYou ? esc(b.name) : esc(b.note)}</small></div>
@@ -242,7 +252,7 @@ function startGame(stage, a) {
     saveState({ last_game: { brand, outcome, score }, best: { ...(state.best || {}), [brand]: best } });
     const card = ads.find(x => x.id === `${brand === "sightglass" ? "sightglass" : "sutrostack"}__endcard_${outcome}`);
     if (!card) { toast(stage, "End card not ready yet"); stage.classList.remove("frozen"); g.remove(); return; }
-    mount(stage, { ...a, extra: null, warning: null, score: { score, best, outcome } }, card.asset, () => startGame(stage, a));
+    mount(stage, { ...a, extra: null, warning: null, score: { score, best, outcome } }, card, () => startGame(stage, a));
     play(stage);
   });
 }
@@ -312,16 +322,29 @@ function selfieSheet(stage, a) {
   file.onchange = async () => {
     const f = file.files[0]; if (!f) return;
     if (f.size > 8 * 1024 * 1024) { toast(stage, "Photo must be under 8 MB"); return; }
-    const assets = await claude.use("assets");
-    if (!assets) { toast(stage, "Only the feed owner can upload"); return; }
+    if (HOSTED && f.size > 4 * 1024 * 1024) { toast(stage, "Photo must be under 4 MB"); return; }
+    const assets = HOSTED ? null : await claude.use("assets");
+    if (!HOSTED && !assets) { toast(stage, "Only the feed owner can upload"); return; }
     pick.disabled = true; pick.textContent = "Uploading…";
-    try { const up = await assets.upload(f); s.remove(); await request("selfie", { brand, selfie_asset: up.id }, `Starring you · ${BRAND[brand].name}`, stage); }
+    try {
+      const payload = { brand };
+      if (HOSTED) payload.image_b64 = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(f); });
+      else payload.selfie_asset = (await assets.upload(f)).id;
+      s.remove(); await request("selfie", payload, `Starring you · ${BRAND[brand].name}`, stage);
+    }
     catch (e) { pick.disabled = false; pick.textContent = "Choose photo"; toast(stage, `Upload failed (${e.code || "error"})`); }
   };
 }
 
 // ---------- requests, state, taps ----------
 async function request(kind, payload, title, stage) {
+  if (HOSTED) {
+    toast(stage, "Sending…");
+    const r = await api("request", { kind, payload, title }).catch(() => ({ ok: false, data: {} }));
+    if (!r.ok) { toast(stage, r.data.message || "Couldn't start the render"); return; }
+    reqs = [...reqs, r.data]; renderPanel();
+    toast(stage, "Rendering your ad · ~3 min"); return;
+  }
   if (!db) { toast(stage, "Data store unavailable here"); return; }
   const ref = db.collection("requests").doc();
   try { await ref.set({ kind, payload, title, status: "queued", created_at: new Date().toISOString() }); }
@@ -335,7 +358,8 @@ async function saveState(patch) {
   if (patch.drop) next.dropped = [...(state.dropped || []), patch.drop].slice(-8);
   delete next.drop;
   state = next; renderPanel();
-  if (db) try { await db.doc("state/viewer").set(next); } catch {}
+  if (HOSTED) api("state", next).catch(() => {});
+  else if (db) try { await db.doc("state/viewer").set(next); } catch {}
 }
 
 let tapTimer = null, pending = {};
@@ -385,7 +409,26 @@ function observe() {
   document.querySelectorAll(".stage").forEach(s => io.observe(s));
 }
 
+async function startHosted() {
+  ads = await fetch("data/ads.json").then(r => r.json()).catch(() => []);
+  const s = await api("state").catch(() => null);
+  if (s?.ok) state = { taps: {}, ...s.data };
+  renderFeed(); renderPanel();
+  const poll = async () => {
+    const r = await api("requests").catch(() => null);
+    if (r?.ok) {
+      const had = new Set(reqs.filter(x => x.status === "ready").map(x => x.id));
+      reqs = r.data;
+      if (reqs.some(x => x.status === "ready" && !had.has(x.id))) { const s2 = await api("state").catch(() => null); if (s2?.ok) state = { taps: {}, ...s2.data }; }
+      renderFeed(); renderPanel();
+    }
+    setTimeout(poll, reqs.some(x => x.status === "rendering") ? 8000 : 20000);
+  };
+  poll();
+}
+
 (async function start() {
+  if (HOSTED) return startHosted();
   db = await claude.use("db");
   mcp = await claude.use("mcp");
   if (!db) { $("#feed").innerHTML = '<p class="muted">This view can’t reach the feed’s data.</p>'; return; }

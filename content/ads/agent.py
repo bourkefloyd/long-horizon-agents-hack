@@ -85,12 +85,14 @@ def body_for(kind, p, defaults):
                             f"{sc['next']}. Same music continues and resolves. {NO_TEXT}")
         return {**base, "mode": "v2v", "duration": 5, "start_video": b64(parent), "prompt": prompt}
     if kind == "selfie":
-        return {**base, "mode": "t2v", "duration": 10, "reference_images": [b64(p["image"])], "prompt": (
-            f"{sc['look']}. A 10-second vertical mobile video ad. {NO_TEXT}\n"
-            f"SHOT ONE (0-4s): the person from the reference images, same face and hair, walks into {sc['place']} "
-            "and grins at the camera.\n"
-            f"HARD CUT. SHOT TWO (4-10s): the same person from the reference images enjoys {sc['hero']}, eyes closed "
-            "in delight, then gives a thumbs up.\n"
+        # The photo is the exact opening frame (i2v keyframe); FLUX 3 animates the person from there.
+        # (reference_images is not accepted on /v1/flux-3-video for t2v or i2v.)
+        return {**base, "mode": "i2v", "duration": 10, "keyframes": b64(p["image"]),  # one image: a plain string
+                "prompt": (
+            f"{sc['look']}. {NO_TEXT}\n"
+            "The person in the opening frame keeps smiling at the camera, then the camera pulls back as they turn and "
+            f"walk into {sc['place']}. They are handed {sc['hero']}, enjoy it with eyes closed in delight, and give "
+            "the camera a thumbs up. Same person, same face, same shirt throughout.\n"
             f"AUDIO: Music: {sc['music']}. Sound effects: {sc['sfx']}. Voiceover by an energetic narrator, American "
             "English. At 6 seconds the narrator says: \"Looks good on you.\"")}
     raise ValueError(kind)
