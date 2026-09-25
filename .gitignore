@@ -1,0 +1,57 @@
+# OS junk
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials
+credentials.*
+.credentials
+**/credentials/
+**/credentials.json
+**/credentials.yaml
+**/credentials.yml
+secrets/
+
+# Dependency and build directories
+node_modules/
+dist/
+.next/
+out/
+build/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Editor junk
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Model weights
+*.gguf
+*.bin
+*.onnx
+models/
