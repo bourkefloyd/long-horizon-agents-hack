@@ -113,6 +113,7 @@ jobs:
           VARIANTS: ${{ inputs.variants }}
           VIDEOS: ${{ inputs.videos }}
           MAX_USD: ${{ inputs.max_usd }}
+          TRACE_DIR: ${{ runner.temp }}/trace
         run: |
           set -euo pipefail
           if [[ -z "$BFL_API_KEY" ]]; then
@@ -146,24 +147,74 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      - name: Upload generation trace (prompts, BFL requests/results, events)
+        # Written incrementally by the script, so a failed run still leaves the prompts and task ids behind.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trace-${{ env.CAMPAIGN_ID }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/trace
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Summarize
+        if: always()
+        env:
+          TRACE_DIR: ${{ runner.temp }}/trace
         run: |
           set -euo pipefail
           run_json="cdn/staging/${CAMPAIGN_ID}/run.json"
+          plan_json="${TRACE_DIR}/plan.json"
           {
             echo "## Generated content: \`${CAMPAIGN_ID}\`"
             echo
-            echo "- Brief: $(jq -r '.brief' "$run_json")"
-            echo "- Campaign record: $(jq -r '.campaign_name // "none (flags)"' "$run_json"); market $(jq -r '.market' "$run_json")"
-            echo "- Discovery: $(jq -r '.discovery.via' "$run_json")"
-            echo "- Cost: quoted $(jq -r '.cost.quoted_credits' "$run_json") credits, settled $(jq -r '.cost.settled_credits' "$run_json") credits (~\$$(jq -r '.cost.settled_usd' "$run_json")); balance $(jq -r '.cost.credits_before' "$run_json") -> $(jq -r '.cost.credits_after' "$run_json")"
-            echo
-            echo "| Variant | Media | Hook | CTA | Audience |"
-            echo "|---|---|---|---|---|"
-            jq -r '.variants[] | select(.staged) | "| \(.variant_id) | \(.media_type) | \(.hook) | \(.cta) | \(.audience) |"' "$run_json"
+            if [[ -f "$run_json" && "$(jq -r '.cost // empty' "$run_json")" != "" ]]; then
+              echo "- Brief: $(jq -r '.brief' "$run_json")"
+              echo "- Campaign record: $(jq -r '.campaign_name // "none (flags)"' "$run_json"); market $(jq -r '.market' "$run_json")"
+              echo "- Discovery: $(jq -r '.discovery.via' "$run_json")"
+              echo "- Cost: quoted $(jq -r '.cost.quoted_credits' "$run_json") credits, settled $(jq -r '.cost.settled_credits' "$run_json") credits (~\$$(jq -r '.cost.settled_usd' "$run_json")); balance $(jq -r '.cost.credits_before' "$run_json") -> $(jq -r '.cost.credits_after' "$run_json")"
+              echo
+              echo "| Variant | Media | Hook | CTA | Audience |"
+              echo "|---|---|---|---|---|"
+              jq -r '.variants[] | select(.staged) | "| \(.variant_id) | \(.media_type) | \(.hook) | \(.cta) | \(.audience) |"' "$run_json"
+            elif [[ -f "$plan_json" ]]; then
+              echo "> The run did not finish; this is the plan it was executing. Task ids and poll results are in the trace artifact."
+              echo
+              echo "- Brief: $(jq -r '.brief' "$plan_json")"
+              echo "- Estimate: ~\$$(jq -r '.estimate_usd.total' "$plan_json")"
+            else
+              echo "> No plan was written; the run failed before variants were built. See the job log."
+            fi
+            if [[ -f "$plan_json" ]]; then
+              echo
+              echo "### Prompts sent to FLUX"
+              echo
+              echo "Trace artifact: \`trace-${CAMPAIGN_ID}-${GITHUB_RUN_ID}\` (per-variant prompts, full BFL request bodies, poll results, \`events.jsonl\`)."
+              echo
+              jq -r --arg t "$TRACE_DIR" '
+                .variants[] |
+                "<details><summary><b>\(.variant_id)</b> — \(.hook) / \(.cta)" + (if .video_planned then " · video \(.duration_s)s" else " · poster only" end) + "</summary>\n\n" +
+                (if .story then "Story: \(.story.title // .story.reference // "n/a")\n\n" else "" end) +
+                "**Poster prompt**\n\n```\n\(.prompts.poster)\n```\n\n**Video prompt**\n\n```\n\(.prompts.video)\n```\n\n</details>\n"' "$plan_json"
+              for d in "$TRACE_DIR"/*/; do
+                [[ -d "$d" ]] || continue
+                for r in "$d"*.result.json; do
+                  [[ -f "$r" ]] || continue
+                  echo "- $(basename "$d") $(basename "$r" .result.json): $(jq -r '.result.status' "$r"), settled $(jq -r '.result.cost // "n/a"' "$r") credits, task $(jq -r '.result.id // "n/a"' "$r")"
+                done
+              done
+            fi
+            if [[ -f "${TRACE_DIR}/events.jsonl" ]]; then
+              echo
+              echo "<details><summary>Timeline</summary>"
+              echo
+              echo '```'
+              jq -r '"[\(.elapsed_s)s] \(.msg)"' "${TRACE_DIR}/events.jsonl" | cut -c1-200
+              echo '```'
+              echo
+              echo "</details>"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
-        env:
-          BRIEF: ${{ inputs.brief }}
 
       - name: Commit staging output, open and merge the PR
         id: pr
