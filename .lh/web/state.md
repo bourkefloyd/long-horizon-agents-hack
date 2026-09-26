@@ -19,6 +19,7 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 - Document title is LH Marketing; the feed route uses the root title template so its tab reads Ad Demo Feed · LH Marketing.
 - Issue #42 router single-target test: state-only update; no campaign-gen work from this agent.
 - Issue #53 status-comment test: state-only; one Done bullet recorded and nothing else changed.
+- A star mark at `web/app/icon.svg` and `web/app/favicon.ico` is the favicon for every route under the shared root layout.
 
 ## Open
 
@@ -30,6 +31,7 @@ dropped events, and the next-day creative brief, with reliable API states and ac
 - A/A results are always shown next to A/B so the operator can see the noise floor.
 - Browser actions use same-origin Next.js route handlers, which proxy to the configured campaign service.
 - Issues #42 and #53 asked for state-only updates, so `web/` and `prompt.md` were left unchanged.
+- Issue #44 asked for a marketing-site favicon and suggested a star; one mark covers the console and feed. `favicon.ico` replaces the Next.js default tab icon; `icon.svg` is the same star for browsers that prefer SVG.
 
 ## Dropped
 
