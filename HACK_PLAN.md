@@ -1,6 +1,8 @@
 # Hack plan: Long Horizon Agents Hackathon
 
-Friday 25 September 2026, San Francisco. Links: [Event](https://tokensand.com/horizonagentshack) · [docs/research/](docs/research/) · Demo: [API](https://demo---lh-campaign-service-row663omlq-uc.a.run.app) · [Web](https://demo---lh-web-row663omlq-uc.a.run.app).
+**Won:** 1st place, Best use of Nimble, Horizon Agents Hack, 25 September 2026. Winners slide name: Local Ad Platform. Prize: $1,500, 5,000 Search credits, and 100 agent-run credits.
+
+Friday 25 September 2026, San Francisco. Links: [Event](https://tokensand.com/horizonagentshack) · [docs/research/](docs/research/) · Demo: [API](https://demo---lh-campaign-service-row663omlq-uc.a.run.app) · [Web](https://demo---lh-web-row663omlq-uc.a.run.app). Those Cloud Run demo URLs were removed on 26 September 2026 and no longer serve.
 
 ## Goal
 
