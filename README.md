@@ -83,4 +83,5 @@ flowchart TD
 | [viral-local-ad-generator/](viral-local-ad-generator/) | Nimble discovery, scripts, and staging |
 | [cdn/](cdn/) | Manifest contract and staged creatives |
 | [docs/cdn.md](docs/cdn.md) | GCS CDN |
+| [docs/screenshots/](docs/screenshots/) | README screenshots |
 | [.lh/](.lh/) | Capped long-horizon state |
