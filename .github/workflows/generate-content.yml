@@ -19,17 +19,22 @@ on:
         type: string
         default: "4"
       videos:
-        description: How many of the top variants get a 5 s FLUX 3 video
+        description: How many of the top variants get a FLUX 3 video (number or `all`)
         required: true
         type: string
         default: "2"
       max_usd:
-        description: Abort before submitting if the estimate exceeds this
+        description: Abort before submitting if the estimate exceeds this (0 = unlimited, estimate is only logged)
         required: true
         type: string
         default: "5"
       campaign:
         description: Campaign id (blank = local-news-YYYYMMDD)
+        required: false
+        type: string
+        default: ""
+      campaign_id:
+        description: Render posters/videos for variants already staged under cdn/staging/<campaign_id>/*/meta.json (skips discovery and scripts; overrides campaign/brief/from_service)
         required: false
         type: string
         default: ""
@@ -65,16 +70,24 @@ jobs:
           VIDEOS: ${{ inputs.videos }}
           MAX_USD: ${{ inputs.max_usd }}
           CAMPAIGN: ${{ inputs.campaign }}
+          RENDER_STAGED: ${{ inputs.campaign_id }}
           FROM_SERVICE: ${{ inputs.from_service }}
           BRIEF: ${{ inputs.brief }}
         run: |
           set -euo pipefail
           [[ "$VARIANTS" =~ ^[1-8]$ ]] || { echo "::error::variants must be 1-8"; exit 1; }
-          [[ "$VIDEOS" =~ ^[0-8]$ ]] || { echo "::error::videos must be 0-8"; exit 1; }
-          [[ "$MAX_USD" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::max_usd must be a number"; exit 1; }
-          if [[ -n "$CAMPAIGN" && ! "$CAMPAIGN" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-            echo "::error::campaign must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
-            exit 1
+          [[ "$VIDEOS" =~ ^([0-8]|all)$ ]] || { echo "::error::videos must be 0-8 or all"; exit 1; }
+          [[ "$MAX_USD" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::max_usd must be a number (0 = unlimited)"; exit 1; }
+          for id in "$CAMPAIGN" "$RENDER_STAGED"; do
+            if [[ -n "$id" && ! "$id" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+              echo "::error::campaign ids must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
+              exit 1
+            fi
+          done
+          if [[ -n "$RENDER_STAGED" ]]; then
+            [[ -d "cdn/staging/$RENDER_STAGED" ]] || { echo "::error::cdn/staging/$RENDER_STAGED does not exist on this ref"; exit 1; }
+            echo "CAMPAIGN_ID=${RENDER_STAGED}" >> "$GITHUB_ENV"
+            exit 0
           fi
           if [[ "$FROM_SERVICE" == "true" && -z "$CAMPAIGN" ]]; then
             echo "::error::from_service needs a campaign id"
@@ -95,10 +108,12 @@ jobs:
           LIQUID_VISION_BASE_URL: ${{ vars.LIQUID_VISION_BASE_URL }}
           BRIEF: ${{ inputs.brief }}
           FROM_SERVICE: ${{ inputs.from_service }}
+          RENDER_STAGED: ${{ inputs.campaign_id }}
           CAMPAIGN_SERVICE_URL: ${{ vars.CAMPAIGN_SERVICE_URL }}
           VARIANTS: ${{ inputs.variants }}
           VIDEOS: ${{ inputs.videos }}
           MAX_USD: ${{ inputs.max_usd }}
+          TRACE_DIR: ${{ runner.temp }}/trace
         run: |
           set -euo pipefail
           if [[ -z "$BFL_API_KEY" ]]; then
@@ -107,13 +122,14 @@ jobs:
           fi
           # An unset repository variable arrives as an empty string; let the script use its default URL.
           [[ -n "$CAMPAIGN_SERVICE_URL" ]] || unset CAMPAIGN_SERVICE_URL
-          source_args=(--brief "$BRIEF")
-          if [[ "$FROM_SERVICE" == "true" ]]; then
-            source_args=(--from-service)
+          source_args=(--brief "$BRIEF" --campaign "$CAMPAIGN_ID")
+          if [[ -n "$RENDER_STAGED" ]]; then
+            source_args=(--render-staged "$RENDER_STAGED")
+          elif [[ "$FROM_SERVICE" == "true" ]]; then
+            source_args=(--from-service --campaign "$CAMPAIGN_ID")
           fi
           python scripts/generate-content.py \
             "${source_args[@]}" \
-            --campaign "$CAMPAIGN_ID" \
             --variants "$VARIANTS" \
             --videos "$VIDEOS" \
             --max-usd "$MAX_USD" \
@@ -131,24 +147,74 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      - name: Upload generation trace (prompts, BFL requests/results, events)
+        # Written incrementally by the script, so a failed run still leaves the prompts and task ids behind.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trace-${{ env.CAMPAIGN_ID }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/trace
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Summarize
+        if: always()
+        env:
+          TRACE_DIR: ${{ runner.temp }}/trace
         run: |
           set -euo pipefail
           run_json="cdn/staging/${CAMPAIGN_ID}/run.json"
+          plan_json="${TRACE_DIR}/plan.json"
           {
             echo "## Generated content: \`${CAMPAIGN_ID}\`"
             echo
-            echo "- Brief: $(jq -r '.brief' "$run_json")"
-            echo "- Campaign record: $(jq -r '.campaign_name // "none (flags)"' "$run_json"); market $(jq -r '.market' "$run_json")"
-            echo "- Discovery: $(jq -r '.discovery.via' "$run_json")"
-            echo "- Cost: quoted $(jq -r '.cost.quoted_credits' "$run_json") credits, settled $(jq -r '.cost.settled_credits' "$run_json") credits (~\$$(jq -r '.cost.settled_usd' "$run_json")); balance $(jq -r '.cost.credits_before' "$run_json") -> $(jq -r '.cost.credits_after' "$run_json")"
-            echo
-            echo "| Variant | Media | Hook | CTA | Audience |"
-            echo "|---|---|---|---|---|"
-            jq -r '.variants[] | select(.staged) | "| \(.variant_id) | \(.media_type) | \(.hook) | \(.cta) | \(.audience) |"' "$run_json"
+            if [[ -f "$run_json" && "$(jq -r '.cost // empty' "$run_json")" != "" ]]; then
+              echo "- Brief: $(jq -r '.brief' "$run_json")"
+              echo "- Campaign record: $(jq -r '.campaign_name // "none (flags)"' "$run_json"); market $(jq -r '.market' "$run_json")"
+              echo "- Discovery: $(jq -r '.discovery.via' "$run_json")"
+              echo "- Cost: quoted $(jq -r '.cost.quoted_credits' "$run_json") credits, settled $(jq -r '.cost.settled_credits' "$run_json") credits (~\$$(jq -r '.cost.settled_usd' "$run_json")); balance $(jq -r '.cost.credits_before' "$run_json") -> $(jq -r '.cost.credits_after' "$run_json")"
+              echo
+              echo "| Variant | Media | Hook | CTA | Audience |"
+              echo "|---|---|---|---|---|"
+              jq -r '.variants[] | select(.staged) | "| \(.variant_id) | \(.media_type) | \(.hook) | \(.cta) | \(.audience) |"' "$run_json"
+            elif [[ -f "$plan_json" ]]; then
+              echo "> The run did not finish; this is the plan it was executing. Task ids and poll results are in the trace artifact."
+              echo
+              echo "- Brief: $(jq -r '.brief' "$plan_json")"
+              echo "- Estimate: ~\$$(jq -r '.estimate_usd.total' "$plan_json")"
+            else
+              echo "> No plan was written; the run failed before variants were built. See the job log."
+            fi
+            if [[ -f "$plan_json" ]]; then
+              echo
+              echo "### Prompts sent to FLUX"
+              echo
+              echo "Trace artifact: \`trace-${CAMPAIGN_ID}-${GITHUB_RUN_ID}\` (per-variant prompts, full BFL request bodies, poll results, \`events.jsonl\`)."
+              echo
+              jq -r --arg t "$TRACE_DIR" '
+                .variants[] |
+                "<details><summary><b>\(.variant_id)</b> — \(.hook) / \(.cta)" + (if .video_planned then " · video \(.duration_s)s" else " · poster only" end) + "</summary>\n\n" +
+                (if .story then "Story: \(.story.title // .story.reference // "n/a")\n\n" else "" end) +
+                "**Poster prompt**\n\n```\n\(.prompts.poster)\n```\n\n**Video prompt**\n\n```\n\(.prompts.video)\n```\n\n</details>\n"' "$plan_json"
+              for d in "$TRACE_DIR"/*/; do
+                [[ -d "$d" ]] || continue
+                for r in "$d"*.result.json; do
+                  [[ -f "$r" ]] || continue
+                  echo "- $(basename "$d") $(basename "$r" .result.json): $(jq -r '.result.status' "$r"), settled $(jq -r '.result.cost // "n/a"' "$r") credits, task $(jq -r '.result.id // "n/a"' "$r")"
+                done
+              done
+            fi
+            if [[ -f "${TRACE_DIR}/events.jsonl" ]]; then
+              echo
+              echo "<details><summary>Timeline</summary>"
+              echo
+              echo '```'
+              jq -r '"[\(.elapsed_s)s] \(.msg)"' "${TRACE_DIR}/events.jsonl" | cut -c1-200
+              echo '```'
+              echo
+              echo "</details>"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
-        env:
-          BRIEF: ${{ inputs.brief }}
 
       - name: Commit staging output, open and merge the PR
         id: pr

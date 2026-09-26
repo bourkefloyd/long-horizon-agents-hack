@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.parse
@@ -35,6 +36,10 @@ REGION_HOSTS = (
     "https://api.us-east.aws.tinybird.co",
     "https://api.eu-central-1.aws.tinybird.co",
     "https://api.europe-west2.gcp.tinybird.co",
+    "https://api.northamerica-northeast2.gcp.tinybird.co",
+    "https://api.eu-west-1.aws.tinybird.co",
+    "https://api.ap-east-1.aws.tinybird.co",
+    "https://api.ap-southeast-2.aws.tinybird.co",
 )
 
 
@@ -147,17 +152,74 @@ def summary(campaign_id: str) -> list[dict[str, Any]]:
     return _pipe("campaign_summary", {"campaign_id": campaign_id})
 
 
-def detect_host(token: str | None = None) -> str | None:
-    """Return the first region host that accepts the token, or None."""
-    token = token or _token()
-    query = urllib.parse.urlencode({"q": "SELECT 1 FORMAT JSON"})
-    for host in REGION_HOSTS:
+PROBES = (
+    "/v0/sql?" + urllib.parse.urlencode({"q": "SELECT 1 FORMAT JSON"}),
+    "/v0/datasources",
+    "/v0/pipes",
+    "/v0/tokens",
+    "/v0/user/workspaces",
+    "/v0/workspaces",
+)
+
+
+def _safe_error(text: str, token: str) -> str:
+    """Short error message with the token (which Tinybird echoes back) removed."""
+    try:
+        message = str(json.loads(text).get("error", text))
+    except (ValueError, AttributeError):
+        message = text
+    message = message.replace(token, "[token]")
+    message = re.sub(r"(?i)invalid token\b.*", "invalid token [redacted]", message, flags=re.DOTALL)
+    return message[:100]
+
+
+def token_info(token: str | None = None) -> dict[str, Any]:
+    """Non-secret facts about the token: length, shape, whitespace, and JWT claims minus ids."""
+    raw = os.environ.get("TINYBIRD_API_KEY", "") if token is None else token
+    info: dict[str, Any] = {
+        "length": len(raw),
+        "stripped_length": len(raw.strip()),
+        "has_surrounding_whitespace": raw != raw.strip(),
+        "prefix": raw.strip()[:2],
+        "dots": raw.strip().count("."),
+        "looks_like_tinybird_jwt": raw.strip().startswith("p.") and raw.strip().count(".") >= 2,
+    }
+    parts = raw.strip().split(".")
+    if info["looks_like_tinybird_jwt"] and len(parts) >= 3:
+        import base64
+
         try:
-            status, _ = _request("GET", f"{host}/v0/sql?{query}", token=token, timeout=10)
-        except (OSError, urllib.error.URLError):
-            continue
-        if status == 200:
-            return host
+            payload = parts[2] if parts[1] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" else parts[1]
+            padded = payload + "=" * (-len(payload) % 4)
+            claims = json.loads(base64.urlsafe_b64decode(padded))
+            info["claim_keys"] = sorted(claims)
+            for key in ("host", "region", "exp"):
+                if key in claims:
+                    info[f"claim_{key}"] = claims[key]
+        except (ValueError, UnicodeDecodeError):
+            info["claim_keys"] = "undecodable"
+    return info
+
+
+def detect_host(token: str | None = None, *, verbose: bool = False) -> str | None:
+    """Return the first region host where any read probe accepts the token, or None.
+
+    Tokens carry different scopes, so several endpoints are tried per host. Only
+    status codes and short error bodies are printed; never the token.
+    """
+    token = token or _token()
+    for host in REGION_HOSTS:
+        for probe in PROBES:
+            try:
+                status, text = _request("GET", f"{host}{probe}", token=token, timeout=10)
+            except (OSError, urllib.error.URLError) as exc:
+                if verbose:
+                    print(f"{host}{probe.split('?')[0]} -> {exc}", file=sys.stderr)
+                continue
+            if verbose:
+                print(f"{host}{probe.split('?')[0]} -> {status} {_safe_error(text, token)}", file=sys.stderr)
+            if status == 200:
+                return host
     return None
 
 
@@ -193,8 +255,13 @@ def _cli(argv: list[str]) -> int:
         print(__doc__)
         return 0
     command, args = argv[0], argv[1:]
+    if command == "token-info":
+        print(json.dumps(token_info(), indent=2))
+        return 0
     if command == "detect-host":
-        host = detect_host()
+        if "--verbose" in args:
+            print("token info: " + json.dumps(token_info()), file=sys.stderr)
+        host = detect_host(verbose="--verbose" in args)
         if host is None:
             print("no Tinybird region accepted TINYBIRD_API_KEY", file=sys.stderr)
             return 1

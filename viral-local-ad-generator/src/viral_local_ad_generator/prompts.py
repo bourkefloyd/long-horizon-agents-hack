@@ -12,6 +12,26 @@ ANGLES = [
     "late-night payoff",
 ]
 
+# Angles promoted ahead of the canonical order when the brief signals a time of day or a commute.
+# "local moment hook" always stays first: it is the story-driven variant.
+ANGLE_SIGNALS: dict[str, tuple[str, ...]] = {
+    "commuter craving": ("commute", "commuter", "bart", "muni", "caltrain", "transit", "train"),
+    "quick lunch rescue": ("lunch", "midday", "noon"),
+    "late-night payoff": ("late-night", "late night", "after the show", "until 2 am", "midnight", "after dark"),
+}
+
+PHRASE_LIMIT = 220
+
+
+def order_angles(campaign_script: str) -> list[str]:
+    """Return ANGLES reordered so angles the brief asks for land inside a small --max-videos window."""
+    lower = " ".join(campaign_script.split()).lower()
+    promoted = [
+        angle for angle in ANGLES if angle in ANGLE_SIGNALS and any(term in lower for term in ANGLE_SIGNALS[angle])
+    ]
+    rest = [angle for angle in ANGLES if angle != "local moment hook" and angle not in promoted]
+    return ["local moment hook", *promoted, *rest]
+
 
 def generate_video_concepts(
     campaign_script: str,
@@ -24,7 +44,7 @@ def generate_video_concepts(
     story_frame = clean_story.sanitized_frame
     story_reference = clean_story.sanitized_reference
     campaign = make_campaign_info(campaign_script)
-    for index, angle in enumerate(ANGLES, start=1):
+    for index, angle in enumerate(order_angles(campaign_script), start=1):
         hook = make_hook(market, story_reference, campaign, angle)
         script = make_short_script(campaign, hook, angle)
         video_script = make_10_second_video_script(
@@ -80,11 +100,34 @@ def make_script_story_reference(market: str, story: NewsStory) -> str:
     return sanitize_story_for_ad(market, story).sanitized_reference
 
 
+IMPERATIVE_OPENERS = (
+    "book",
+    "bring",
+    "come",
+    "discover",
+    "download",
+    "get",
+    "grab",
+    "join",
+    "order",
+    "stop by",
+    "swing by",
+    "taste",
+    "try",
+    "visit",
+)
+
+PASTRY_TERMS = ("kouign", "pastry", "pastries", "patisserie", "patiserie", "croissant", "bakery", "baked")
+TACO_TERMS = ("taco", "al pastor", "trompo", "taqueria", "burrito")
+
+
 def make_campaign_info(campaign_script: str) -> dict[str, str]:
-    raw_phrase = " ".join(campaign_script.split())[:220] or "the featured offer"
+    # Split the CTA off before capping the phrase, so a long website brief never loses its "CTA:" tail.
+    raw_phrase = " ".join(campaign_script.split()) or "the featured offer"
     phrase, requested_cta = split_campaign_and_cta(raw_phrase)
+    phrase = phrase[:PHRASE_LIMIT].strip()
     lower = phrase.lower()
-    cta = f"Try {phrase} today."
+    cta = make_default_cta(phrase)
     if "game" in lower:
         product = "a new casual mobile game"
         product_shot = (
@@ -94,8 +137,30 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         product_energy = "Quick-play energy"
         craving = "quick-play craving"
         cta = "Download the game and play on your next break."
-    elif any(term in lower for term in ("morning bun", "pastry", "pastries", "bakery", "croissant")):
-        product = "a warm bakery morning bun" if "morning bun" in lower else "a fresh bakery pastry"
+    elif "sandwi" in lower:
+        # Matches "sandwich" and the common "sandwitch" misspelling seen in website briefs.
+        product = "a fresh made-to-order sandwich"
+        product_shot = (
+            "sandwich reveal: crusty bread sliced clean, layered fillings, crisp greens, a melty pull, "
+            "wrapped in paper on a bright deli counter"
+        )
+        product_energy = "Fresh sandwich energy"
+        craving = "lunch craving"
+        cta = "Tap the link and order your sandwich now." if "link" in lower else "Grab your sandwich today."
+    elif any(term in lower for term in TACO_TERMS):
+        late_night = "late-night" in lower or "late night" in lower
+        product = "fresh al pastor tacos" if "al pastor" in lower or "trompo" in lower else "fresh street tacos"
+        product_shot = (
+            "taco reveal: marinated pork carved off a spinning trompo, a sliver of pineapple, warm corn tortillas, "
+            "cilantro, onion, and salsa on a bright taqueria counter"
+            if "al pastor" in lower or "trompo" in lower
+            else "taco reveal: warm corn tortillas, sizzling filling, cilantro, onion, lime, and salsa on a bright taqueria counter"
+        )
+        product_energy = "Late-night taco energy" if late_night else "Fresh taco energy"
+        craving = "late-night taco craving" if late_night else "taco craving"
+        cta = "Order ahead on the link and skip the line." if "link" in lower else "Grab your tacos today."
+    elif "morning bun" in lower:
+        product = "a warm bakery morning bun"
         product_shot = (
             "fresh bakery reveal: a warm, flaky pastry pulled from a paper bag, sugar crust catching the light, "
             "a picnic blanket on grass, and a coffee cup beside it"
@@ -116,6 +181,14 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         product_shot = "fresh coffee reveal: warm cup, rich pour, gentle steam, and a clean cafe-counter close-up"
         product_energy = "Fresh coffee energy"
         craving = "coffee craving"
+    elif any(term in lower for term in PASTRY_TERMS):
+        product = "a fresh, flaky pastry"
+        product_shot = (
+            "bakery pastry reveal: caramelized, layered pastry on a marble bakery counter, buttery sheen, "
+            "a light dusting of sugar, and an espresso cup resting beside it"
+        )
+        product_energy = "Fresh-from-the-oven energy"
+        craving = "buttery pastry craving"
     elif any(term in lower for term in ("pottery", "ceramic", "clay")):
         product = "a date night pottery class"
         product_shot = (
@@ -139,6 +212,14 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
     }
 
 
+def make_default_cta(phrase: str) -> str:
+    """Briefs written as an invitation ("Come try ...") are already a CTA; do not wrap them in "Try ... today"."""
+    lower = phrase.lower()
+    if any(lower == opener or lower.startswith(f"{opener} ") for opener in IMPERATIVE_OPENERS):
+        return f"{phrase.rstrip(' .!')}."
+    return f"Try {phrase} today."
+
+
 def split_campaign_and_cta(phrase: str) -> tuple[str, str]:
     markers = ("call to action:", "cta:")
     lower = phrase.lower()
@@ -160,7 +241,7 @@ def make_hook(market: str, story_reference: str, campaign: dict[str, str], angle
         return f"When {market} has something to talk about, make the break memorable."
     if angle == "quick lunch rescue":
         return f"Everyone is following the local buzz. You can still plan something memorable."
-    return f"The local feed is moving fast. End the moment with something refreshing."
+    return f"The local feed is moving fast. End the night with {campaign['product']}."
 
 
 def make_short_script(campaign: dict[str, str], hook: str, angle: str) -> str:

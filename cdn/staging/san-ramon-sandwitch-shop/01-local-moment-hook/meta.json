@@ -1,0 +1,26 @@
+{
+  "id": "san-ramon-sandwitch-shop-01-local-moment-hook",
+  "hook": "San Ramon CA is already talking about this: San Ramon CA's local moment about San Ramon CA food festival draws huge weekend crowds",
+  "cta": "Tap the link and order your sandwich now.",
+  "media_type": "video",
+  "media_file": "creative.mp4",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "sandwitch lovers, 21-40, commute by transit"
+    ],
+    "geo": [
+      "San Ramon CA"
+    ],
+    "weight": 2,
+    "active": true
+  },
+  "source": {
+    "agent": "viral-local-ad-generator",
+    "generated_at": "2026-09-25T23:23:02Z",
+    "brief_ref": "campaign:san-ramon-sandwitch-shop"
+  },
+  "poster_file": "poster.jpg"
+}

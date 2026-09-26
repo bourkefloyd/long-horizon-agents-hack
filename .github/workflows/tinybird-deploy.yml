@@ -52,11 +52,18 @@ jobs:
           fi
           echo "TINYBIRD_API_KEY is present (length ${#TINYBIRD_API_KEY})"
 
+      # Set the TINYBIRD_HOST repository variable to skip probing.
       - name: Detect region host
         id: host
+        env:
+          HOST_OVERRIDE: ${{ vars.TINYBIRD_HOST }}
         run: |
           set -euo pipefail
-          line="$(python3 scripts/tb_events.py detect-host)"
+          if [[ -n "${HOST_OVERRIDE}" ]]; then
+            line="TINYBIRD_HOST=${HOST_OVERRIDE%/}"
+          else
+            line="$(python3 scripts/tb_events.py detect-host --verbose)"
+          fi
           echo "${line}" >> "$GITHUB_ENV"
           echo "host=${line#TINYBIRD_HOST=}" >> "$GITHUB_OUTPUT"
           echo "Token authenticates against ${line#TINYBIRD_HOST=}"

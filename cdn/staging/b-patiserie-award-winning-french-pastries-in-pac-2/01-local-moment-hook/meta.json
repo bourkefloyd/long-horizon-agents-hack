@@ -1,0 +1,25 @@
+{
+  "id": "b-patiserie-award-winning-french-pastries-in-pac-2-01-local-moment-hook",
+  "hook": "San Francisco is already talking about this: the headline \"San Francisco celebrates culture of lowriding\"",
+  "cta": "Come try our famous kouign Amann.",
+  "media_type": "script",
+  "media_file": "script.txt",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "francophiles, Coffee lovers, 21-40, singles"
+    ],
+    "geo": [
+      "San Francisco"
+    ],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "viral-local-ad-generator",
+    "generated_at": "2026-09-25T23:03:36Z",
+    "brief_ref": "campaign:b-patiserie-award-winning-french-pastries-in-pac-2"
+  }
+}

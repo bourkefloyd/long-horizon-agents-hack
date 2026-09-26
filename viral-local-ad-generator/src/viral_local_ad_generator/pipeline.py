@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .agent_memory import AgentMemory, env_cost, guard
 from .bfl_client import BFLClient, find_media_url
 from .brand_guard import validate_no_famous_brands
 from .event_logger import PipelineLogger
@@ -11,6 +12,7 @@ from .models import NewsOutlet, NewsStory, SanitizedStory, VideoAdConcept
 from .nimble_client import NimbleClient, mock_stories
 from .prompts import generate_video_concepts, make_campaign_info
 from .sanitizer import sanitize_stories_for_ad
+from .staging import variant_id_for
 
 
 def run_pipeline(
@@ -33,6 +35,7 @@ def run_pipeline(
     story_published_at: str = "",
     story_snippet: str = "",
     logger: PipelineLogger | None = None,
+    memory: AgentMemory | None = None,
 ) -> dict[str, object]:
     output_dir.mkdir(parents=True, exist_ok=True)
     emit_log(
@@ -74,6 +77,7 @@ def run_pipeline(
         story_published_at=story_published_at,
         story_snippet=story_snippet,
         logger=logger,
+        memory=memory,
     )
     concepts = generate_ads_from_stories(
         campaign_script=campaign_script,
@@ -82,6 +86,7 @@ def run_pipeline(
         output_dir=output_dir,
         max_videos=max_videos,
         logger=logger,
+        memory=memory,
     )
     if generate and not dry_run:
         generate_videos(
@@ -91,6 +96,7 @@ def run_pipeline(
             poll=poll,
             download_media=download_media,
             logger=logger,
+            memory=memory,
         )
     result = write_run_artifacts(output_dir, market, stories, concepts, logger=logger)
     emit_log(logger, "pipeline.run", "output", result)
@@ -111,6 +117,7 @@ def discover_stories(
     story_published_at: str = "",
     story_snippet: str = "",
     logger: PipelineLogger | None = None,
+    memory: AgentMemory | None = None,
 ) -> list[NewsStory]:
     output_dir.mkdir(parents=True, exist_ok=True)
     emit_log(
@@ -155,8 +162,18 @@ def discover_stories(
                 nimble_client=nimble_client,
                 max_outlets=max_outlets,
                 logger=logger,
+                memory=memory,
             )
-        stories = nimble_client.search_recent_local_news(market, limit=12, outlets=outlets)
+        try:
+            stories = nimble_client.search_recent_local_news(market, limit=12, outlets=outlets)
+        except Exception as error:
+            guard(memory, "nimble_query", error, allow_continue=False)
+        emit_memory(
+            memory,
+            "nimble_query",
+            {"kind": "recent_local_news", "market": market, "results": len(stories)},
+            cost_usd=env_cost("NIMBLE_QUERY_COST_USD"),
+        )
     emit_log(
         logger,
         "news.discovery",
@@ -167,6 +184,17 @@ def discover_stories(
         },
     )
     selected_stories = select_stories(stories, count=max_stories)
+    emit_memory(
+        memory,
+        "story_ranked",
+        {
+            "candidates": len(stories),
+            "selected": [
+                {"title": story.title, "url": story.url, "score": round(story.virality_score + story.relevance_score, 3)}
+                for story in selected_stories
+            ],
+        },
+    )
     write_json(output_dir / "stories.json", [story.to_dict() for story in selected_stories])
     write_news_summary(output_dir / "news.md", market, selected_stories)
     emit_log(
@@ -188,6 +216,7 @@ def discover_outlets(
     nimble_client: NimbleClient,
     max_outlets: int = 8,
     logger: PipelineLogger | None = None,
+    memory: AgentMemory | None = None,
 ) -> list[NewsOutlet]:
     output_dir.mkdir(parents=True, exist_ok=True)
     emit_log(
@@ -196,7 +225,16 @@ def discover_outlets(
         "input",
         {"market": market, "max_outlets": max_outlets},
     )
-    outlets = nimble_client.search_local_news_outlets(market, limit=max_outlets)
+    try:
+        outlets = nimble_client.search_local_news_outlets(market, limit=max_outlets)
+    except Exception as error:
+        guard(memory, "nimble_query", error, allow_continue=False)
+    emit_memory(
+        memory,
+        "nimble_query",
+        {"kind": "local_news_outlets", "market": market, "results": len(outlets)},
+        cost_usd=env_cost("NIMBLE_QUERY_COST_USD"),
+    )
     write_json(output_dir / "outlets.json", [outlet.to_dict() for outlet in outlets])
     write_outlets_summary(output_dir / "outlets.md", market, outlets)
     emit_log(
@@ -219,6 +257,7 @@ def generate_ads_from_stories(
     output_dir: Path,
     max_videos: int | None = None,
     logger: PipelineLogger | None = None,
+    memory: AgentMemory | None = None,
 ) -> list[VideoAdConcept]:
     output_dir.mkdir(parents=True, exist_ok=True)
     campaign = make_campaign_info(campaign_script)
@@ -267,13 +306,20 @@ def generate_ads_from_stories(
         validate_no_famous_brands(concepts)
     except Exception as error:
         emit_log(logger, "brand_guard", "validation", {"error": str(error)}, status="error")
-        raise
+        guard(memory, "brand_guard", error, allow_continue=False)
     emit_log(
         logger,
         "brand_guard",
         "validation",
         {"concept_count": len(concepts), "result": "passed"},
     )
+    for concept in concepts:
+        emit_memory(
+            memory,
+            "script_generated",
+            {"story_title": concept.story_title, "angle": concept.angle, "hook": concept.hook},
+            variant_id=variant_id_for(concept),
+        )
     write_input_webpages(output_dir, stories)
     write_json(output_dir / "concepts.json", [concept.to_dict() for concept in concepts])
     write_markdown_summary(output_dir / "summary.md", market, stories, concepts)
@@ -297,6 +343,7 @@ def generate_videos(
     poll: bool,
     download_media: bool,
     logger: PipelineLogger | None = None,
+    memory: AgentMemory | None = None,
 ) -> list[VideoAdConcept]:
     output_dir.mkdir(parents=True, exist_ok=True)
     emit_log(
@@ -310,30 +357,58 @@ def generate_videos(
             "concepts": [concept.to_dict() for concept in concepts],
         },
     )
-    validate_no_famous_brands(concepts)
+    try:
+        validate_no_famous_brands(concepts)
+    except Exception as error:
+        guard(memory, "brand_guard", error, allow_continue=False)
+    # Variants that reached bfl_ready in an earlier run of this campaign are not re-spent.
+    already_done = memory.completed_variants() if memory else set()
     for index, concept in enumerate(concepts, start=1):
+        variant_id = variant_id_for(concept)
+        if variant_id in already_done:
+            concept.bfl_job = {"skipped": True, "reason": "bfl_ready in a previous run", "variant_id": variant_id}
+            emit_log(logger, "video_generation", "skip_concept", {"index": index, "variant_id": variant_id})
+            emit_memory(memory, "variant_skipped", {"reason": "bfl_ready in a previous run"}, variant_id=variant_id)
+            continue
         emit_log(
             logger,
             "video_generation",
             "submit_concept",
             {"index": index, "concept": concept.to_dict()},
         )
-        job = bfl_client.submit_flux3_video(concept.bfl_payload)
-        if poll and job.get("polling_url"):
-            job["poll_result"] = bfl_client.poll(str(job["polling_url"]))
-            poll_status = job["poll_result"].get("status")
-            if poll_status != "Ready":
-                concept.bfl_job = job
-                write_json(output_dir / "concepts.json", [item.to_dict() for item in concepts])
-                raise RuntimeError(f"BFL job ended with status {poll_status}")
-            if download_media:
-                media_path = output_dir / "videos" / f"video_{index:02d}.mp4"
-                job["local_video_path"] = bfl_client.download_video_result(job["poll_result"], media_path)
-            video_url = find_media_url(job["poll_result"])
-            if video_url:
-                job["video_url"] = video_url
-                link_path = output_dir / "video_links" / f"video_{index:02d}.url"
-                write_text(link_path, video_url + "\n")
+        step = "bfl_submit"
+        try:
+            job = bfl_client.submit_flux3_video(concept.bfl_payload)
+            emit_memory(
+                memory,
+                "bfl_submit",
+                {"index": index, "job_id": job.get("id"), "polling": bool(job.get("polling_url"))},
+                variant_id=variant_id,
+                cost_usd=env_cost("BFL_VIDEO_COST_USD"),
+            )
+            if poll and job.get("polling_url"):
+                step = "bfl_poll"
+                job["poll_result"] = bfl_client.poll(str(job["polling_url"]))
+                poll_status = job["poll_result"].get("status")
+                if poll_status != "Ready":
+                    concept.bfl_job = job
+                    write_json(output_dir / "concepts.json", [item.to_dict() for item in concepts])
+                    raise RuntimeError(f"BFL job ended with status {poll_status}")
+                if download_media:
+                    step = "bfl_download"
+                    media_path = output_dir / "videos" / f"video_{index:02d}.mp4"
+                    job["local_video_path"] = bfl_client.download_video_result(job["poll_result"], media_path)
+                video_url = find_media_url(job["poll_result"])
+                if video_url:
+                    job["video_url"] = video_url
+                    link_path = output_dir / "video_links" / f"video_{index:02d}.url"
+                    write_text(link_path, video_url + "\n")
+                emit_memory(memory, "bfl_ready", {"index": index, "video_url": video_url}, variant_id=variant_id)
+        except Exception as error:
+            concept.bfl_job = concept.bfl_job or {"error": f"{type(error).__name__}: {error}", "step": step}
+            write_json(output_dir / "concepts.json", [item.to_dict() for item in concepts])
+            guard(memory, step, error, variant_id=variant_id)
+            continue
         concept.bfl_job = job
     write_json(output_dir / "concepts.json", [concept.to_dict() for concept in concepts])
     write_video_link_index(output_dir, concepts)
@@ -424,6 +499,17 @@ def emit_log(
 ) -> None:
     if logger:
         logger.emit(stage, event_type, payload, status=status)
+
+
+def emit_memory(
+    memory: AgentMemory | None,
+    event_type: str,
+    payload: dict[str, Any],
+    variant_id: str | None = None,
+    cost_usd: float | None = None,
+) -> None:
+    if memory:
+        memory.emit(event_type, payload, variant_id=variant_id, cost_usd=cost_usd)
 
 
 def write_json(path: Path, payload: object) -> None:

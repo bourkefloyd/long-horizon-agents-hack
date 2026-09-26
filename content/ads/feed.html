@@ -438,7 +438,7 @@ async function nextEpisode(stage, a) {
 function selfieSheet(stage, a) {
   const brand = brandOf(a);
   const s = sheet(stage, `<h3>Star in the next ad</h3>
-    <label class="check"><input type="checkbox" id="consent-${esc(a.id)}"> <span>I'm 18+, this is me, and it's sent to Black Forest Labs for one render, then deleted.</span></label>
+    <label class="check"><input type="checkbox" id="consent-${esc(a.id)}"> <span>I'm 18+, this is me, and it's sent to Black Forest Labs for one render, then deleted. Only I and the feed owner can see it.</span></label>
     <input type="file" accept="image/jpeg,image/png" hidden>
     <div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" data-pick disabled>Choose photo</button></div>`);
   const c = $("input[type=checkbox]", s), pick = $("[data-pick]", s), file = $("input[type=file]", s);
@@ -446,19 +446,40 @@ function selfieSheet(stage, a) {
   pick.onclick = () => file.click();
   file.onchange = async () => {
     const f = file.files[0]; if (!f) return;
-    if (f.size > 8 * 1024 * 1024) { toast(stage, "Photo must be under 8 MB"); return; }
-    if (HOSTED && f.size > 4 * 1024 * 1024) { toast(stage, "Photo must be under 4 MB"); return; }
-    const assets = HOSTED ? null : await claude.use("assets");
-    if (!HOSTED && !assets) { toast(stage, "Only the feed owner can upload"); return; }
+    if (f.size > 20 * 1024 * 1024) { toast(stage, "Photo must be under 20 MB"); return; }
     pick.disabled = true; pick.textContent = "Uploading…";
     try {
       const payload = { brand };
-      if (HOSTED) payload.image_b64 = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(f); });
-      else payload.selfie_asset = (await assets.upload(f)).id;
+      const jpeg = await shrink(f);  // any viewer can upload: the photo travels as a small JPEG, not an artifact asset
+      if (HOSTED) payload.image_b64 = jpeg;
+      else {
+        const user = await claude.use("user"), uid = user && await user.id();
+        if (!db || !uid) { toast(stage, "Sign in to add a photo"); pick.disabled = false; pick.textContent = "Choose photo"; return; }
+        const path = `uploads/${uid}/photos/p${Date.now()}`;
+        // Readable only by you and the feed owner (see the db rules); deleted after the render starts.
+        await db.doc(path).set({ jpeg_b64: jpeg, created_at: new Date().toISOString() });
+        payload.photo_doc = path;
+      }
       s.remove(); await request("selfie", payload, `Starring you · ${BRAND[brand].name}`, stage);
     }
-    catch (e) { pick.disabled = false; pick.textContent = "Choose photo"; toast(stage, `Upload failed (${e.code || "error"})`); }
+    catch (e) {
+      pick.disabled = false; pick.textContent = "Choose photo";
+      toast(stage, e?.code === "invalid_argument" ? "Ask the feed owner for Contributor access to add a photo" : `Upload failed (${e?.code || "error"})`);
+    }
   };
+}
+
+// Downscale to a JPEG small enough for one data-store document (under ~200 KB of base64).
+async function shrink(file) {
+  const img = await createImageBitmap(file);
+  for (const [edge, q] of [[1280, .82], [1024, .78], [896, .72], [768, .68], [640, .62]]) {
+    const k = Math.min(1, edge / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const b64 = c.toDataURL("image/jpeg", q).split(",")[1];
+    if (b64.length < 200000) return b64;
+  }
+  throw { code: "too_large" };
 }
 
 // ---------- requests, state, taps ----------
