@@ -10,6 +10,10 @@
 
 **1st place, Best use of Nimble.** Prize: $1,500, 5,000 Search credits, and 100 agent-run credits.
 
+![SF Coffee Launch in the ad feed](docs/screenshots/sf-coffee-launch.png)
+
+*SF Coffee Launch, 9:16, in the ad feed.*
+
 ## Team
 
 - **[Thomas Barrios](https://www.linkedin.com/in/tbarrios2/)** ([X](https://x.com/tbarrios2)) — marketing schema, Nimble, campaign generation.
@@ -54,6 +58,20 @@ flowchart TD
         API --> CampaignJSON
     end
 ```
+
+## Screenshots
+
+![Campaign page for B Patisserie](docs/screenshots/campaign-b-patisserie.png)
+
+*Campaign page for B Patisserie. Brief, market, 9:16, and the folded signal counts.*
+
+<p>
+  <img src="docs/screenshots/fogfeed-score.png" width="220" alt="Fog Feed, Sightglass, score 0, Liquid agent">
+  <img src="docs/screenshots/fogfeed-pour-espresso.png" width="220" alt="Fog Feed, hold to pour espresso">
+  <img src="docs/screenshots/fogfeed-pour-foam.png" width="220" alt="Fog Feed, hold to pour foam">
+</p>
+
+*Fog Feed, Sightglass. Pour the latte. The card shows a Liquid agent score.*
 
 ## Layout
 
