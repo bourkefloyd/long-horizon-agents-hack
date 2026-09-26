@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import re
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 from typing import Any
 from urllib.parse import urlparse
 
 from .brand_guard import find_famous_brand_terms
 from .http import post_json
 from .models import NewsOutlet, NewsStory
+
+if TYPE_CHECKING:
+    from .event_logger import PipelineLogger
 
 
 SENSITIVE_TERMS = {
@@ -66,6 +70,7 @@ class NimbleClient:
     def __init__(self, api_key: str, base_url: str) -> None:
         self.api_key = api_key
         self.base_url = base_url
+        self.logger: PipelineLogger | None = None
 
     def search_local_news_outlets(self, market: str, limit: int = 8) -> list[NewsOutlet]:
         if not self.api_key:
@@ -77,21 +82,40 @@ class NimbleClient:
             "neighborhood news, and local digital outlets. Avoid national aggregators, tourism sites, "
             "wire services, and generic directories."
         )
+        endpoint = f"{self.base_url}/v2/search"
+        request_payload = {
+            "query": query,
+            "focus": "general",
+            "max_results": limit,
+            "search_depth": "standard",
+        }
+        if self.logger:
+            self.logger.emit(
+                "nimble.outlet_search",
+                "request",
+                {"endpoint": endpoint, "payload": request_payload},
+            )
         payload = post_json(
-            f"{self.base_url}/v2/search",
+            endpoint,
             headers={
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
             },
-            payload={
-                "query": query,
-                "focus": "general",
-                "max_results": limit,
-                "search_depth": "standard",
-            },
+            payload=request_payload,
             timeout=45,
         )
-        return normalize_nimble_outlets(payload)[:limit]
+        outlets = normalize_nimble_outlets(payload)[:limit]
+        if self.logger:
+            self.logger.emit(
+                "nimble.outlet_search",
+                "response",
+                {
+                    "raw_response": payload,
+                    "normalized_count": len(outlets),
+                    "outlets": [outlet.to_dict() for outlet in outlets],
+                },
+            )
+        return outlets
 
     def search_recent_local_news(
         self,
@@ -119,24 +143,46 @@ class NimbleClient:
             "lawsuits, disasters, health stories, disease stories, and medical stories."
             f"{outlet_clause}"
         )
+        endpoint = f"{self.base_url}/v2/search"
+        request_payload = {
+            "query": query,
+            "focus": "general",
+            "max_results": limit,
+            "search_depth": "standard",
+        }
+        if self.logger:
+            self.logger.emit(
+                "nimble.news_search",
+                "request",
+                {
+                    "endpoint": endpoint,
+                    "payload": request_payload,
+                    "outlets": [outlet.to_dict() for outlet in outlets] if outlets else [],
+                },
+            )
         payload = post_json(
-            f"{self.base_url}/v2/search",
+            endpoint,
             headers={
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
             },
-            payload={
-                "query": query,
-                "focus": "general",
-                "max_results": limit,
-                "search_depth": "standard",
-            },
+            payload=request_payload,
             timeout=45,
         )
         stories = normalize_nimble_results(payload)
         if outlets:
             domains = {outlet.domain for outlet in outlets if outlet.domain}
             stories = [story for story in stories if normalize_domain(story.url) in domains]
+        if self.logger:
+            self.logger.emit(
+                "nimble.news_search",
+                "response",
+                {
+                    "raw_response": payload,
+                    "normalized_count": len(stories),
+                    "stories": [story.to_dict() for story in stories],
+                },
+            )
         return stories
 
 

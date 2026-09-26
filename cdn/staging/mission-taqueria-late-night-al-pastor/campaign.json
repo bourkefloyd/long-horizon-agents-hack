@@ -1,0 +1,29 @@
+{
+  "campaign": {
+    "id": "mission-taqueria-late-night-al-pastor",
+    "name": "Mission Taqueria Late Night Al Pastor",
+    "brief": "Late-night al pastor tacos carved fresh off the trompo until 2 AM, two blocks from the 24th St Mission BART. Order ahead on the link and skip the line after the show. CTA: Order ahead and skip the line.",
+    "vertical": "Food & beverage",
+    "geo": "San Francisco Mission District",
+    "audience": "night-out crowd and late-shift workers, 21-35, leaving shows, bars and BART after 10 PM",
+    "dims": "9:16",
+    "issue_url": null
+  },
+  "market": "San Francisco Mission District",
+  "generated_at": "2026-09-25T23:49:41Z",
+  "agent": "viral-local-ad-generator",
+  "stories": [
+    {
+      "title": "San Francisco celebrates culture of lowriding",
+      "url": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/",
+      "source": "Nimble news search",
+      "published_at": "2026-09-25",
+      "brand_safe": true
+    }
+  ],
+  "variants": [
+    "01-local-moment-hook",
+    "02-commuter-craving",
+    "03-late-night-payoff"
+  ]
+}

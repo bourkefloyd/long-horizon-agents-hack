@@ -1,0 +1,14 @@
+Tartine Bakery x N-Judah commuters - 5-second vertical ad
+Campaign: Tartine Weekend Buns (tartine-weekend-buns)
+Brief: Tartine Bakery morning buns for Dolores Park weekends
+Local moment: San Francisco's Chinatown lantern-display story (source: https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420)
+
+HOOK (VO, 0s): "Missed the N. Not the good part."
+SHOT ONE (0-2s): a software engineer in his late twenties in a rain shell with earbuds and a backpack, a stop in the Inner Sunset as a light-rail streetcar pulls up, fog rolling down Irving Street, 7:45 AM, thick gray summer fog. the streetcar doors close in his face and he exhales into the fog.
+SHOT TWO (2-4s): he turns, walks half a block and steps inside. a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it.
+SHOT THREE (4-5s): first sip by the window, streetcar bell fading behind him.
+AUDIO: mellow lo-fi hip hop beat with muted keys and rain ambience; a crackling crust, a paper bag rustling open; ends on a warm three-note acoustic guitar figure on the final frame.
+CTA (overlay): Get in line at 600 Guerrero
+
+Brand facts: Mission bakery at 600 Guerrero St, known for morning buns, croissants and country bread; https://tartinebakery.com/san-francisco/bakery; https://en.wikipedia.org/wiki/Tartine
+Unofficial spec work for a hackathon experiment; not affiliated with or endorsed by the brand.

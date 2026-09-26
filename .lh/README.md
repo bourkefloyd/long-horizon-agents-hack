@@ -11,6 +11,8 @@ Working memory and instructions for the GitHub Actions agent runs. Full guide: [
     check-state.sh     enforce the state.md contract (sections, line cap)
     compose-prompt.sh  build the exact prompt one run sees
     prune-logs.sh      keep the newest K run logs
+    merge-state.sh     merge two state.md versions: base keeps Goal/Plan/Open/Decisions, Done/Dropped are unioned
+    rebase-onto-base.sh  rebase the agent branch onto main, auto-resolving only state.md via merge-state.sh
   log/                 one short summary per run, <run-id>.md, pruned to K (default 5)
   web/                 target: web surface of the campaign automation
     config.json        target model override (Grok 4.7 High)
@@ -33,6 +35,10 @@ The target is selected by one label: `lh:web` or `lh:campaign-gen`.
 
 Each run works on `lh/<target>/issue-<n>` (or `lh/<target>/manual-<run-id>`), opens or updates a PR, and comments on the
 task issue. Nothing is pushed to `main`. Runs for the same target and issue queue behind each other.
+
+Before publishing (and again on `/approve`), the branch is rebased onto `main`. A conflict in `state.md` is resolved
+deterministically: `main` keeps Goal, Current plan, Open, and Decisions; Done and Dropped bullets from both sides are
+unioned and deduplicated, then the line cap is re-checked. Any other conflict leaves the branch as-is for a human.
 
 ## The state file
 

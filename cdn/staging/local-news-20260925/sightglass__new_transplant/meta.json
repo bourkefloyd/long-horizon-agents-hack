@@ -1,0 +1,25 @@
+{
+  "id": "local-news-20260925-sightglass-new-transplant",
+  "hook": "Nobody told you about July. We did.",
+  "cta": "Find the roastery at 270 7th St",
+  "media_type": "image",
+  "media_file": "poster.jpg",
+  "script_file": "script.txt",
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "New to SF"
+    ],
+    "geo": [
+      "US"
+    ],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "scripts/generate-content.py",
+    "generated_at": "2026-09-25T21:43:31Z",
+    "brief_ref": "https://ktla.com/news/california/hitchhiking-burning-man-marmots-returned-to-wild/"
+  },
+  "poster_file": "poster.jpg"
+}

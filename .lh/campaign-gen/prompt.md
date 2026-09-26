@@ -22,6 +22,21 @@ Upcoming work includes BFL video generation and Liquid model calls.
 4. Brand-safety checks reject sensitive stories and famous-brand leakage while retaining useful local context.
 5. Make one coherent, reviewable change per run. Do not edit `web/` or `service/`.
 
+## Website campaigns
+
+The website's `POST /campaigns/{id}/queue` opens a task issue titled `Campaign: <name>` whose body contains a fenced ```json block
+with the campaign record (`id`, `name`, `brief`, `vertical`, `geo`, `audience`, `dims`). When the task issue contains such a block,
+generate for that campaign: use `brief` as the campaign script, `geo` as the market, honor `dims`, and write every staged output under
+`cdn/staging/<campaign_id>/<variant>/` with a `meta.json` per variant (see `docs/cdn.md`) so the feed can filter by `campaign_id`.
+Do not invent a different campaign id and do not write outside that folder. Publishing to the CDN still requires human approval.
+
+## Upcoming tooling: Tinybird event memory
+
+When `TINYBIRD_API_KEY` is present in the environment, record what a run did as small events instead of growing state or logs:
+`python3 scripts/tb_events.py emit <campaign_id> campaign-gen <event_type> '<json payload>'` (event types: `run_started`,
+`nimble_query`, `variant_generated`, `run_finished`; pass `cost_usd` via the Python API in `scripts/tb_events.py` when money was spent).
+Read prior runs with `python3 scripts/tb_events.py read <campaign_id>`; see `tinybird/README.md`. Never print the key.
+
 ## Human approval
 
 Do not spend money, change the marketing output schema, or publish content without a human decision. Instead, include the proposed

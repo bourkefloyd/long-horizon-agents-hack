@@ -11,6 +11,9 @@ class Settings:
     bfl_api_key: str
     nimble_base_url: str
     bfl_base_url: str
+    tinybird_token: str
+    tinybird_base_url: str
+    tinybird_datasource: str
 
 
 def load_settings() -> Settings:
@@ -20,6 +23,9 @@ def load_settings() -> Settings:
         bfl_api_key=os.getenv("BFL_API_KEY", ""),
         nimble_base_url=os.getenv("NIMBLE_BASE_URL", "https://sdk.nimbleway.com").rstrip("/"),
         bfl_base_url=os.getenv("BFL_BASE_URL", "https://api.bfl.ai").rstrip("/"),
+        tinybird_token=os.getenv("TINYBIRD_TOKEN", ""),
+        tinybird_base_url=os.getenv("TINYBIRD_BASE_URL", "https://api.europe-west2.gcp.tinybird.co").rstrip("/"),
+        tinybird_datasource=os.getenv("TINYBIRD_DATASOURCE", "events"),
     )
 
 

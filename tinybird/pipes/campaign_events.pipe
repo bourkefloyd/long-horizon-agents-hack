@@ -1,0 +1,21 @@
+DESCRIPTION >
+    Recent events for one campaign, newest first.
+    Params: campaign_id (required), since (optional ISO-8601 or 'YYYY-MM-DD HH:MM:SS'),
+    agent (optional), limit (default 200).
+
+NODE endpoint
+SQL >
+    %
+    SELECT ts, campaign_id, agent, run_id, event_type, variant_id, payload, cost_usd
+    FROM agent_events
+    WHERE campaign_id = {{ String(campaign_id, required=True) }}
+    {% if defined(since) %}
+        AND ts >= parseDateTimeBestEffort({{ String(since) }})
+    {% end %}
+    {% if defined(agent) %}
+        AND agent = {{ String(agent) }}
+    {% end %}
+    ORDER BY ts DESC
+    LIMIT {{ Int32(limit, 200) }}
+
+TYPE ENDPOINT
