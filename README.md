@@ -28,19 +28,32 @@ Local vertical 9:16 video ad campaigns. Nimble discovery, scripts, FLUX.2 pro po
 
 **Not on the live path.** Tinybird was intended as agent-event memory and was never validated. Liquid was a paused local llama.cpp experiment, not the live path.
 
-## Shutdown
+```mermaid
+flowchart TD
+    subgraph SWE["Long-horizon SWE"]
+        Issue["Issue labeled lh:web or lh:campaign-gen"]
+        Agent["Restricted Cursor CLI agent"]
+        State["Capped state file"]
+        PR["Pull request"]
+        Approve["/approve squash-merges"]
+        Issue --> Agent --> State --> PR --> Approve
+    end
 
-Dated 26 September 2026.
-
-- GitHub Actions disabled.
-- GitHub Actions secrets removed.
-- Cloud Run services deleted.
-- Secret Manager secrets removed.
-- Cloud Run, Cloud Build, and Secret Manager APIs disabled.
-
-Kept: the GCP project, bucket `gs://lh-ads-assets-205515555985` and its manifest, and Artifact Registry `lh-campaign`. Old Cloud Run URLs no longer serve.
-
-Do not run `generate-content`, publish, or deploy workflows. Do not spend Black Forest Labs credits.
+    subgraph Ads["Local ad marketing"]
+        Nimble["Nimble discovery"]
+        Script["Script schema"]
+        BFL["BFL FLUX.2 pro posters 1088×1920<br/>FLUX 3 video 9:16 hd"]
+        Manifest["Public GCS manifest"]
+        Web["Next.js swipe feed<br/>Cloud Run lh-web"]
+        API["FastAPI lh-campaign-service"]
+        CampaignJSON["Campaign JSON in GCS"]
+        QR["QR to /campaigns/new"]
+        Nimble --> Script --> BFL --> Manifest --> Web
+        QR --> Web
+        Web -->|"queue next campaign"| API
+        API --> CampaignJSON
+    end
+```
 
 ## Layout
 
