@@ -1,0 +1,29 @@
+{
+  "campaign": {
+    "id": "tartine-weekend-buns",
+    "name": "Tartine Weekend Buns",
+    "brief": "Tartine Bakery morning buns for Dolores Park weekends",
+    "vertical": "Food & beverage",
+    "geo": "San Francisco",
+    "audience": "Dolores Park crews and Ocean Beach surfers, weekend mornings",
+    "dims": "9:16",
+    "issue_url": null
+  },
+  "market": "San Francisco",
+  "generated_at": "2026-09-25T22:31:16Z",
+  "agent": "viral-local-ad-generator",
+  "stories": [
+    {
+      "title": "San Francisco celebrates culture of lowriding",
+      "url": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/",
+      "source": "KFOR via Nimble news search",
+      "published_at": "2026-09-25",
+      "brand_safe": true
+    }
+  ],
+  "variants": [
+    "01-local-moment-hook",
+    "02-commuter-craving",
+    "03-fan-celebration"
+  ]
+}

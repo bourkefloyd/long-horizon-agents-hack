@@ -1,0 +1,25 @@
+{
+  "id": "tartine-weekend-buns-03-fan-celebration",
+  "hook": "When San Francisco has something to talk about, make the break memorable.",
+  "cta": "Grab one warm before the weekend gets going.",
+  "media_type": "script",
+  "media_file": "script.txt",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "Dolores Park crews and Ocean Beach surfers, weekend mornings"
+    ],
+    "geo": [
+      "San Francisco"
+    ],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "viral-local-ad-generator",
+    "generated_at": "2026-09-25T22:31:16Z",
+    "brief_ref": "campaign:tartine-weekend-buns"
+  }
+}

@@ -159,6 +159,15 @@ def make_campaign_info(campaign_script: str) -> dict[str, str]:
         product_energy = "Late-night taco energy" if late_night else "Fresh taco energy"
         craving = "late-night taco craving" if late_night else "taco craving"
         cta = "Order ahead on the link and skip the line." if "link" in lower else "Grab your tacos today."
+    elif "morning bun" in lower:
+        product = "a warm bakery morning bun"
+        product_shot = (
+            "fresh bakery reveal: a warm, flaky pastry pulled from a paper bag, sugar crust catching the light, "
+            "a picnic blanket on grass, and a coffee cup beside it"
+        )
+        product_energy = "Fresh-baked weekend energy"
+        craving = "fresh-baked craving"
+        cta = "Grab one warm before the weekend gets going."
     elif "frappe" in lower:
         product = "a new Frappe"
         product_shot = (
