@@ -1,0 +1,20 @@
+DESCRIPTION >
+    Per-agent, per-event_type counts and spend for one campaign.
+    Params: campaign_id (required).
+
+NODE endpoint
+SQL >
+    %
+    SELECT
+        agent,
+        event_type,
+        count() AS events,
+        sum(coalesce(cost_usd, 0)) AS cost_usd,
+        min(ts) AS first_ts,
+        max(ts) AS last_ts
+    FROM agent_events
+    WHERE campaign_id = {{ String(campaign_id, required=True) }}
+    GROUP BY agent, event_type
+    ORDER BY agent, event_type
+
+TYPE ENDPOINT

@@ -1,0 +1,14 @@
+Tartine Bakery x Dolores Park crews - 5-second vertical ad
+Campaign: Tartine Weekend Buns (tartine-weekend-buns)
+Brief: Tartine Bakery morning buns for Dolores Park weekends
+Local moment: San Francisco's Chinatown lantern-display story (source: https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420)
+
+HOOK (VO, 0s): "Who was on bread duty?"
+SHOT ONE (0-2s): a group of four friends in their twenties with a picnic blanket and a speaker, the sloped lawn of Dolores Park with the downtown skyline behind, palm trees, crowds, sunny Sunday afternoon. the friends spread a blanket on the slope and realize nobody brought food, groans and laughs.
+SHOT TWO (2-4s): one friend jogs up holding a big round country loaf and a pastry box. a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it.
+SHOT THREE (4-5s): they tear the bread and pass it around, skyline behind, everyone talking at once.
+AUDIO: sunny indie pop with hand claps and bright guitar; a crackling crust, a paper bag rustling open; ends on a warm three-note acoustic guitar figure on the final frame.
+CTA (overlay): Get in line at 600 Guerrero
+
+Brand facts: Mission bakery at 600 Guerrero St, known for morning buns, croissants and country bread; https://tartinebakery.com/san-francisco/bakery; https://en.wikipedia.org/wiki/Tartine
+Unofficial spec work for a hackathon experiment; not affiliated with or endorsed by the brand.

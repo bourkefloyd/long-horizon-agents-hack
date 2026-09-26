@@ -1,0 +1,23 @@
+SF Coffee Launch - variant 2 (commuter craving) - 9:16 vertical ad
+Brief: Casual mobile game cross-promo for SF coffee lovers
+Vertical: Mobile games
+Audience: Coffee lovers, 21-40, commute by transit
+Local moment: San Francisco celebrates culture of lowriding (KFOR via Nimble news search; https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/)
+
+HOOK: On the way across San Francisco, the local buzz meets a quick-play craving.
+
+10-second vertical video commercial script
+Market: San Francisco
+Local news inspiration: a San Francisco local story about San Francisco celebrates culture of lowriding
+Story content reference to use in the ad: San Francisco's local story about San Francisco celebrates culture of lowriding
+Campaign message: Casual mobile game cross-promo for SF coffee lovers
+
+0.0-2.0s | Shot: Fast social-feed style montage of recognizable San Francisco street energy, phones lighting up, and abstract local-news card visuals tied to the story topic. | On-screen text: San Francisco is talking. | Voiceover: "San Francisco is talking about San Francisco's local story about San Francisco celebrates culture of lowriding."
+2.0-4.0s | Shot: Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: San Francisco's local story about San Francisco celebrates culture of lowriding. | On-screen text: Local story. Fresh twist. | Voiceover: "When the local story has everyone paying attention..."
+4.0-7.0s | Shot: Smash cut to a craveable phone-screen game reveal: a bright casual game on a handheld phone, one thumb tap, a satisfying level-clear burst, and a coffee cup resting beside it on a cafe table. | On-screen text: Quick-play energy. | Voiceover: "...make your next twist a new casual mobile game."
+7.0-10.0s | Shot: Hero product shot against a bright San Francisco-inspired backdrop, then quick end-card with a simple CTA. | On-screen text: Download the game and play on your next break. | Voiceover: "Download the game and play on your next break."
+
+Brand-safety rules: reference the news story's actual topic and city clearly, but do not show real private people, do not recreate sensitive events, do not show publisher logos, do not use famous brand references, and do not imply endorsement by anyone in the story.
+Strategy note: On the way across San Francisco, the local buzz meets a quick-play craving.
+
+Unofficial spec work for a hackathon experiment; not affiliated with or endorsed by anyone in the story.

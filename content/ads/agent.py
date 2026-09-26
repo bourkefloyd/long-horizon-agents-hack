@@ -91,6 +91,77 @@ SCENE = {
 }
 NO_TEXT = "No on-screen text, captions, logos, signs or readable words."
 
+# ---- Create mode: a campaign brief from the feed's multiple-choice screens becomes one full ad per variant ----
+CATEGORY = {  # look + setting + hero for brands we have no scene for yet
+    "coffee": ("Bright airy look, soft morning window light, warm wood tones", "a bright neighborhood coffee shop", "a latte in a ceramic cup with latte art"),
+    "burger": ("Punchy social-feed look, saturated warm colors, crisp commercial food lighting", "a lively burger counter with a sizzling flat-top", "a juicy double smash burger with melted cheese"),
+    "bakery": ("Warm golden look, natural light, flaky pastry in macro detail", "a busy neighborhood bakery with trays fresh from the oven", "a flaky golden croissant torn open, steam rising"),
+    "ice cream": ("Sun-drenched summer look, saturated colors, playful handheld energy", "a small ice cream shop with a line out the door", "a glossy scoop of ice cream pressed into a cone"),
+    "other": ("Clean modern commercial look, soft natural light", "a friendly neighborhood shop", "the product in a clean hero close-up"),
+}
+AUDIENCE = {
+    "soma lunch": ("office workers on a weekday lunch break", "SoMa, with brick warehouses and the Bay Bridge in the distance"),
+    "mission brunch": ("friends meeting for weekend brunch", "a sunny Mission District street lined with murals"),
+    "n-judah commuters": ("a commuter with a backpack and earbuds", "a foggy Inner Sunset streetcar stop"),
+    "students": ("college students with laptops and backpacks", "a busy campus-side street in San Francisco"),
+    "wharf visitors": ("visitors taking in the city", "the waterfront near the piers with sea lions and fog"),
+}
+MOMENT = {"morning rush": "early morning, soft fog lifting", "lunch": "midday, bright sun", "after work": "golden hour, warm low light", "weekend": "a lazy sunny weekend afternoon"}
+MUSIC = {"lo-fi chill": "mellow lo-fi beat with muted keys", "upbeat hip hop": "upbeat hip hop beat with snappy hi-hats",
+         "indie acoustic": "bright indie acoustic guitar with hand claps", "cinematic swell": "cinematic strings building to a warm swell"}
+VOICE = {"warm narrator": "a warm, friendly narrator, American English", "energetic creator": "an energetic social-media creator talking to camera, American English",
+         "spanish narrator": "a warm narrator speaking Mexican Spanish", "music only": None}
+GOAL_LINE = {"foot traffic": "Come by today.", "online orders": "Order ahead in two taps.", "new item launch": "New on the menu.", "brand love": "Made for San Francisco."}
+FORMAT = {  # (shot one, shot two, shot three, hook line); {who} {where} {hero} filled in
+    "pov": ("first-person POV walking through {where}, a hand reaching toward the door", "POV close-up: {hero} slides across the counter toward the camera", "POV: the first taste, the city blurring happily in the background", "POV: you found your spot."),
+    "trend hook": ("fast social-feed montage in {where}: {who} glance at phones that light up and react with surprise", "abstract news-feed cards with icons and emoji sliding past, no readable words", "smash cut to {hero} in a slow-motion reveal", "San Francisco's feed is buzzing."),
+    "day in the life": ("{who} starting their day in {where}", "{who} stepping inside and being handed {hero}", "{who} sharing it with a friend, laughing", "A day in the life, made better."),
+    "asmr close-up": ("extreme macro of {hero} being made, every texture visible", "slow-motion detail: steam, drips and crumbs in window light", "a satisfying first bite or sip in close-up", ""),
+    "street interview": ("a friendly host with a microphone stops {who} in {where}", "the person tastes {hero} on the spot and their eyes light up", "they give the camera a big thumbs up as the host laughs", "Quick question: what's the best thing on this block?"),
+}
+
+
+def campaign_body(p, defaults):
+    """One variant of a Create-mode campaign as a full 10-second FLUX 3 ad."""
+    brand_key = p.get("brand_key")
+    if brand_key in SCENE:
+        sc = SCENE[brand_key]
+        look, place, hero = sc["look"], sc["place"], sc["hero"]
+    else:
+        look, place, hero = CATEGORY[p.get("category", "other")]
+    name = p.get("brand_name") or "the shop"
+    who, where = AUDIENCE[p["audience"]]
+    one, two, three, hook = (x.format(who=who, where=where, hero=hero) for x in FORMAT[p["format"]])
+    sc_in = p.get("script")  # written by Claude Opus 5.5 when the request is processed
+    if sc_in and "shot1" in sc_in:
+        one, two, three, hook = sc_in["shot1"], sc_in["shot2"], sc_in["shot3"], sc_in["hook"]
+    voice = VOICE[p["voice"]]
+    close = f"{name}. {GOAL_LINE[p['goal']]}"
+    if sc_in and sc_in.get("close"):
+        close = sc_in["close"]
+    if p["voice"] == "spanish narrator":
+        hook, close = "", f"{name}. Te esperamos."
+    lines = ""
+    if voice:
+        said = [f'At 0 seconds the narrator says: "{hook}"'] if hook else []
+        said.append(f'At 7 seconds the narrator says: "{close}"')
+        lines = f" Voiceover by {voice}. " + " ".join(said)
+    dur = int(p.get("length", 10))
+    head = f"{look}. A {dur}-second vertical mobile video ad for {name}, set in {place}, {MOMENT[p['moment']]}. {NO_TEXT}"
+    music = f"AUDIO: Music: {MUSIC[p['music']]}, ending on a short upbeat sting."
+    if sc_in and sc_in.get("shots"):  # Opus 5.5 timed shot list: [{"t": [a, b], "shot": ..., "vo": ...}]
+        names = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"]
+        shots = [f"{'' if i == 0 else 'HARD CUT. '}SHOT {names[i]} ({x['t'][0]}-{x['t'][1]}s): {x['shot']}." for i, x in enumerate(sc_in["shots"])]
+        said = " ".join(f'At {x["t"][0]} seconds the narrator says: "{x["vo"]}"' for x in sc_in["shots"] if x.get("vo"))
+        lines = f" Voiceover by {voice}. {said}" if voice and said else ""
+        prompt = "\n".join([head, *shots, music + lines])
+    else:
+        t1, t2 = round(dur * .3), round(dur * .7)
+        prompt = (f"{head}\nSHOT ONE (0-{t1}s): {one}.\nHARD CUT. SHOT TWO ({t1}-{t2}s): {two}.\n"
+                  f"HARD CUT. SHOT THREE ({t2}-{dur}s): {three}.\n{music}{lines}")
+    return {"aspect_ratio": defaults["aspect_ratio"], "resolution": defaults["resolution"], "generate_audio": True,
+            "mode": "t2v", "duration": dur, **({"draft": True} if p.get("quality") == "draft" else {}), "prompt": prompt}
+
 
 def body_for(kind, p, defaults):
     base = {"aspect_ratio": defaults["aspect_ratio"], "resolution": defaults["resolution"], "generate_audio": True}
@@ -141,7 +212,33 @@ def body_for(kind, p, defaults):
             "the camera a thumbs up. Same person, same face, same shirt throughout.\n"
             f"AUDIO: Music: {sc['music']}. Sound effects: {sc['sfx']}. Voiceover by an energetic narrator, American "
             "English. At 6 seconds the narrator says: \"Looks good on you.\"")}
+    if kind == "campaign":
+        return campaign_body(p, defaults)
     raise ValueError(kind)
+
+
+def clean(line, limit=60):
+    """Keep a spoken line speakable: no emoji or symbols, bounded length."""
+    out = "".join(ch for ch in line if ch.isalnum() or ch in " .,!?'-:&").strip()
+    return out[:limit].rsplit(" ", 1)[0] if len(out) > limit else out
+
+
+def research(p):
+    """Nimble: this week's local stories for the audience's area. Opus 5.5 picks a brand-safe one and writes the script."""
+    import nimble
+    area = {"soma lunch": "SoMa", "mission brunch": "Mission District", "n-judah commuters": "Inner Sunset",
+            "students": "San Francisco", "wharf visitors": "Fisherman's Wharf"}[p["audience"]]
+    q = p.get("query") or f"San Francisco {area} local news this week"
+    res = nimble.search(q, "news", 6, "week")
+    return q, [{"title": x.get("title"), "description": x.get("description"), "url": x.get("url")} for x in res.get("results", [])]
+
+
+def prepare_campaign(p, ledger):
+    if p.get("research"):
+        r = p["research"]
+        ledger["nimble"] = f"news search '{r['query']}': {r['count']} stories" + (f", used '{p['headline']}'" if p.get("headline") else ", none used")
+    if p.get("script"):
+        ledger["claude"] = p.get("script_by", "Claude Opus 5.5") + " picked the story and wrote the script"
 
 
 def main(kind, req_id, payload):
@@ -151,13 +248,35 @@ def main(kind, req_id, payload):
     if not key:
         sys.exit("Set BLACK_FOREST (or BFL_API_KEY) in the environment.")
     OUT.mkdir(exist_ok=True)
+    ledger = {}
+    if kind == "selfie":  # Liquid vision checks the upload before anything is sent to BFL
+        import liquid
+        chk = liquid.check_image(p["image"])
+        ledger["liquid"] = [f"LFM2-VL-1.6B photo check: {'passed' if chk['ok'] else 'rejected'} ({chk['description']})"]
+        if not chk["ok"]:
+            Path(p["image"]).unlink(missing_ok=True)
+            (OUT / f"{req_id}.sponsors.json").write_text(json.dumps(ledger))
+            sys.exit(f"photo rejected: {chk}")
+    if kind == "research":
+        q, stories = research(p)
+        print(json.dumps({"query": q, "stories": stories}, indent=1, ensure_ascii=False))
+        return
+    if kind == "campaign":
+        prepare_campaign(p, ledger)
     body = body_for(kind, p, defaults)
+    mode = {"t2v": "text-to-video", "i2v": "image-to-video", "v2v": "continuation"}[body["mode"]]
+    ledger["bfl"] = f"FLUX 3 {mode}, {body['duration']} s {'draft' if body.get('draft') else 'HD'}"
     poll = render.submit(req_id, body, key, OUT)
     if kind == "selfie":
         Path(p["image"]).unlink(missing_ok=True)  # used once, then dropped
     ok = render.wait(req_id, poll, body, key, OUT)
+    if ok and (kind == "campaign" or os.environ.get("LIQUID_QA")):
+        import liquid
+        qa = liquid.check_video(OUT / f"{req_id}.mp4")
+        ledger.setdefault("liquid", []).append("LFM2-VL-1.6B frame check: " + ("flagged " + "; ".join(qa["found"]) if qa["flagged"] else "no text or logos"))
+    (OUT / f"{req_id}.sponsors.json").write_text(json.dumps(ledger, ensure_ascii=False))
+    print(json.dumps(ledger, ensure_ascii=False))
     sys.exit(0 if ok else 1)
-
 
 if __name__ == "__main__":
     main(*sys.argv[1:4])

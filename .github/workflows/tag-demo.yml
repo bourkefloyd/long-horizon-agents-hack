@@ -1,0 +1,114 @@
+name: Tag Cloud Run revision
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Cloud Run service to tag
+        required: true
+        type: choice
+        options:
+          - lh-campaign-service
+          - lh-web
+          - both
+        default: both
+      tag:
+        description: Traffic tag (revision URL prefix)
+        required: true
+        type: string
+        default: demo
+      revision:
+        description: Revision name (leave empty for latest ready)
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate configuration
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          DEPLOYER_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          FALLBACK_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          set -euo pipefail
+          for name in PROJECT_ID REGION; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing repository variable for ${name}"
+              exit 1
+            fi
+          done
+          if [[ -z "${WIF_PROVIDER}" || -z "${DEPLOYER_SERVICE_ACCOUNT}" ]]; then
+            if [[ -z "${FALLBACK_KEY}" ]]; then
+              echo "::error::Configure both WIF variables or the GCP_SA_KEY fallback secret"
+              exit 1
+            fi
+          fi
+
+      - name: Authenticate with Workload Identity Federation
+        if: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && vars.GCP_SERVICE_ACCOUNT != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Authenticate with service account key
+        if: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER == '' || vars.GCP_SERVICE_ACCOUNT == '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Update revision tags
+        env:
+          SERVICE_INPUT: ${{ inputs.service }}
+          TAG: ${{ inputs.tag }}
+          REVISION_INPUT: ${{ inputs.revision }}
+        run: |
+          set -euo pipefail
+          services=()
+          case "$SERVICE_INPUT" in
+            both)
+              services=(lh-campaign-service lh-web)
+              ;;
+            *)
+              services=("$SERVICE_INPUT")
+              ;;
+          esac
+
+          for svc in "${services[@]}"; do
+            rev="$REVISION_INPUT"
+            if [[ -z "$rev" ]]; then
+              rev="$(gcloud run services describe "$svc" \
+                --region "$REGION" \
+                --project "$PROJECT_ID" \
+                --format='value(status.latestReadyRevisionName)')"
+            fi
+            echo "Tagging ${svc}: ${TAG}=${rev}"
+            gcloud run services update-traffic "$svc" \
+              --region "$REGION" \
+              --project "$PROJECT_ID" \
+              --update-tags "${TAG}=${rev}"
+
+            tagged_url="$(gcloud run services describe "$svc" \
+              --region "$REGION" \
+              --project "$PROJECT_ID" \
+              --format=json | jq -r --arg tag "$TAG" '.status.traffic[] | select(.tag == $tag) | .url' | head -n1)"
+            echo "${svc} tagged URL: ${tagged_url}"
+            {
+              echo "### ${svc}"
+              echo "- Revision: \`${rev}\`"
+              echo "- Tagged URL: ${tagged_url}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          done

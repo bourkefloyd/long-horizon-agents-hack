@@ -1,0 +1,388 @@
+{
+ "campaign_id": "local-news-20260925",
+ "brief": "Sightglass Coffee pour-over for the people who make San Francisco run before 8 AM",
+ "market": "San Francisco",
+ "generated_at": "2026-09-25T21:43:31+00:00",
+ "discovery": {
+  "via": "nimble",
+  "query": "San Francisco viral local news this week",
+  "request_id": "5d1b69b6-5a84-46cb-bfcd-a75c8900a8d0",
+  "returned": 8,
+  "brand_safe": 4
+ },
+ "stories": [
+  {
+   "title": "49ers’ Kyle Juszczyk fined for viral chugging celebration",
+   "url": "https://sports.yahoo.com/articles/49ers-kyle-juszczyk-fined-viral-165853255.html",
+   "source": "Nimble news search",
+   "published_at": "",
+   "snippet": "A San Francisco 49ers star has been fined by the NFL following the team's Week 2 win over the Miami Dolphins.",
+   "relevance_score": 0.6,
+   "virality_score": 0.52,
+   "brand_safe": true,
+   "raw": {
+    "title": "49ers’ Kyle Juszczyk fined for viral chugging celebration",
+    "description": "A San Francisco 49ers star has been fined by the NFL following the team's Week 2 win over the Miami Dolphins.",
+    "url": "https://sports.yahoo.com/articles/49ers-kyle-juszczyk-fined-viral-165853255.html",
+    "content": "",
+    "additional_data": {
+     "publish_date_raw": "1 day ago"
+    },
+    "metadata": {
+     "position": 1,
+     "entity_type": "NewsResult",
+     "country": "US",
+     "locale": "en"
+    }
+   }
+  },
+  {
+   "title": "San Francisco AI startup planned to open hundred-plus 24-hour cafes, then a top executive's dating post w",
+   "url": "https://timesofindia.indiatimes.com/technology/tech-news/san-francisco-ai-startup-planned-to-open-hundred-plus-24-hour-cafes-then-a-top-executives-dating-post-went-viral-making-company-with-cafes-in-london-new-york-and-atlanta-junk-all-plans/articleshow/134489285.cms",
+   "source": "Nimble news search",
+   "published_at": "",
+   "snippet": "A San Francisco-based AI insurance startup, Corgi, has put its plans to open more than 100 round-the-clock cafes on hold.",
+   "relevance_score": 0.6,
+   "virality_score": 0.4,
+   "brand_safe": true,
+   "raw": {
+    "title": "San Francisco AI startup planned to open hundred-plus 24-hour cafes, then a top executive's dating post w",
+    "description": "A San Francisco-based AI insurance startup, Corgi, has put its plans to open more than 100 round-the-clock cafes on hold.",
+    "url": "https://timesofindia.indiatimes.com/technology/tech-news/san-francisco-ai-startup-planned-to-open-hundred-plus-24-hour-cafes-then-a-top-executives-dating-post-went-viral-making-company-with-cafes-in-london-new-york-and-atlanta-junk-all-plans/articleshow/134489285.cms",
+    "content": "",
+    "additional_data": {
+     "publish_date_raw": "5 hours ago"
+    },
+    "metadata": {
+     "position": 5,
+     "entity_type": "NewsResult",
+     "country": "US",
+     "locale": "en"
+    }
+   }
+  },
+  {
+   "title": "San Francisco celebrates culture of lowriding",
+   "url": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/",
+   "source": "Nimble news search",
+   "published_at": "",
+   "snippet": "Drivers in vehicles built to move low and slow cruised down San Francisco's Mission Street over the weekend in celebration of one of the city's most...",
+   "relevance_score": 0.6,
+   "virality_score": 0.4,
+   "brand_safe": true,
+   "raw": {
+    "title": "San Francisco celebrates culture of lowriding",
+    "description": "Drivers in vehicles built to move low and slow cruised down San Francisco's Mission Street over the weekend in celebration of one of the city's most...",
+    "url": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/",
+    "content": "",
+    "additional_data": {
+     "publish_date_raw": "3 days ago"
+    },
+    "metadata": {
+     "position": 6,
+     "entity_type": "NewsResult",
+     "country": "US",
+     "locale": "en"
+    }
+   }
+  },
+  {
+   "title": "Mysterious ‘Burning Man marmots’ returned to wild after hitchhiking to the Bay Area",
+   "url": "https://ktla.com/news/california/hitchhiking-burning-man-marmots-returned-to-wild/",
+   "source": "Nimble news search",
+   "published_at": "",
+   "snippet": "Two marmots believed to have hitchhiked their way to the Bay Area with Burning Man travelers were released back into the wild near Lake Tahoe on Tuesday...",
+   "relevance_score": 0.6,
+   "virality_score": 0.4,
+   "brand_safe": true,
+   "raw": {
+    "title": "Mysterious ‘Burning Man marmots’ returned to wild after hitchhiking to the Bay Area",
+    "description": "Two marmots believed to have hitchhiked their way to the Bay Area with Burning Man travelers were released back into the wild near Lake Tahoe on Tuesday...",
+    "url": "https://ktla.com/news/california/hitchhiking-burning-man-marmots-returned-to-wild/",
+    "content": "",
+    "additional_data": {
+     "publish_date_raw": "1 day ago"
+    },
+    "metadata": {
+     "position": 8,
+     "entity_type": "NewsResult",
+     "country": "US",
+     "locale": "en"
+    }
+   }
+  }
+ ],
+ "estimate_usd": {
+  "images": 0.1853,
+  "videos": 1.7,
+  "total": 1.89,
+  "cap": 5.0
+ },
+ "variants": [
+  {
+   "variant_id": "sightglass__n_judah_commuter",
+   "staged": true,
+   "id": "local-news-20260925-sightglass-n-judah-commuter",
+   "media_type": "video",
+   "hook": "Missed the train. Found the fog.",
+   "cta": "Find the roastery at 270 7th St",
+   "audience": "N-Judah commuters",
+   "authored_by": "content/ads/scripts.json",
+   "active": true,
+   "story": {
+    "title": "49ers’ Kyle Juszczyk fined for viral chugging celebration",
+    "url": "https://sports.yahoo.com/articles/49ers-kyle-juszczyk-fined-viral-165853255.html",
+    "source": "Nimble news search",
+    "published_at": "",
+    "snippet": "A San Francisco 49ers star has been fined by the NFL following the team's Week 2 win over the Miami Dolphins.",
+    "relevance_score": 0.6,
+    "virality_score": 0.52,
+    "brand_safe": true,
+    "raw": {
+     "title": "49ers’ Kyle Juszczyk fined for viral chugging celebration",
+     "description": "A San Francisco 49ers star has been fined by the NFL following the team's Week 2 win over the Miami Dolphins.",
+     "url": "https://sports.yahoo.com/articles/49ers-kyle-juszczyk-fined-viral-165853255.html",
+     "content": "",
+     "additional_data": {
+      "publish_date_raw": "1 day ago"
+     },
+     "metadata": {
+      "position": 1,
+      "entity_type": "NewsResult",
+      "country": "US",
+      "locale": "en"
+     }
+    }
+   },
+   "prompts": {
+    "video": "Bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field. A 5-second vertical mobile video ad for Sightglass Coffee in three shots. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT ONE (0-2s): a software engineer in his late twenties in a rain shell with earbuds and a backpack, a stop in the Inner Sunset as a light-rail streetcar pulls up, fog rolling down Irving Street, 7:45 AM, thick gray summer fog. the streetcar doors close just as he reaches them, he sighs as fog swirls around him.\nHARD CUT. SHOT TWO (2-4s): later, downtown, he ducks out of the fog into the bright roastery. inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light.\nHARD CUT. SHOT THREE (4-5s): he holds the warm cup in both hands by the window, fogged glass, finally awake.\nAUDIO: Music: mellow lo-fi hip hop beat with muted keys and rain ambience, resolving in shot three and ending with a soft two-note upright bass pluck on the final frame. Sound effects: the low rumble of a coffee roaster, beans crackling, a cup set down on a wooden bar. Voiceover by a dry, easygoing young male voice, American English, in English. At 0 seconds the narrator says: \"Missed the train. Found the fog.\"",
+    "poster": "Bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field. Vertical 9:16 poster photograph for a mobile ad for Sightglass Coffee: inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light. In the background, a software engineer in his late twenties in a rain shell with earbuds and a backpack, a stop in the Inner Sunset as a light-rail streetcar pulls up, fog rolling down Irving Street, 7:45 AM, thick gray summer fog. Editorial food photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "43190df2-ef18-4e25-9e3f-bdd2a44cee30",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 559863,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "dc57541a-79a3-4dee-b9ba-7ae01edab961",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 85.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 5,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 2862911,
+     "file": "creative.mp4"
+    }
+   }
+  },
+  {
+   "variant_id": "sightglass__soma_founder",
+   "staged": true,
+   "id": "local-news-20260925-sightglass-soma-founder",
+   "media_type": "video",
+   "hook": "Demo day. Four minutes to make it count.",
+   "cta": "Find the roastery at 270 7th St",
+   "audience": "SoMa founders",
+   "authored_by": "content/ads/scripts.json",
+   "active": true,
+   "story": {
+    "title": "San Francisco AI startup planned to open hundred-plus 24-hour cafes, then a top executive's dating post w",
+    "url": "https://timesofindia.indiatimes.com/technology/tech-news/san-francisco-ai-startup-planned-to-open-hundred-plus-24-hour-cafes-then-a-top-executives-dating-post-went-viral-making-company-with-cafes-in-london-new-york-and-atlanta-junk-all-plans/articleshow/134489285.cms",
+    "source": "Nimble news search",
+    "published_at": "",
+    "snippet": "A San Francisco-based AI insurance startup, Corgi, has put its plans to open more than 100 round-the-clock cafes on hold.",
+    "relevance_score": 0.6,
+    "virality_score": 0.4,
+    "brand_safe": true,
+    "raw": {
+     "title": "San Francisco AI startup planned to open hundred-plus 24-hour cafes, then a top executive's dating post w",
+     "description": "A San Francisco-based AI insurance startup, Corgi, has put its plans to open more than 100 round-the-clock cafes on hold.",
+     "url": "https://timesofindia.indiatimes.com/technology/tech-news/san-francisco-ai-startup-planned-to-open-hundred-plus-24-hour-cafes-then-a-top-executives-dating-post-went-viral-making-company-with-cafes-in-london-new-york-and-atlanta-junk-all-plans/articleshow/134489285.cms",
+     "content": "",
+     "additional_data": {
+      "publish_date_raw": "5 hours ago"
+     },
+     "metadata": {
+      "position": 5,
+      "entity_type": "NewsResult",
+      "country": "US",
+      "locale": "en"
+     }
+    }
+   },
+   "prompts": {
+    "video": "Bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field. A 5-second vertical mobile video ad for Sightglass Coffee in three shots. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT ONE (0-2s): a startup founder in her early thirties in a black blazer, holding a laptop, a SoMa street lined with brick warehouses, the Bay Bridge visible at the end of the block, 7 AM on demo day, cool marine layer burning off. she mouths her pitch to herself on the sidewalk, checks her phone, eight missed messages, exhales hard.\nHARD CUT. SHOT TWO (2-4s): she steps into the roastery and waits at the bar. inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light.\nHARD CUT. SHOT THREE (4-5s): she walks out, cup in hand, shoulders back, striding toward the city with a small smile.\nAUDIO: Music: minimal electronic beat with a steady ticking pulse, building tension, resolving in shot three and ending with a soft two-note upright bass pluck on the final frame. Sound effects: the low rumble of a coffee roaster, beans crackling, a cup set down on a wooden bar. Voiceover by a focused, confident female voice, American English, in English. At 0 seconds the narrator says: \"Demo day. Four minutes to make it count.\"",
+    "poster": "Bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field. Vertical 9:16 poster photograph for a mobile ad for Sightglass Coffee: inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light. In the background, a startup founder in her early thirties in a black blazer, holding a laptop, a SoMa street lined with brick warehouses, the Bay Bridge visible at the end of the block, 7 AM on demo day, cool marine layer burning off. Editorial food photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "d84caf76-7fa1-4bd8-8adc-4b3419259ac2",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 600605,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "83cfff19-af04-4aa2-a50d-2437d7dd0e0b",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 85.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 5,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 1923212,
+     "file": "creative.mp4"
+    }
+   }
+  },
+  {
+   "variant_id": "sightglass__fog_narrator",
+   "staged": true,
+   "id": "local-news-20260925-sightglass-fog-narrator",
+   "media_type": "image",
+   "hook": "Morning. It's me, the fog. Yes, again.",
+   "cta": "Find the roastery at 270 7th St",
+   "audience": "SoMa fog watchers",
+   "authored_by": "content/ads/scripts.json",
+   "active": true,
+   "story": {
+    "title": "San Francisco celebrates culture of lowriding",
+    "url": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/",
+    "source": "Nimble news search",
+    "published_at": "",
+    "snippet": "Drivers in vehicles built to move low and slow cruised down San Francisco's Mission Street over the weekend in celebration of one of the city's most...",
+    "relevance_score": 0.6,
+    "virality_score": 0.4,
+    "brand_safe": true,
+    "raw": {
+     "title": "San Francisco celebrates culture of lowriding",
+     "description": "Drivers in vehicles built to move low and slow cruised down San Francisco's Mission Street over the weekend in celebration of one of the city's most...",
+     "url": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/",
+     "content": "",
+     "additional_data": {
+      "publish_date_raw": "3 days ago"
+     },
+     "metadata": {
+      "position": 6,
+      "entity_type": "NewsResult",
+      "country": "US",
+      "locale": "en"
+     }
+    }
+   },
+   "prompts": {
+    "video": "Bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field. A 5-second vertical mobile video ad for Sightglass Coffee in three shots. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT ONE (0-2s): a thick, slow bank of fog seen from above, rolling between SoMa rooftops and brick warehouses, the skies over SoMa, the Bay Bridge disappearing into gray, 8 AM on a gray summer morning. the fog swallows the tops of buildings; people on the sidewalk below zip up their jackets and hunch their shoulders.\nHARD CUT. SHOT TWO (2-4s): the fog presses up against the tall windows of a bright roastery, curling against the glass as if peering in. inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light.\nHARD CUT. SHOT THREE (4-5s): a woman steps out onto the sidewalk holding a warm cup, steam from the coffee rising and mixing with the fog around her.\nAUDIO: Music: playful low woodwinds and a bouncy tuba, comedic and sly, resolving in shot three and ending with a soft two-note upright bass pluck on the final frame. Sound effects: the low rumble of a coffee roaster, beans crackling, a cup set down on a wooden bar. Voiceover by a deep, theatrical, slightly smug male voice, as if the fog itself is talking, in English. At 0 seconds the narrator says: \"Morning. It's me, the fog. Yes, again.\"",
+    "poster": "Bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field. Vertical 9:16 poster photograph for a mobile ad for Sightglass Coffee: inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light. In the background, a thick, slow bank of fog seen from above, rolling between SoMa rooftops and brick warehouses, the skies over SoMa, the Bay Bridge disappearing into gray, 8 AM on a gray summer morning. Editorial food photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "8e2d5419-908c-481e-8fbf-a8a6340615f1",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 850356,
+     "file": "poster.jpg"
+    }
+   }
+  },
+  {
+   "variant_id": "sightglass__new_transplant",
+   "staged": true,
+   "id": "local-news-20260925-sightglass-new-transplant",
+   "media_type": "image",
+   "hook": "Nobody told you about July. We did.",
+   "cta": "Find the roastery at 270 7th St",
+   "audience": "New to SF",
+   "authored_by": "scripts/generate-content.py",
+   "active": true,
+   "story": {
+    "title": "Mysterious ‘Burning Man marmots’ returned to wild after hitchhiking to the Bay Area",
+    "url": "https://ktla.com/news/california/hitchhiking-burning-man-marmots-returned-to-wild/",
+    "source": "Nimble news search",
+    "published_at": "",
+    "snippet": "Two marmots believed to have hitchhiked their way to the Bay Area with Burning Man travelers were released back into the wild near Lake Tahoe on Tuesday...",
+    "relevance_score": 0.6,
+    "virality_score": 0.4,
+    "brand_safe": true,
+    "raw": {
+     "title": "Mysterious ‘Burning Man marmots’ returned to wild after hitchhiking to the Bay Area",
+     "description": "Two marmots believed to have hitchhiked their way to the Bay Area with Burning Man travelers were released back into the wild near Lake Tahoe on Tuesday...",
+     "url": "https://ktla.com/news/california/hitchhiking-burning-man-marmots-returned-to-wild/",
+     "content": "",
+     "additional_data": {
+      "publish_date_raw": "1 day ago"
+     },
+     "metadata": {
+      "position": 8,
+      "entity_type": "NewsResult",
+      "country": "US",
+      "locale": "en"
+     }
+    }
+   },
+   "prompts": {
+    "video": "Bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field. A 5-second vertical mobile video ad for Sightglass Coffee in three shots. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT ONE (0-2s): a woman in her mid-twenties who just moved to San Francisco, underdressed in a thin jacket, arms wrapped around herself, a waterfront pier with sea lions barking and the Golden Gate Bridge half-hidden in fog, a cold July afternoon, fog pouring over the hills. she shivers in a thin jacket as sea lions bark and the bridge disappears.\nHARD CUT. SHOT TWO (2-4s): a stranger points her toward a warm doorway a block away. inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light.\nHARD CUT. SHOT THREE (4-5s): she wraps both hands around something warm and finally smiles.\nAUDIO: Music: quirky pizzicato strings with a light marching snare, resolving in shot three and ending with a soft two-note upright bass pluck on the final frame. Sound effects: the low rumble of a coffee roaster, beans crackling, a cup set down on a wooden bar. Voiceover by a wry, amused young female voice, American English, in English. At 0 seconds the narrator says: \"Nobody told you about July. We did.\"",
+    "poster": "Bright airy look, tall industrial windows, soft morning light on wood and steel, shallow depth of field. Vertical 9:16 poster photograph for a mobile ad for Sightglass Coffee: inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light. In the background, a woman in her mid-twenties who just moved to San Francisco, underdressed in a thin jacket, arms wrapped around herself, a waterfront pier with sea lions barking and the Golden Gate Bridge half-hidden in fog, a cold July afternoon, fog pouring over the hills. Editorial food photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "f3338722-5811-46e8-b184-4ecc98f55e33",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 688177,
+     "file": "poster.jpg"
+    }
+   }
+  }
+ ],
+ "liquid_qa": "skipped",
+ "cost": {
+  "quoted_credits": 18.0,
+  "settled_credits": 188.0,
+  "settled_usd": 1.88,
+  "credits_before": 9490.0,
+  "credits_after": 9302.0,
+  "spent_by_balance_usd": 1.88
+ }
+}

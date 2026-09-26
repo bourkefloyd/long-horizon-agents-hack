@@ -1,0 +1,26 @@
+{
+  "id": "mission-taqueria-late-night-al-pastor-03-late-night-payoff",
+  "hook": "The local feed is moving fast. End the night with fresh al pastor tacos.",
+  "cta": "Order ahead and skip the line",
+  "media_type": "video",
+  "media_file": "creative.mp4",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "night-out crowd and late-shift workers, 21-35, leaving shows, bars and BART after 10 PM"
+    ],
+    "geo": [
+      "San Francisco Mission District"
+    ],
+    "weight": 2,
+    "active": true
+  },
+  "source": {
+    "agent": "viral-local-ad-generator",
+    "generated_at": "2026-09-25T23:55:19Z",
+    "brief_ref": "campaign:mission-taqueria-late-night-al-pastor"
+  },
+  "poster_file": "poster.jpg"
+}

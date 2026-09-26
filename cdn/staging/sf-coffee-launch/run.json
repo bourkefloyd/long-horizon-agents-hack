@@ -1,0 +1,179 @@
+{
+ "campaign_id": "sf-coffee-launch",
+ "campaign_name": "SF Coffee Launch",
+ "brief": "Casual mobile game cross-promo for SF coffee lovers",
+ "market": "San Francisco",
+ "audience": "Coffee lovers, 21-40, commute by transit",
+ "generated_at": "2026-09-25T22:41:32+00:00",
+ "mode": "render-staged",
+ "discovery": {
+  "via": "staged",
+  "agent": "viral-local-ad-generator"
+ },
+ "stories": [],
+ "sanitized_stories": [],
+ "estimate_usd": {
+  "images": 0.139,
+  "videos": 5.1,
+  "total": 5.24,
+  "cap": null
+ },
+ "variants": [
+  {
+   "variant_id": "01-local-moment-hook",
+   "staged": true,
+   "id": "sf-coffee-launch-01-local-moment-hook",
+   "media_type": "video",
+   "hook": "San Francisco is already talking about this: San Francisco's local story about San Francisco celebrates culture of lowriding",
+   "cta": "Download the game and play on your next break.",
+   "audience": "Coffee lovers, 21-40, commute by transit",
+   "authored_by": "viral-local-ad-generator",
+   "active": true,
+   "story": null,
+   "story_safe": null,
+   "prompts": {
+    "video": "A 10-second vertical 9:16 mobile video ad in 4 shots. Bright, clean, upbeat. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT 1 (0.0-2.0s): Fast social-feed style montage of recognizable San Francisco street energy, phones lighting up, and abstract local-news card visuals tied to the story topic.\nHARD CUT. SHOT 2 (2.0-4.0s): Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: San Francisco's local story about San Francisco celebrates culture of lowriding.\nHARD CUT. SHOT 3 (4.0-7.0s): Smash cut to a craveable phone-screen game reveal: a bright casual game on a handheld phone, one thumb tap, a satisfying level-clear burst, and a coffee cup resting beside it on a cafe table.\nHARD CUT. SHOT 4 (7.0-10.0s): Hero product shot against a bright San Francisco-inspired backdrop, then quick end-card with a simple CTA.\nAUDIO: upbeat modern soundtrack; a warm, friendly narrator in English. At 0 seconds the narrator says: \"San Francisco is already talking about this: San Francisco's local story about San Francisco celebrates culture of lowriding\". Then: San Francisco is talking about San Francisco's local story about San Francisco celebrates culture of lowriding. When the local story has everyone paying attention... ...make your next twist a new casual mobile game. Download the game and play on your next break.",
+    "poster": "Vertical 9:16 poster photograph for a mobile ad: Hero product shot against a bright San Francisco-inspired backdrop, then quick end-card with a simple CTA. Editorial photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "90f0236c-e0d1-4648-8977-0abf40657302",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 361563,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "40453edf-3a8a-4a9e-8e3d-61f7fc0fff8b",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 170.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 10,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 6409016,
+     "file": "creative.mp4"
+    }
+   }
+  },
+  {
+   "variant_id": "02-commuter-craving",
+   "staged": true,
+   "id": "sf-coffee-launch-02-commuter-craving",
+   "media_type": "video",
+   "hook": "On the way across San Francisco, the local buzz meets a quick-play craving.",
+   "cta": "Download the game and play on your next break.",
+   "audience": "Coffee lovers, 21-40, commute by transit",
+   "authored_by": "viral-local-ad-generator",
+   "active": true,
+   "story": null,
+   "story_safe": null,
+   "prompts": {
+    "video": "A 10-second vertical 9:16 mobile video ad in 4 shots. Bright, clean, upbeat. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT 1 (0.0-2.0s): Fast social-feed style montage of recognizable San Francisco street energy, phones lighting up, and abstract local-news card visuals tied to the story topic.\nHARD CUT. SHOT 2 (2.0-4.0s): Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: San Francisco's local story about San Francisco celebrates culture of lowriding.\nHARD CUT. SHOT 3 (4.0-7.0s): Smash cut to a craveable phone-screen game reveal: a bright casual game on a handheld phone, one thumb tap, a satisfying level-clear burst, and a coffee cup resting beside it on a cafe table.\nHARD CUT. SHOT 4 (7.0-10.0s): Hero product shot against a bright San Francisco-inspired backdrop, then quick end-card with a simple CTA.\nAUDIO: upbeat modern soundtrack; a warm, friendly narrator in English. At 0 seconds the narrator says: \"On the way across San Francisco, the local buzz meets a quick-play craving.\". Then: San Francisco is talking about San Francisco's local story about San Francisco celebrates culture of lowriding. When the local story has everyone paying attention... ...make your next twist a new casual mobile game. Download the game and play on your next break.",
+    "poster": "Vertical 9:16 poster photograph for a mobile ad: Hero product shot against a bright San Francisco-inspired backdrop, then quick end-card with a simple CTA. Editorial photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "48a04ea8-5dfa-4bfd-988c-d9cb4aba0a38",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 380901,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "8cd2b29f-afd3-4b18-be39-f51ddc4a9945",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 170.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 10,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 5357221,
+     "file": "creative.mp4"
+    }
+   }
+  },
+  {
+   "variant_id": "03-fan-celebration",
+   "staged": true,
+   "id": "sf-coffee-launch-03-fan-celebration",
+   "media_type": "video",
+   "hook": "When San Francisco has something to talk about, make the break memorable.",
+   "cta": "Download the game and play on your next break.",
+   "audience": "Coffee lovers, 21-40, commute by transit",
+   "authored_by": "viral-local-ad-generator",
+   "active": true,
+   "story": null,
+   "story_safe": null,
+   "prompts": {
+    "video": "A 10-second vertical 9:16 mobile video ad in 4 shots. Bright, clean, upbeat. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT 1 (0.0-2.0s): Fast social-feed style montage of recognizable San Francisco street energy, phones lighting up, and abstract local-news card visuals tied to the story topic.\nHARD CUT. SHOT 2 (2.0-4.0s): Quick abstract news-feed cards slide by with no publisher logos, no real faces, and no private names; one card references: San Francisco's local story about San Francisco celebrates culture of lowriding.\nHARD CUT. SHOT 3 (4.0-7.0s): Smash cut to a craveable phone-screen game reveal: a bright casual game on a handheld phone, one thumb tap, a satisfying level-clear burst, and a coffee cup resting beside it on a cafe table.\nHARD CUT. SHOT 4 (7.0-10.0s): Hero product shot against a bright San Francisco-inspired backdrop, then quick end-card with a simple CTA.\nAUDIO: upbeat modern soundtrack; a warm, friendly narrator in English. At 0 seconds the narrator says: \"When San Francisco has something to talk about, make the break memorable.\". Then: San Francisco is talking about San Francisco's local story about San Francisco celebrates culture of lowriding. When the local story has everyone paying attention... ...make your next twist a new casual mobile game. Download the game and play on your next break.",
+    "poster": "Vertical 9:16 poster photograph for a mobile ad: Hero product shot against a bright San Francisco-inspired backdrop, then quick end-card with a simple CTA. Editorial photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "0507897c-2a2f-49ac-9e8b-7ac5ff670e44",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 408153,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "0e8f9672-ae19-4f98-9d5e-81a3b73a8b3d",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 170.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 10,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 5790312,
+     "file": "creative.mp4"
+    }
+   }
+  }
+ ],
+ "liquid_qa": "skipped",
+ "cost": {
+  "quoted_credits": 13.5,
+  "settled_credits": 523.5,
+  "settled_usd": 5.235,
+  "credits_before": 8948.5,
+  "credits_after": 8425.0,
+  "spent_by_balance_usd": 5.235
+ }
+}

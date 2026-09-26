@@ -8,6 +8,7 @@ import {
   Clapperboard,
   CircleDot,
   FlaskConical,
+  Megaphone,
   RefreshCw,
   Send,
   Sparkles,
@@ -244,6 +245,10 @@ export function CampaignDashboard() {
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
+          <Link href="/campaigns" className={buttonVariants({ variant: "outline", size: "lg" })}>
+            <Megaphone aria-hidden="true" />
+            Campaigns
+          </Link>
           <Link
             href="/feed"
             className={buttonVariants({

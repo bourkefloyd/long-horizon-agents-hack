@@ -1,0 +1,15 @@
+SCHEMA >
+    `event_id` String `json:$.event_id`,
+    `timestamp` DateTime64(6) `json:$.timestamp`,
+    `run_id` String `json:$.run_id`,
+    `command` LowCardinality(String) `json:$.command`,
+    `stage` LowCardinality(String) `json:$.stage`,
+    `event_type` LowCardinality(String) `json:$.event_type`,
+    `status` LowCardinality(String) `json:$.status`,
+    `payload_json` String `json:$.payload_json`,
+    `context_json` String `json:$.context_json`
+
+ENGINE "MergeTree"
+ENGINE_SORTING_KEY "run_id, timestamp, stage"
+
+TOKEN ingest_token APPEND

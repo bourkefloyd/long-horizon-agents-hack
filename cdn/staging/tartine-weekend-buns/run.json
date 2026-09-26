@@ -1,0 +1,377 @@
+{
+ "campaign_id": "tartine-weekend-buns",
+ "campaign_name": "Tartine Weekend Buns",
+ "brief": "Tartine Bakery morning buns for Dolores Park weekends",
+ "market": "San Francisco",
+ "audience": "Dolores Park crews and Ocean Beach surfers, weekend mornings",
+ "generated_at": "2026-09-25T22:27:57+00:00",
+ "discovery": {
+  "via": "nimble-outlets",
+  "outlets": [
+   {
+    "name": "SFGate",
+    "domain": "sfgate.com",
+    "url": "https://www.sfgate.com/"
+   },
+   {
+    "name": "KRON4",
+    "domain": "kron4.com",
+    "url": "https://www.kron4.com/"
+   },
+   {
+    "name": "NBC Bay Area",
+    "domain": "nbcbayarea.com",
+    "url": "https://www.nbcbayarea.com/"
+   },
+   {
+    "name": "SFist",
+    "domain": "sfist.com",
+    "url": "https://sfist.com/"
+   },
+   {
+    "name": "San Francisco Examiner",
+    "domain": "sfexaminer.com",
+    "url": "https://www.sfexaminer.com/"
+   },
+   {
+    "name": "SF Weekly",
+    "domain": "sfweekly.com",
+    "url": "https://www.sfweekly.com/"
+   },
+   {
+    "name": "The Mercury News - Local News",
+    "domain": "mercurynews.com",
+    "url": "https://www.mercurynews.com/location/californ"
+   },
+   {
+    "name": "CBS News - San Francisco",
+    "domain": "cbsnews.com",
+    "url": "https://www.cbsnews.com/sanfrancisco/"
+   }
+  ],
+  "returned": 12,
+  "brand_safe": 1
+ },
+ "stories": [
+  {
+   "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+   "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+   "source": "",
+   "published_at": "",
+   "snippet": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+   "relevance_score": 0.7999999999999999,
+   "virality_score": 0.64,
+   "brand_safe": true,
+   "raw": {
+    "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+    "description": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+    "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+    "content": "",
+    "metadata": {
+     "position": 9,
+     "entity_type": "SearchResult",
+     "country": "US",
+     "locale": "en"
+    }
+   }
+  }
+ ],
+ "sanitized_stories": [
+  {
+   "frame": "a San Francisco culture story about a Chinatown lantern display celebrating local history",
+   "reference": "San Francisco's Chinatown lantern-display story",
+   "notes": [
+    "publisher_and_private_names_neutralized"
+   ]
+  }
+ ],
+ "estimate_usd": {
+  "images": 0.1853,
+  "videos": 1.7,
+  "total": 1.89,
+  "cap": 5.0
+ },
+ "variants": [
+  {
+   "variant_id": "tartine__ocean_beach_surfer",
+   "staged": true,
+   "id": "tartine-weekend-buns-tartine-ocean-beach-surfer",
+   "media_type": "video",
+   "hook": "Fifty-five degree water. Worth it.",
+   "cta": "Get in line at 600 Guerrero",
+   "audience": "Ocean Beach surfers",
+   "authored_by": "content/ads/scripts.json",
+   "active": true,
+   "story": {
+    "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+    "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+    "source": "",
+    "published_at": "",
+    "snippet": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+    "relevance_score": 0.7999999999999999,
+    "virality_score": 0.64,
+    "brand_safe": true,
+    "raw": {
+     "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+     "description": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+     "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+     "content": "",
+     "metadata": {
+      "position": 9,
+      "entity_type": "SearchResult",
+      "country": "US",
+      "locale": "en"
+     }
+    }
+   },
+   "story_safe": {
+    "frame": "a San Francisco culture story about a Chinatown lantern display celebrating local history",
+    "reference": "San Francisco's Chinatown lantern-display story",
+    "notes": [
+     "publisher_and_private_names_neutralized"
+    ]
+   },
+   "prompts": {
+    "video": "Warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing. A 5-second vertical mobile video ad for Tartine Bakery in three shots. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT ONE (0-2s): a surfer in her thirties in a dripping black wetsuit, board under her arm, Ocean Beach, gray surf and a long empty shoreline, a vintage camper van parked on the Great Highway, 6:30 AM, cold fog, pale light. she jogs out of cold gray surf, shivering, peels down her wetsuit hood.\nHARD CUT. SHOT TWO (2-4s): wrapped in a towel on the back bumper of the van, she opens a warm paper bag. a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it.\nHARD CUT. SHOT THREE (4-5s): she bites into the morning bun, eyes closed, sugar on her lips, waves rolling behind her.\nAUDIO: Music: reverb-drenched surf rock guitar, slow and dreamy, resolving in shot three and ending with a warm three-note acoustic guitar figure on the final frame. Sound effects: a crackling crust, a paper bag rustling open. Voiceover by a laid-back, warm female voice, American English, in English. At 0 seconds the narrator says: \"Fifty-five degree water. Worth it.\"",
+    "poster": "Warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing. Vertical 9:16 poster photograph for a mobile ad for Tartine Bakery: a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it. In the background, a surfer in her thirties in a dripping black wetsuit, board under her arm, Ocean Beach, gray surf and a long empty shoreline, a vintage camper van parked on the Great Highway, 6:30 AM, cold fog, pale light. Editorial food photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "b6847983-c99d-4d74-987c-4052b556f090",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 883360,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "56beacd7-384b-4cf1-8f3f-ffde453b884f",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 85.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 5,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 3222564,
+     "file": "creative.mp4"
+    }
+   }
+  },
+  {
+   "variant_id": "tartine__dolores_park_crew",
+   "staged": true,
+   "id": "tartine-weekend-buns-tartine-dolores-park-crew",
+   "media_type": "video",
+   "hook": "Who was on bread duty?",
+   "cta": "Get in line at 600 Guerrero",
+   "audience": "Dolores Park crews",
+   "authored_by": "content/ads/scripts.json",
+   "active": true,
+   "story": {
+    "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+    "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+    "source": "",
+    "published_at": "",
+    "snippet": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+    "relevance_score": 0.7999999999999999,
+    "virality_score": 0.64,
+    "brand_safe": true,
+    "raw": {
+     "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+     "description": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+     "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+     "content": "",
+     "metadata": {
+      "position": 9,
+      "entity_type": "SearchResult",
+      "country": "US",
+      "locale": "en"
+     }
+    }
+   },
+   "story_safe": {
+    "frame": "a San Francisco culture story about a Chinatown lantern display celebrating local history",
+    "reference": "San Francisco's Chinatown lantern-display story",
+    "notes": [
+     "publisher_and_private_names_neutralized"
+    ]
+   },
+   "prompts": {
+    "video": "Warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing. A 5-second vertical mobile video ad for Tartine Bakery in three shots. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT ONE (0-2s): a group of four friends in their twenties with a picnic blanket and a speaker, the sloped lawn of Dolores Park with the downtown skyline behind, palm trees, crowds, sunny Sunday afternoon. the friends spread a blanket on the slope and realize nobody brought food, groans and laughs.\nHARD CUT. SHOT TWO (2-4s): one friend jogs up holding a big round country loaf and a pastry box. a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it.\nHARD CUT. SHOT THREE (4-5s): they tear the bread and pass it around, skyline behind, everyone talking at once.\nAUDIO: Music: sunny indie pop with hand claps and bright guitar, resolving in shot three and ending with a warm three-note acoustic guitar figure on the final frame. Sound effects: a crackling crust, a paper bag rustling open. Voiceover by an upbeat, playful young female voice, American English, in English. At 0 seconds the narrator says: \"Who was on bread duty?\"",
+    "poster": "Warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing. Vertical 9:16 poster photograph for a mobile ad for Tartine Bakery: a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it. In the background, a group of four friends in their twenties with a picnic blanket and a speaker, the sloped lawn of Dolores Park with the downtown skyline behind, palm trees, crowds, sunny Sunday afternoon. Editorial food photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "a7a51b6d-6a22-45ff-89a2-df6003687ff1",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 844711,
+     "file": "poster.jpg"
+    },
+    "video": {
+     "task_id": "a387d9f8-703c-4026-bb9d-f0a56b200cd2",
+     "quoted_credits": null,
+     "status": "Ready",
+     "settled_credits": 85.0,
+     "request": {
+      "mode": "t2v",
+      "aspect_ratio": "9:16",
+      "duration": 5,
+      "resolution": "hd",
+      "generate_audio": true,
+      "safety_tolerance": 2
+     },
+     "bytes": 4726635,
+     "file": "creative.mp4"
+    }
+   }
+  },
+  {
+   "variant_id": "tartine__new_transplant",
+   "staged": true,
+   "id": "tartine-weekend-buns-tartine-new-transplant",
+   "media_type": "image",
+   "hook": "Nobody told you about July. We did.",
+   "cta": "Get in line at 600 Guerrero",
+   "audience": "New to SF",
+   "authored_by": "scripts/generate-content.py",
+   "active": true,
+   "story": {
+    "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+    "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+    "source": "",
+    "published_at": "",
+    "snippet": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+    "relevance_score": 0.7999999999999999,
+    "virality_score": 0.64,
+    "brand_safe": true,
+    "raw": {
+     "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+     "description": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+     "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+     "content": "",
+     "metadata": {
+      "position": 9,
+      "entity_type": "SearchResult",
+      "country": "US",
+      "locale": "en"
+     }
+    }
+   },
+   "story_safe": {
+    "frame": "a San Francisco culture story about a Chinatown lantern display celebrating local history",
+    "reference": "San Francisco's Chinatown lantern-display story",
+    "notes": [
+     "publisher_and_private_names_neutralized"
+    ]
+   },
+   "prompts": {
+    "video": "Warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing. A 5-second vertical mobile video ad for Tartine Bakery in three shots. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT ONE (0-2s): a woman in her mid-twenties who just moved to San Francisco, underdressed in a thin jacket, arms wrapped around herself, a waterfront pier with sea lions barking and the Golden Gate Bridge half-hidden in fog, a cold July afternoon, fog pouring over the hills. she shivers in a thin jacket as sea lions bark and the bridge disappears.\nHARD CUT. SHOT TWO (2-4s): a stranger points her toward a warm doorway a block away. a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it.\nHARD CUT. SHOT THREE (4-5s): she wraps both hands around something warm and finally smiles.\nAUDIO: Music: quirky pizzicato strings with a light marching snare, resolving in shot three and ending with a warm three-note acoustic guitar figure on the final frame. Sound effects: a crackling crust, a paper bag rustling open. Voiceover by a wry, amused young female voice, American English, in English. At 0 seconds the narrator says: \"Nobody told you about July. We did.\"",
+    "poster": "Warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing. Vertical 9:16 poster photograph for a mobile ad for Tartine Bakery: a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it. In the background, a woman in her mid-twenties who just moved to San Francisco, underdressed in a thin jacket, arms wrapped around herself, a waterfront pier with sea lions barking and the Golden Gate Bridge half-hidden in fog, a cold July afternoon, fog pouring over the hills. Editorial food photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "4ecd2e6d-fcbe-49d5-96b6-b8acb50c3a07",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 801318,
+     "file": "poster.jpg"
+    }
+   }
+  },
+  {
+   "variant_id": "tartine__n_judah_commuter",
+   "staged": true,
+   "id": "tartine-weekend-buns-tartine-n-judah-commuter",
+   "media_type": "image",
+   "hook": "Missed the N. Not the good part.",
+   "cta": "Get in line at 600 Guerrero",
+   "audience": "N-Judah commuters",
+   "authored_by": "scripts/generate-content.py",
+   "active": true,
+   "story": {
+    "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+    "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+    "source": "",
+    "published_at": "",
+    "snippet": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+    "relevance_score": 0.7999999999999999,
+    "virality_score": 0.64,
+    "brand_safe": true,
+    "raw": {
+     "title": "Lantern Stories Display in San Francisco’s Chinatown – NBC Bay Area",
+     "description": "On a block in San Francisco’s Chinatown, you’ll find history and culture in a new display called Lantern Stories. Gia Vang reports.\n\n \n\nOn a block in San Francisco's Chinatown, you'll find history and culture in a new display called Lantern Stories.\n\nThe display on the 600 block of Grant Avenue features pictures of iconic people in the community, like Bruce Lee, pioneer chef Cecilia Chang and author Amy Tan.\n\nWatch NBC Bay Area News free wherever you are\n\nWatch button  WATCH HERE [...] Skip to content\n\nNBC Bay Area\n\nWatch 24/7 \n\nCreate profile / Log in\n\nDashboard\n\nEmail preferences\n\nSign out\n\nTrending\nNick Bosa Restaurant break-ins 🎸 Dolly Parton Day ⛽ Gas prices 🛩️ Fleet Week 🎙️ Women Who Lead 🗳️ Election guide\n\nSan Francisco\n\n# New Lanterns in San Francisco's Chinatown Celebrate Icons, History and Culture\n\n#### By Gia Vang and Christine Ni • •\n\nNBC Universal, Inc. [...] #### Follow Us\n\n Facebook\n Instagram\n TikTok\n Youtube\n\n Contact Us",
+     "url": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420",
+     "content": "",
+     "metadata": {
+      "position": 9,
+      "entity_type": "SearchResult",
+      "country": "US",
+      "locale": "en"
+     }
+    }
+   },
+   "story_safe": {
+    "frame": "a San Francisco culture story about a Chinatown lantern display celebrating local history",
+    "reference": "San Francisco's Chinatown lantern-display story",
+    "notes": [
+     "publisher_and_private_names_neutralized"
+    ]
+   },
+   "prompts": {
+    "video": "Warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing. A 5-second vertical mobile video ad for Tartine Bakery in three shots. No on-screen text, captions, subtitles, logos, signs or readable words.\nSHOT ONE (0-2s): a software engineer in his late twenties in a rain shell with earbuds and a backpack, a stop in the Inner Sunset as a light-rail streetcar pulls up, fog rolling down Irving Street, 7:45 AM, thick gray summer fog. the streetcar doors close in his face and he exhales into the fog.\nHARD CUT. SHOT TWO (2-4s): he turns, walks half a block and steps inside. a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it.\nHARD CUT. SHOT THREE (4-5s): first sip by the window, streetcar bell fading behind him.\nAUDIO: Music: mellow lo-fi hip hop beat with muted keys and rain ambience, resolving in shot three and ending with a warm three-note acoustic guitar figure on the final frame. Sound effects: a crackling crust, a paper bag rustling open. Voiceover by a dry, easygoing young male voice, American English, in English. At 0 seconds the narrator says: \"Missed the N. Not the good part.\"",
+    "poster": "Warm golden look, natural light, crumbs and flaky pastry in macro detail, handheld intimate framing. Vertical 9:16 poster photograph for a mobile ad for Tartine Bakery: a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it. In the background, a software engineer in his late twenties in a rain shell with earbuds and a backpack, a stop in the Inner Sunset as a light-rail streetcar pulls up, fog rolling down Irving Street, 7:45 AM, thick gray summer fog. Editorial food photography, shallow depth of field, the subject centered with calm negative space in the top third and bottom quarter of the frame. No on-screen text, captions, subtitles, logos, signs or readable words."
+   },
+   "render": {
+    "poster": {
+     "task_id": "0bc80048-3e60-4e8e-9277-7452cd11f7d7",
+     "quoted_credits": 4.5,
+     "status": "Ready",
+     "settled_credits": null,
+     "request": {
+      "width": 1088,
+      "height": 1920,
+      "output_format": "jpeg",
+      "safety_tolerance": 2
+     },
+     "bytes": 965395,
+     "file": "poster.jpg"
+    }
+   }
+  }
+ ],
+ "liquid_qa": "skipped",
+ "cost": {
+  "quoted_credits": 18.0,
+  "settled_credits": 188.0,
+  "settled_usd": 1.88,
+  "credits_before": 9132.0,
+  "credits_after": 8948.5,
+  "spent_by_balance_usd": 1.835
+ }
+}

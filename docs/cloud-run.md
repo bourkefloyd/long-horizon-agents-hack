@@ -89,3 +89,25 @@ uvicorn app.main:app --reload --port 8080
 ```
 
 Check `http://127.0.0.1:8080/health`; `/healthz` is also available. Signal timestamps must include a timezone, and `POST /campaigns/{id}/decide` accepts an optional `window_hours` query parameter (default `24`).
+
+## Stable URLs
+
+Each Cloud Run service has a **stable service URL** that does not change when you deploy a new revision. In this project you will see both forms:
+
+- `https://<service>-<hash>-uc.a.run.app` (regional hostname)
+- `https://<service>-<project-number>.<region>.run.app` (project-number hostname)
+
+Examples for `lh-campaign-service` and `lh-web` in `us-central1`: `https://lh-campaign-service-row663omlq-uc.a.run.app` and `https://lh-campaign-service-205515555985.us-central1.run.app` (same for `lh-web` with its hash).
+
+**Revision-tagged URLs** pin traffic to one revision without moving production traffic off `LATEST`. The tag name becomes a URL prefix, for example `demo`:
+
+| Service | `demo` tag URL | Pinned revision (as of setup) |
+| --- | --- | --- |
+| `lh-campaign-service` (API) | https://demo---lh-campaign-service-row663omlq-uc.a.run.app | `lh-campaign-service-00002-4mx` |
+| `lh-web` (frontend) | https://demo---lh-web-row663omlq-uc.a.run.app | `lh-web-00004-rxs` |
+
+Deploy workflows still send 100% of traffic to `LATEST`; only the tagged URL stays on the pinned revision until you re-pin.
+
+The web image baked at build time uses `NEXT_PUBLIC_API_BASE_URL` pointing at the API **service** URL (not the `demo`-tagged API URL). That is acceptable for the hackathon demo; the pinned web revision still talks to whatever API URL was set when that revision was built.
+
+**Re-pin a tag:** run the [Tag Cloud Run revision](https://github.com/bourkefloyd/long-horizon-agents-hack/actions/workflows/tag-demo.yml) workflow (`workflow_dispatch`). Choose `lh-campaign-service`, `lh-web`, or `both`; set `tag` (default `demo`); leave `revision` empty to use each service’s latest ready revision, or pass a specific revision name. The job runs `gcloud run services update-traffic … --update-tags <tag>=<revision>` with the deployer service account (WIF), same auth as deploy.

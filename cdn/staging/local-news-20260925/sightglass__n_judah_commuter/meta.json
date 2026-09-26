@@ -1,0 +1,26 @@
+{
+  "id": "local-news-20260925-sightglass-n-judah-commuter",
+  "hook": "Missed the train. Found the fog.",
+  "cta": "Find the roastery at 270 7th St",
+  "media_type": "video",
+  "media_file": "creative.mp4",
+  "script_file": "script.txt",
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "N-Judah commuters"
+    ],
+    "geo": [
+      "US"
+    ],
+    "weight": 2,
+    "active": true
+  },
+  "source": {
+    "agent": "scripts/generate-content.py",
+    "generated_at": "2026-09-25T21:43:31Z",
+    "brief_ref": "https://sports.yahoo.com/articles/49ers-kyle-juszczyk-fined-viral-165853255.html"
+  },
+  "poster_file": "poster.jpg",
+  "duration_s": 5
+}

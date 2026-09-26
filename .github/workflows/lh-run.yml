@@ -23,10 +23,10 @@ on:
         type: string
         default: ""
       model:
-        description: "Cursor CLI model slug"
+        description: "Workflow override for the Cursor CLI model slug"
         required: false
         type: string
-        default: composer-2.5
+        default: ""
       state_max_lines:
         description: "Hard cap on .lh/<target>/state.md line count"
         required: false
@@ -59,13 +59,16 @@ jobs:
     env:
       TARGET: ${{ inputs.target }}
       ISSUE_NUMBER: ${{ inputs.issue_number }}
-      MODEL: ${{ inputs.model }}
+      MODEL_OVERRIDE: ${{ inputs.model }}
+      DEFAULT_MODEL: grok-4.7-high
       STATE_MAX_LINES: ${{ inputs.state_max_lines }}
       KEEP_LOGS: ${{ inputs.keep_logs }}
       BASE_REF: ${{ github.ref_name }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Validate inputs
         run: |
+          echo "STATUS_FILE=$RUNNER_TEMP/issue-status.md" >> "$GITHUB_ENV"
           case "$TARGET" in
             ""|*[!a-z0-9-]*|-*|*-)
               echo "::error::target must contain only lowercase letters, numbers, and internal hyphens: '$TARGET'"
@@ -119,6 +122,49 @@ jobs:
             || { echo "::error::state.md on the branch is already invalid; fix it by hand"; exit 1; }
           cp ".lh/$TARGET/state.md" "$RUNNER_TEMP/state.before.md"
 
+      - name: Resolve model
+        id: model
+        run: |
+          CONFIG_MODEL=""
+          if [ -f ".lh/$TARGET/config.json" ]; then
+            CONFIG_MODEL=$(jq -er '
+              (.model // "") as $model |
+              if ($model | type) == "string" then $model
+              else error("model must be a string")
+              end
+            ' ".lh/$TARGET/config.json")
+          fi
+          MODEL="${MODEL_OVERRIDE:-${CONFIG_MODEL:-$DEFAULT_MODEL}}"
+          case "$MODEL" in
+            ""|*[!A-Za-z0-9._-]*)
+              echo "::error::invalid Cursor CLI model slug '$MODEL'"
+              exit 1 ;;
+          esac
+          echo "MODEL=$MODEL" >> "$GITHUB_ENV"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "Chosen model: $MODEL"
+
+      - name: Mark issue running (status comment)
+        # One comment per run, edited in place below. Failures here only warn:
+        # status is a courtesy and must never block the run itself.
+        if: inputs.issue_number != 0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          RESUMED: ${{ steps.branch.outputs.resumed }}
+        run: |
+          gh issue edit "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --add-label lh:running --remove-label lh:review,lh:failed \
+            || echo "::warning::could not set lh:running (do the lh:running/lh:review/lh:failed labels exist?)"
+          BRANCH_STATE=new; [ "$RESUMED" = "true" ] && BRANCH_STATE=resumed
+          HEADER="**LH ${TARGET}** run [${{ github.run_id }}](${RUN_URL}) · model \`${MODEL}\` · branch \`${BRANCH}\` (${BRANCH_STATE})"$'\n\n'"Comment \`/lh <instruction>\` on this issue to run again once this finishes."
+          if ID=$(bash .lh/bin/issue-status.sh init "$HEADER"); then
+            echo "STATUS_COMMENT_ID=$ID" >> "$GITHUB_ENV"
+            echo "Status comment: $ID"
+          else
+            echo "::warning::could not create the status comment"
+          fi
+
       - name: Fetch issue text
         if: inputs.issue_number != 0
         env:
@@ -143,27 +189,28 @@ jobs:
           curl https://cursor.com/install -fsS | bash
           echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
 
+      - name: Status milestone (agent started)
+        # Separates setup time (checkout, prompt, CLI install) from the agent's own run time.
+        if: inputs.issue_number != 0 && env.STATUS_COMMENT_ID != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash .lh/bin/issue-status.sh update running "agent started (\`${MODEL}\`, prompt $(wc -l < "$RUNNER_TEMP/prompt.txt") lines)" \
+            || echo "::warning::status update failed"
+
       - name: Run agent (restricted, file edits only)
         id: agent
         # No GH token or git credentials. Nimble's key is target-scoped.
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-          NIMBLE_API_KEY: ${{ inputs.target == 'nimble' && secrets.NIMBLE_API_KEY || '' }}
+          NIMBLE_API_KEY: ${{ inputs.target == 'campaign-gen' && secrets.NIMBLE_API_KEY || '' }}
         run: |
           set -o pipefail
           agent --version
-          # Fall back to auto if the requested slug is not available to this key.
-          USE_MODEL="$MODEL"
-          if agent models > "$RUNNER_TEMP/models.txt" 2>/dev/null; then
-            if ! grep -qi -- "$MODEL" "$RUNNER_TEMP/models.txt"; then
-              echo "::warning::model '$MODEL' not in 'agent models' output; using 'auto'"
-              USE_MODEL="auto"
-            fi
-          else
-            echo "::warning::'agent models' failed; passing '$MODEL' through untested"
-          fi
-          echo "model=$USE_MODEL" >> "$GITHUB_OUTPUT"
-          agent -p --force --trust --output-format text --model "$USE_MODEL" "$(cat "$RUNNER_TEMP/prompt.txt")" \
+          agent models | tee "$RUNNER_TEMP/models.txt"
+          echo "Cursor agent init: target=$TARGET model=$MODEL"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          agent -p --force --trust --output-format text --model "$MODEL" "$(cat "$RUNNER_TEMP/prompt.txt")" \
             2>&1 | tee "$RUNNER_TEMP/agent-output.txt"
 
       - name: Discard edits outside the allowed surface
@@ -174,6 +221,24 @@ jobs:
           find . -path ./.git -prune -o -name '.env*' -newer "$RUNNER_TEMP/prompt.txt" -type f -print -exec rm -f {} + 2>/dev/null || true
           rm -rf .lh/log/*.tmp 2>/dev/null || true
           echo "Changed files:"; git status --short
+
+      - name: Status milestone (agent finished)
+        if: inputs.issue_number != 0 && env.STATUS_COMMENT_ID != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          N=$(git status --short | wc -l | tr -d ' ')
+          # Content milestones: staged ad variants per campaign, then a per-area file count.
+          CONTENT=$(git status --short --porcelain -uall -- cdn/staging 2>/dev/null \
+            | awk '{ print $NF }' | awk -F/ '$1 == "cdn" && $2 == "staging" && NF >= 4 { print $3 "\t" $4 }' \
+            | sort -u | awk -F'\t' '{ n[$1]++ } END { for (c in n) printf "%s%s: %d variant(s)", (out++ ? ", " : ""), c, n[c] }')
+          AREAS=$(git status --short -uall | awk '{ print $NF }' \
+            | awk -F/ '{ a = ($1 == ".lh" || $1 == "cdn") && NF > 2 ? $1 "/" $2 : $1; n[a]++ } END { for (k in n) printf "%s%s %d", (out++ ? ", " : ""), k, n[k] }')
+          LINE="agent finished; ${N} file(s) changed"
+          [ -n "$CONTENT" ] && LINE="${LINE} — generated ${CONTENT}"
+          [ -n "$AREAS" ] && LINE="${LINE} (${AREAS})"
+          bash .lh/bin/issue-status.sh update running "$LINE" \
+            || echo "::warning::status update failed"
 
       - name: Capture approval request
         id: approval
@@ -208,10 +273,20 @@ jobs:
         id: checks
         continue-on-error: true
         env:
-          NIMBLE_API_KEY: ${{ inputs.target == 'nimble' && secrets.NIMBLE_API_KEY || '' }}
+          NIMBLE_API_KEY: ${{ inputs.target == 'campaign-gen' && secrets.NIMBLE_API_KEY || '' }}
         run: |
           set -o pipefail
           bash ".lh/$TARGET/checks.sh" 2>&1 | tee "$RUNNER_TEMP/checks-output.txt"
+
+      - name: Status milestone (checks)
+        if: inputs.issue_number != 0 && env.STATUS_COMMENT_ID != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECKS_OUTCOME: ${{ steps.checks.outcome }}
+          STATE_RESULT: ${{ steps.state.outputs.result }}
+        run: |
+          bash .lh/bin/issue-status.sh update running "checks: ${CHECKS_OUTCOME}; state.md: ${STATE_RESULT}" \
+            || echo "::warning::status update failed"
 
       - name: Write run log and prune
         env:
@@ -292,7 +367,17 @@ jobs:
           TITLE="lh(${TARGET}): run ${{ github.run_id }}"
           [ "$ISSUE_NUMBER" != "0" ] && TITLE="lh(${TARGET}): issue #${ISSUE_NUMBER}, run ${{ github.run_id }}"
           git commit -q -m "$TITLE" -m "checks: ${CHECKS_OUTCOME}; state.md: ${STATE_RESULT}; model: ${USED_MODEL}"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"
+
+          # Rebase onto the current base so the PR does not conflict on
+          # state.md just because main moved. Only state.md is auto-resolved
+          # (.lh/bin/merge-state.sh); any other conflict leaves the branch as
+          # committed above and a human resolves it on the PR.
+          git fetch -q origin "$BASE_REF"
+          PUSH_FLAGS=()
+          if bash .lh/bin/rebase-onto-base.sh "origin/$BASE_REF" "$STATE_MAX_LINES"; then
+            PUSH_FLAGS=(--force-with-lease)
+          fi
+          git push "${PUSH_FLAGS[@]}" "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
           BODY_FILE="$RUNNER_TEMP/pr-body.md"
@@ -329,7 +414,18 @@ jobs:
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
           echo "PR: $PR_URL"
 
+      - name: Status milestone (pull request)
+        if: inputs.issue_number != 0 && env.STATUS_COMMENT_ID != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.publish.outputs.pr_url }}
+          CHANGED: ${{ steps.publish.outputs.changed }}
+        run: |
+          if [ "$CHANGED" = "true" ]; then LINE="pull request: ${PR_URL}"; else LINE="no file changes to publish"; fi
+          bash .lh/bin/issue-status.sh update running "$LINE" || echo "::warning::status update failed"
+
       - name: Open approval issue
+        id: approval_issue
         if: steps.approval.outputs.requested == 'true' && steps.publish.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -375,35 +471,54 @@ jobs:
           fi
           gh pr comment "$PR_URL" --repo "$GITHUB_REPOSITORY" \
             --body "Human approval is required: ${APPROVAL_URL}. An assignee must comment \`/approve\` there."
+          echo "url=$APPROVAL_URL" >> "$GITHUB_OUTPUT"
           echo "Approval: $APPROVAL_URL"
 
-      - name: Comment on issue (deterministic)
-        if: inputs.issue_number != 0
+      - name: Status milestone (approval issue)
+        if: steps.approval_issue.outcome == 'success' && inputs.issue_number != 0 && env.STATUS_COMMENT_ID != ''
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ steps.publish.outputs.pr_url }}
-          CHANGED: ${{ steps.publish.outputs.changed }}
-          CHECKS_OUTCOME: ${{ steps.checks.outcome }}
-          STATE_RESULT: ${{ steps.state.outputs.result }}
-          USED_MODEL: ${{ steps.agent.outputs.model }}
+          APPROVAL_URL: ${{ steps.approval_issue.outputs.url }}
         run: |
-          {
-            echo "**LH ${TARGET} run** ([log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}), model \`${USED_MODEL}\`)"
-            echo
-            if [ "$CHANGED" = "true" ]; then
-              echo "- PR: ${PR_URL}"
-            else
-              echo "- No file changes this run."
-            fi
-            echo "- Checks: ${CHECKS_OUTCOME}"
-            echo "- state.md: ${STATE_RESULT}"
-            echo
-            echo "Comment \`/lh <instruction>\` on this issue to run again."
-          } > "$RUNNER_TEMP/comment.md"
-          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/comment.md"
+          bash .lh/bin/issue-status.sh update running "approval needed: ${APPROVAL_URL}" \
+            || echo "::warning::status update failed"
 
       - name: Fail if checks failed
         if: steps.checks.outcome != 'success'
         run: |
           echo "::error::target checks failed; work was still published so the next run can see it"
           exit 1
+
+      - name: Finish issue status (labels and summary)
+        # Runs even after a crash so lh:running never sticks. Replaces the old
+        # end-of-run comment: the status comment already carries the summary.
+        if: always() && inputs.issue_number != 0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+          PR_URL: ${{ steps.publish.outputs.pr_url }}
+          CHANGED: ${{ steps.publish.outputs.changed }}
+          CHECKS_OUTCOME: ${{ steps.checks.outcome }}
+          USED_MODEL: ${{ steps.agent.outputs.model }}
+        run: |
+          case "$JOB_STATUS" in
+            success)
+              if [ "$CHANGED" = "true" ]; then
+                STATUS=review; ADD=lh:review; LINE="finished; ${PR_URL} is ready for review"
+              else
+                STATUS="done"; ADD=""; LINE="finished; nothing to review (no file changes)"
+              fi ;;
+            *)
+              STATUS=failed; ADD=lh:failed
+              LINE="run ${JOB_STATUS} (checks: ${CHECKS_OUTCOME:-not run}); see the [run log](${RUN_URL})"
+              [ "$CHANGED" = "true" ] && LINE="${LINE}; work was still published at ${PR_URL}" ;;
+          esac
+          gh issue edit "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --remove-label lh:running ${ADD:+--add-label "$ADD"} \
+            || echo "::warning::could not update status labels"
+          if [ -z "${STATUS_COMMENT_ID:-}" ] && [ ! -f "$STATUS_FILE" ]; then
+            # Start step never ran (early failure): give the fallback comment a header.
+            { echo "**LH ${TARGET}** run [${{ github.run_id }}](${RUN_URL}) · model \`${USED_MODEL:-unresolved}\`"; echo; echo "Status: **${STATUS}**"; echo; } > "$STATUS_FILE"
+          fi
+          # `finish` appends the phase timing line and a collapsed per-step table from the jobs API.
+          bash .lh/bin/issue-status.sh finish "$STATUS" "$LINE" || echo "::warning::final status update failed"

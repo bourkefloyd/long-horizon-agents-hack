@@ -1,0 +1,29 @@
+{
+  "campaign": {
+    "id": "san-ramon-sandwitch-shop",
+    "name": "San Ramon sandwitch Shop",
+    "brief": "Casual sandwitch lovers buy now link",
+    "vertical": "Food & beverage",
+    "geo": "San Ramon CA",
+    "audience": "sandwitch lovers, 21-40, commute by transit",
+    "dims": "9:16",
+    "issue_url": null
+  },
+  "market": "San Ramon CA",
+  "generated_at": "2026-09-25T22:57:10Z",
+  "agent": "viral-local-ad-generator",
+  "stories": [
+    {
+      "title": "San Ramon CA food festival draws huge weekend crowds",
+      "url": "https://example.com/local-food-festival",
+      "source": "Mock Local News",
+      "published_at": "2026-09-25",
+      "brand_safe": true
+    }
+  ],
+  "variants": [
+    "01-local-moment-hook",
+    "02-commuter-craving",
+    "03-fan-celebration"
+  ]
+}

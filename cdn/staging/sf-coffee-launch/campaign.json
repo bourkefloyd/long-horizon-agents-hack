@@ -1,0 +1,29 @@
+{
+  "campaign": {
+    "id": "sf-coffee-launch",
+    "name": "SF Coffee Launch",
+    "brief": "Casual mobile game cross-promo for SF coffee lovers",
+    "vertical": "Mobile games",
+    "geo": "San Francisco",
+    "audience": "Coffee lovers, 21-40, commute by transit",
+    "dims": "9:16",
+    "issue_url": null
+  },
+  "market": "San Francisco",
+  "generated_at": "2026-09-25T22:01:27Z",
+  "agent": "viral-local-ad-generator",
+  "stories": [
+    {
+      "title": "San Francisco celebrates culture of lowriding",
+      "url": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/",
+      "source": "KFOR via Nimble news search",
+      "published_at": "2026-09-25",
+      "brand_safe": true
+    }
+  ],
+  "variants": [
+    "01-local-moment-hook",
+    "02-commuter-craving",
+    "03-fan-celebration"
+  ]
+}

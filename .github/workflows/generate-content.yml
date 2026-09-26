@@ -1,0 +1,288 @@
+name: Generate ad content
+
+on:
+  workflow_dispatch:
+    inputs:
+      brief:
+        description: Campaign brief (brand + product + who it is for); ignored when from_service is on
+        required: false
+        type: string
+        default: Sightglass Coffee pour-over for the people who make San Francisco run before 8 AM
+      from_service:
+        description: Load brief, market and audience for `campaign` from the website's campaign service
+        required: false
+        type: boolean
+        default: false
+      variants:
+        description: Number of ad variants (each gets a 9:16 poster)
+        required: true
+        type: string
+        default: "4"
+      videos:
+        description: How many of the top variants get a FLUX 3 video (number or `all`)
+        required: true
+        type: string
+        default: "2"
+      max_usd:
+        description: Abort before submitting if the estimate exceeds this (0 = unlimited, estimate is only logged)
+        required: true
+        type: string
+        default: "5"
+      campaign:
+        description: Campaign id (blank = local-news-YYYYMMDD)
+        required: false
+        type: string
+        default: ""
+      campaign_id:
+        description: Render posters/videos for variants already staged under cdn/staging/<campaign_id>/*/meta.json (skips discovery and scripts; overrides campaign/brief/from_service)
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: generate-content
+  cancel-in-progress: false # cancelling mid-poll wastes paid renders
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: cdn/requirements.txt
+
+      - name: Install publisher dependencies (staging validation)
+        run: python -m pip install --requirement cdn/requirements.txt
+
+      - name: Validate inputs
+        env:
+          VARIANTS: ${{ inputs.variants }}
+          VIDEOS: ${{ inputs.videos }}
+          MAX_USD: ${{ inputs.max_usd }}
+          CAMPAIGN: ${{ inputs.campaign }}
+          RENDER_STAGED: ${{ inputs.campaign_id }}
+          FROM_SERVICE: ${{ inputs.from_service }}
+          BRIEF: ${{ inputs.brief }}
+        run: |
+          set -euo pipefail
+          [[ "$VARIANTS" =~ ^[1-8]$ ]] || { echo "::error::variants must be 1-8"; exit 1; }
+          [[ "$VIDEOS" =~ ^([0-8]|all)$ ]] || { echo "::error::videos must be 0-8 or all"; exit 1; }
+          [[ "$MAX_USD" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "::error::max_usd must be a number (0 = unlimited)"; exit 1; }
+          for id in "$CAMPAIGN" "$RENDER_STAGED"; do
+            if [[ -n "$id" && ! "$id" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+              echo "::error::campaign ids must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
+              exit 1
+            fi
+          done
+          if [[ -n "$RENDER_STAGED" ]]; then
+            [[ -d "cdn/staging/$RENDER_STAGED" ]] || { echo "::error::cdn/staging/$RENDER_STAGED does not exist on this ref"; exit 1; }
+            echo "CAMPAIGN_ID=${RENDER_STAGED}" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          if [[ "$FROM_SERVICE" == "true" && -z "$CAMPAIGN" ]]; then
+            echo "::error::from_service needs a campaign id"
+            exit 1
+          fi
+          if [[ "$FROM_SERVICE" != "true" && -z "$BRIEF" ]]; then
+            echo "::error::brief is required unless from_service is on"
+            exit 1
+          fi
+          campaign="${CAMPAIGN:-local-news-$(date -u +%Y%m%d)}"
+          echo "CAMPAIGN_ID=${campaign}" >> "$GITHUB_ENV"
+
+      - name: Generate variants, posters and videos
+        env:
+          BFL_API_KEY: ${{ secrets.BFL_API_KEY }}
+          NIMBLE_API_KEY: ${{ secrets.NIMBLE_API_KEY }}
+          LIQUID_TEXT_BASE_URL: ${{ vars.LIQUID_TEXT_BASE_URL }}
+          LIQUID_VISION_BASE_URL: ${{ vars.LIQUID_VISION_BASE_URL }}
+          BRIEF: ${{ inputs.brief }}
+          FROM_SERVICE: ${{ inputs.from_service }}
+          RENDER_STAGED: ${{ inputs.campaign_id }}
+          CAMPAIGN_SERVICE_URL: ${{ vars.CAMPAIGN_SERVICE_URL }}
+          VARIANTS: ${{ inputs.variants }}
+          VIDEOS: ${{ inputs.videos }}
+          MAX_USD: ${{ inputs.max_usd }}
+          TRACE_DIR: ${{ runner.temp }}/trace
+        run: |
+          set -euo pipefail
+          if [[ -z "$BFL_API_KEY" ]]; then
+            echo "::error::BFL_API_KEY secret is not set"
+            exit 1
+          fi
+          # An unset repository variable arrives as an empty string; let the script use its default URL.
+          [[ -n "$CAMPAIGN_SERVICE_URL" ]] || unset CAMPAIGN_SERVICE_URL
+          source_args=(--brief "$BRIEF" --campaign "$CAMPAIGN_ID")
+          if [[ -n "$RENDER_STAGED" ]]; then
+            source_args=(--render-staged "$RENDER_STAGED")
+          elif [[ "$FROM_SERVICE" == "true" ]]; then
+            source_args=(--from-service --campaign "$CAMPAIGN_ID")
+          fi
+          python scripts/generate-content.py \
+            "${source_args[@]}" \
+            --variants "$VARIANTS" \
+            --videos "$VIDEOS" \
+            --max-usd "$MAX_USD" \
+            --timeout-minutes 45 | tee "$RUNNER_TEMP/generate.log"
+
+      - name: Upload rendered media as a run artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-${{ env.CAMPAIGN_ID }}-${{ github.run_id }}
+          path: |
+            cdn/staging/${{ env.CAMPAIGN_ID }}/**/creative.mp4
+            cdn/staging/${{ env.CAMPAIGN_ID }}/**/poster.jpg
+            cdn/staging/${{ env.CAMPAIGN_ID }}/run.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload generation trace (prompts, BFL requests/results, events)
+        # Written incrementally by the script, so a failed run still leaves the prompts and task ids behind.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trace-${{ env.CAMPAIGN_ID }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/trace
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Summarize
+        if: always()
+        env:
+          TRACE_DIR: ${{ runner.temp }}/trace
+        run: |
+          set -euo pipefail
+          run_json="cdn/staging/${CAMPAIGN_ID}/run.json"
+          plan_json="${TRACE_DIR}/plan.json"
+          {
+            echo "## Generated content: \`${CAMPAIGN_ID}\`"
+            echo
+            if [[ -f "$run_json" && "$(jq -r '.cost // empty' "$run_json")" != "" ]]; then
+              echo "- Brief: $(jq -r '.brief' "$run_json")"
+              echo "- Campaign record: $(jq -r '.campaign_name // "none (flags)"' "$run_json"); market $(jq -r '.market' "$run_json")"
+              echo "- Discovery: $(jq -r '.discovery.via' "$run_json")"
+              echo "- Cost: quoted $(jq -r '.cost.quoted_credits' "$run_json") credits, settled $(jq -r '.cost.settled_credits' "$run_json") credits (~\$$(jq -r '.cost.settled_usd' "$run_json")); balance $(jq -r '.cost.credits_before' "$run_json") -> $(jq -r '.cost.credits_after' "$run_json")"
+              echo
+              echo "| Variant | Media | Hook | CTA | Audience |"
+              echo "|---|---|---|---|---|"
+              jq -r '.variants[] | select(.staged) | "| \(.variant_id) | \(.media_type) | \(.hook) | \(.cta) | \(.audience) |"' "$run_json"
+            elif [[ -f "$plan_json" ]]; then
+              echo "> The run did not finish; this is the plan it was executing. Task ids and poll results are in the trace artifact."
+              echo
+              echo "- Brief: $(jq -r '.brief' "$plan_json")"
+              echo "- Estimate: ~\$$(jq -r '.estimate_usd.total' "$plan_json")"
+            else
+              echo "> No plan was written; the run failed before variants were built. See the job log."
+            fi
+            if [[ -f "$plan_json" ]]; then
+              echo
+              echo "### Prompts sent to FLUX"
+              echo
+              echo "Trace artifact: \`trace-${CAMPAIGN_ID}-${GITHUB_RUN_ID}\` (per-variant prompts, full BFL request bodies, poll results, \`events.jsonl\`)."
+              echo
+              jq -r --arg t "$TRACE_DIR" '
+                .variants[] |
+                "<details><summary><b>\(.variant_id)</b> — \(.hook) / \(.cta)" + (if .video_planned then " · video \(.duration_s)s" else " · poster only" end) + "</summary>\n\n" +
+                (if .story then "Story: \(.story.title // .story.reference // "n/a")\n\n" else "" end) +
+                "**Poster prompt**\n\n```\n\(.prompts.poster)\n```\n\n**Video prompt**\n\n```\n\(.prompts.video)\n```\n\n</details>\n"' "$plan_json"
+              for d in "$TRACE_DIR"/*/; do
+                [[ -d "$d" ]] || continue
+                for r in "$d"*.result.json; do
+                  [[ -f "$r" ]] || continue
+                  echo "- $(basename "$d") $(basename "$r" .result.json): $(jq -r '.result.status' "$r"), settled $(jq -r '.result.cost // "n/a"' "$r") credits, task $(jq -r '.result.id // "n/a"' "$r")"
+                done
+              done
+            fi
+            if [[ -f "${TRACE_DIR}/events.jsonl" ]]; then
+              echo
+              echo "<details><summary>Timeline</summary>"
+              echo
+              echo '```'
+              jq -r '"[\(.elapsed_s)s] \(.msg)"' "${TRACE_DIR}/events.jsonl" | cut -c1-200
+              echo '```'
+              echo
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit staging output, open and merge the PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git add "cdn/staging/${CAMPAIGN_ID}"
+          if git diff --cached --quiet; then
+            echo "::error::generator produced no staging changes"
+            exit 1
+          fi
+          branch="content/${CAMPAIGN_ID}-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --create "$branch"
+          staged="$(jq -r '[.variants[] | select(.staged)] | length' "cdn/staging/${CAMPAIGN_ID}/run.json")"
+          videos="$(jq -r '[.variants[] | select(.staged and .media_type == "video")] | length' "cdn/staging/${CAMPAIGN_ID}/run.json")"
+          git commit -m "content(${CAMPAIGN_ID}): ${staged} variants, ${videos} videos (run ${GITHUB_RUN_ID})" \
+                     -m "Generated by generate-content.yml. Media artifact: content-${CAMPAIGN_ID}-${GITHUB_RUN_ID}."
+          git push --set-upstream origin "$branch"
+
+          body_file="$(mktemp)"
+          {
+            echo "Automated ad content for \`${CAMPAIGN_ID}\` from run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+            echo
+            jq -r '.variants[] | select(.staged) | "- **\(.variant_id)** (\(.media_type)): \"\(.hook)\" / \(.cta)"' "cdn/staging/${CAMPAIGN_ID}/run.json"
+            echo
+            echo "Settled cost: $(jq -r '.cost.settled_credits' "cdn/staging/${CAMPAIGN_ID}/run.json") credits. Merging publishes via publish-assets.yml."
+          } > "$body_file"
+          pr_url="$(gh pr create --base main --head "$branch" \
+            --title "content: ${CAMPAIGN_ID} (${staged} variants, ${videos} videos)" \
+            --body-file "$body_file")"
+          echo "pr_url=${pr_url}" >> "$GITHUB_OUTPUT"
+          echo "- Pull request: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"
+
+          gh pr merge "$pr_url" --squash --delete-branch
+          for _ in {1..60}; do
+            state="$(gh pr view "$pr_url" --json state --jq .state)"
+            if [[ "$state" == MERGED ]]; then
+              merge_sha="$(gh pr view "$pr_url" --json mergeCommit --jq .mergeCommit.oid)"
+              echo "merge_sha=${merge_sha}" >> "$GITHUB_OUTPUT"
+              echo "- Merge commit: \`${merge_sha}\`" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::PR did not reach MERGED state"
+          exit 1
+
+      - name: Publish to the CDN
+        # A merge made with GITHUB_TOKEN does not fire push-triggered workflows, so dispatch explicitly.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_SHA: ${{ steps.pr.outputs.merge_sha }}
+        run: |
+          set -euo pipefail
+          gh workflow run publish-assets.yml --ref main
+          run_id=""
+          for _ in {1..30}; do
+            run_id="$(gh run list --workflow publish-assets.yml --branch main --event workflow_dispatch \
+              --commit "$MERGE_SHA" --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+            [[ -n "$run_id" ]] && break
+            sleep 5
+          done
+          if [[ -z "$run_id" ]]; then
+            echo "::error::Could not find the publish-assets run for ${MERGE_SHA}"
+            exit 1
+          fi
+          echo "- Publish run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"
+          gh run watch "$run_id" --exit-status
