@@ -1,0 +1,25 @@
+{
+  "id": "local-news-20260925-sightglass-fog-narrator",
+  "hook": "Morning. It's me, the fog. Yes, again.",
+  "cta": "Find the roastery at 270 7th St",
+  "media_type": "image",
+  "media_file": "poster.jpg",
+  "script_file": "script.txt",
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "SoMa fog watchers"
+    ],
+    "geo": [
+      "US"
+    ],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "scripts/generate-content.py",
+    "generated_at": "2026-09-25T21:43:31Z",
+    "brief_ref": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/"
+  },
+  "poster_file": "poster.jpg"
+}

@@ -1,0 +1,29 @@
+{
+  "campaign": {
+    "id": "b-patiserie-award-winning-french-pastries-in-pac-2",
+    "name": "B Patiserie (award winning French pastries in Pac Heights SF)",
+    "brief": "Come try our famous kouign Amann",
+    "vertical": "Food & beverage",
+    "geo": "San Francisco",
+    "audience": "francophiles, Coffee lovers, 21-40, singles",
+    "dims": "9:16",
+    "issue_url": null
+  },
+  "market": "San Francisco",
+  "generated_at": "2026-09-25T23:03:36Z",
+  "agent": "viral-local-ad-generator",
+  "stories": [
+    {
+      "title": "San Francisco celebrates culture of lowriding",
+      "url": "https://kfor.com/hispanic-heritage-month/san-francisco-celebrates-culture-of-lowriding/",
+      "source": "Nimble news search",
+      "published_at": "2026-09-25",
+      "brand_safe": true
+    }
+  ],
+  "variants": [
+    "01-local-moment-hook",
+    "02-commuter-craving",
+    "03-fan-celebration"
+  ]
+}

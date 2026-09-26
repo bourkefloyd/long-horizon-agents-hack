@@ -1,0 +1,26 @@
+{
+  "id": "sf-coffee-launch-02-commuter-craving",
+  "hook": "On the way across San Francisco, the local buzz meets a quick-play craving.",
+  "cta": "Download the game and play on your next break.",
+  "media_type": "video",
+  "media_file": "creative.mp4",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "Coffee lovers, 21-40, commute by transit"
+    ],
+    "geo": [
+      "San Francisco"
+    ],
+    "weight": 2,
+    "active": true
+  },
+  "source": {
+    "agent": "viral-local-ad-generator",
+    "generated_at": "2026-09-25T22:41:32Z",
+    "brief_ref": "campaign:sf-coffee-launch"
+  },
+  "poster_file": "poster.jpg"
+}

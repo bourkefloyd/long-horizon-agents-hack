@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://storage.googleapis.com/lh-ads-assets-205515555985/manifest.schema.json",
+  "title": "Long Horizon ad asset manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "updated_at", "ads"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ads": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ad"
+      }
+    }
+  },
+  "$defs": {
+    "ad": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "campaign_id",
+        "variant_id",
+        "hook",
+        "cta",
+        "media_type",
+        "media_url",
+        "aspect",
+        "targeting",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "campaign_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "variant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hook": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cta": {
+          "type": "string",
+          "minLength": 1
+        },
+        "media_type": {
+          "enum": ["video", "image", "playable", "script"]
+        },
+        "media_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "poster_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "duration_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "aspect": {
+          "const": "9:16"
+        },
+        "script": {
+          "type": "string"
+        },
+        "targeting": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["weight", "active"],
+          "properties": {
+            "audience": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "geo": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "weight": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "active": {
+              "type": "boolean"
+            }
+          }
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["agent", "generated_at"],
+          "properties": {
+            "agent": {
+              "type": "string",
+              "minLength": 1
+            },
+            "generated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "brief_ref": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

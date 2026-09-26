@@ -1,0 +1,19 @@
+{
+  "id": "demo-launch-bold-hook",
+  "hook": "Your ads should learn overnight.",
+  "cta": "See tomorrow's winner",
+  "media_type": "image",
+  "media_file": "poster.svg",
+  "poster_file": "poster.svg",
+  "aspect": "9:16",
+  "targeting": {
+    "audience": ["founders", "growth"],
+    "weight": 2,
+    "active": true
+  },
+  "source": {
+    "agent": "seed-demo",
+    "generated_at": "2026-09-25T20:00:00Z",
+    "brief_ref": "HACK_PLAN.md"
+  }
+}

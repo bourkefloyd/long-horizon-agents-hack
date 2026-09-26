@@ -1,0 +1,23 @@
+San Ramon sandwitch Shop - variant 1 (local moment hook) - 9:16 vertical ad
+Brief: Casual sandwitch lovers buy now link
+Vertical: Food & beverage
+Audience: sandwitch lovers, 21-40, commute by transit
+Local moment: San Ramon CA food festival draws huge weekend crowds (Mock Local News; https://example.com/local-food-festival)
+
+HOOK: San Ramon CA is already talking about this: San Ramon CA's local moment about San Ramon CA food festival draws huge weekend crowds
+
+10-second vertical video commercial script
+Market: San Ramon CA
+Local event inspiration: a San Ramon CA local moment about San Ramon CA food festival draws huge weekend crowds
+Local event reference to use in the ad: San Ramon CA's local moment about San Ramon CA food festival draws huge weekend crowds
+Campaign message: Casual sandwitch lovers buy now link
+
+0.0-2.0s | Shot: Fast social-feed style montage of recognizable San Ramon CA street energy, phones lighting up, and abstract local-update card visuals tied to the event topic. | On-screen text: San Ramon CA is talking. | Voiceover: "San Ramon CA is talking about San Ramon CA's local moment about San Ramon CA food festival draws huge weekend crowds."
+2.0-4.0s | Shot: Quick abstract local-update cards slide by with no publisher logos, no real faces, and no private names; one card references: San Ramon CA's local moment about San Ramon CA food festival draws huge weekend crowds. | On-screen text: Local moment. Fresh twist. | Voiceover: "When a local moment has everyone paying attention..."
+4.0-7.0s | Shot: Smash cut to an inviting sandwich reveal: crusty bread sliced clean, layered fillings, crisp greens, a melty pull, wrapped in paper on a bright deli counter. | On-screen text: Fresh sandwich energy. | Voiceover: "...make your next twist a fresh made-to-order sandwich."
+7.0-10.0s | Shot: Hero product shot against a bright San Ramon CA-inspired backdrop, then quick end-card with a simple CTA. | On-screen text: Tap the link and order your sandwich now. | Voiceover: "Tap the link and order your sandwich now."
+
+Brand-safety rules: reference the local event topic and city clearly, but do not show real private people, do not recreate sensitive events, do not show publisher logos, do not use famous brand references, and do not imply endorsement by anyone connected to the event.
+Strategy note: San Ramon CA is already talking about this: San Ramon CA's local moment about San Ramon CA food festival draws huge weekend crowds
+
+Unofficial spec work for a hackathon experiment; not affiliated with or endorsed by anyone in the story.

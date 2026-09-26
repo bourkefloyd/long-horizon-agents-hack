@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <rect width="1080" height="1920" fill="#09131f"/>
+  <rect x="70" y="180" width="940" height="1440" rx="70" fill="#10273a" stroke="#65f4c6" stroke-width="4"/>
+  <text x="130" y="300" fill="#65f4c6" font-family="Arial, sans-serif" font-size="38" font-weight="700">DAY 1 ’ DAY 2</text>
+  <text x="130" y="700" fill="#fff" font-family="Arial, sans-serif" font-size="92" font-weight="800">
+    <tspan x="130" dy="0">ONE ROW</tspan>
+    <tspan x="130" dy="112">REMEMBERS</tspan>
+    <tspan x="130" dy="112">WHAT WORKED.</tspan>
+  </text>
+  <path d="M140 1210h210l95-180 115 310 105-210h260" fill="none" stroke="#65f4c6" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="130" y="1510" fill="#fff" font-family="Arial, sans-serif" font-size="46" font-weight="700">WATCH THE LOOP ’</text>
+</svg>

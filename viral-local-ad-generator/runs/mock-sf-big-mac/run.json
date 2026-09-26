@@ -1,0 +1,589 @@
+{
+  "market": "San Francisco",
+  "story_count": 5,
+  "concept_count": 25,
+  "stories": [
+    {
+      "title": "San Francisco food festival draws huge weekend crowds",
+      "url": "https://example.com/local-food-festival",
+      "source": "Mock Local News",
+      "published_at": "2026-09-25",
+      "snippet": "A lively neighborhood food event became one of the area's most shared local stories.",
+      "relevance_score": 0.9,
+      "virality_score": 0.8,
+      "brand_safe": true,
+      "raw": {}
+    },
+    {
+      "title": "San Francisco baseball fans celebrate a dramatic late-game win",
+      "url": "https://example.com/local-sports-win",
+      "source": "Mock Sports Desk",
+      "published_at": "2026-09-25",
+      "snippet": "Fans shared clips from a dramatic finish and packed local hangouts after the game.",
+      "relevance_score": 0.85,
+      "virality_score": 0.85,
+      "brand_safe": true,
+      "raw": {}
+    },
+    {
+      "title": "Local bakery collab sells out in minutes across San Francisco",
+      "url": "https://example.com/bakery-collab",
+      "source": "Mock Food",
+      "published_at": "2026-09-25",
+      "snippet": "A limited-time collaboration had people lining up and sharing photos online.",
+      "relevance_score": 0.88,
+      "virality_score": 0.82,
+      "brand_safe": true,
+      "raw": {}
+    },
+    {
+      "title": "San Francisco students launch a playful citywide scavenger hunt",
+      "url": "https://example.com/scavenger-hunt",
+      "source": "Mock Community",
+      "published_at": "2026-09-25",
+      "snippet": "The lighthearted challenge is spreading across campuses and local social feeds.",
+      "relevance_score": 0.8,
+      "virality_score": 0.78,
+      "brand_safe": true,
+      "raw": {}
+    },
+    {
+      "title": "New public art installation becomes a selfie spot in San Francisco",
+      "url": "https://example.com/public-art",
+      "source": "Mock Culture",
+      "published_at": "2026-09-25",
+      "snippet": "A colorful public art installation is trending as a cheerful photo backdrop.",
+      "relevance_score": 0.82,
+      "virality_score": 0.75,
+      "brand_safe": true,
+      "raw": {}
+    }
+  ],
+  "concepts": [
+    {
+      "story_title": "San Francisco food festival draws huge weekend crowds",
+      "story_url": "https://example.com/local-food-festival",
+      "variant_index": 1,
+      "angle": "local moment hook",
+      "hook": "San Francisco is already talking about this: San Francisco food festival draws huge weekend crowds",
+      "script": "San Francisco is already talking about this: San Francisco food festival draws huge weekend crowds Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: San Francisco food festival draws huge weekend crowds Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: San Francisco food festival draws huge weekend crowds Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco food festival draws huge weekend crowds",
+      "story_url": "https://example.com/local-food-festival",
+      "variant_index": 2,
+      "angle": "commuter craving",
+      "hook": "On the way across San Francisco, the local buzz meets a Big Mac craving.",
+      "script": "On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco food festival draws huge weekend crowds",
+      "story_url": "https://example.com/local-food-festival",
+      "variant_index": 3,
+      "angle": "fan celebration",
+      "hook": "When San Francisco has something to celebrate, make the bite iconic.",
+      "script": "When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco food festival draws huge weekend crowds",
+      "story_url": "https://example.com/local-food-festival",
+      "variant_index": 4,
+      "angle": "quick lunch rescue",
+      "hook": "Everyone is chasing the story. You can still grab lunch fast.",
+      "script": "Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco food festival draws huge weekend crowds",
+      "story_url": "https://example.com/local-food-festival",
+      "variant_index": 5,
+      "angle": "late-night payoff",
+      "hook": "The local feed is moving fast. End the night with a familiar win.",
+      "script": "The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco food festival draws huge weekend crowds. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco baseball fans celebrate a dramatic late-game win",
+      "story_url": "https://example.com/local-sports-win",
+      "variant_index": 1,
+      "angle": "local moment hook",
+      "hook": "San Francisco is already talking about this: San Francisco baseball fans celebrate a dramatic late-game win",
+      "script": "San Francisco is already talking about this: San Francisco baseball fans celebrate a dramatic late-game win Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: San Francisco baseball fans celebrate a dramatic late-game win Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: San Francisco baseball fans celebrate a dramatic late-game win Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco baseball fans celebrate a dramatic late-game win",
+      "story_url": "https://example.com/local-sports-win",
+      "variant_index": 2,
+      "angle": "commuter craving",
+      "hook": "On the way across San Francisco, the local buzz meets a Big Mac craving.",
+      "script": "On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco baseball fans celebrate a dramatic late-game win",
+      "story_url": "https://example.com/local-sports-win",
+      "variant_index": 3,
+      "angle": "fan celebration",
+      "hook": "When San Francisco has something to celebrate, make the bite iconic.",
+      "script": "When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco baseball fans celebrate a dramatic late-game win",
+      "story_url": "https://example.com/local-sports-win",
+      "variant_index": 4,
+      "angle": "quick lunch rescue",
+      "hook": "Everyone is chasing the story. You can still grab lunch fast.",
+      "script": "Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco baseball fans celebrate a dramatic late-game win",
+      "story_url": "https://example.com/local-sports-win",
+      "variant_index": 5,
+      "angle": "late-night payoff",
+      "hook": "The local feed is moving fast. End the night with a familiar win.",
+      "script": "The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco baseball fans celebrate a dramatic late-game win. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "Local bakery collab sells out in minutes across San Francisco",
+      "story_url": "https://example.com/bakery-collab",
+      "variant_index": 1,
+      "angle": "local moment hook",
+      "hook": "San Francisco is already talking about this: Local bakery collab sells out in minutes across San Francisco",
+      "script": "San Francisco is already talking about this: Local bakery collab sells out in minutes across San Francisco Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: Local bakery collab sells out in minutes across San Francisco Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: Local bakery collab sells out in minutes across San Francisco Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "Local bakery collab sells out in minutes across San Francisco",
+      "story_url": "https://example.com/bakery-collab",
+      "variant_index": 2,
+      "angle": "commuter craving",
+      "hook": "On the way across San Francisco, the local buzz meets a Big Mac craving.",
+      "script": "On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "Local bakery collab sells out in minutes across San Francisco",
+      "story_url": "https://example.com/bakery-collab",
+      "variant_index": 3,
+      "angle": "fan celebration",
+      "hook": "When San Francisco has something to celebrate, make the bite iconic.",
+      "script": "When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "Local bakery collab sells out in minutes across San Francisco",
+      "story_url": "https://example.com/bakery-collab",
+      "variant_index": 4,
+      "angle": "quick lunch rescue",
+      "hook": "Everyone is chasing the story. You can still grab lunch fast.",
+      "script": "Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "Local bakery collab sells out in minutes across San Francisco",
+      "story_url": "https://example.com/bakery-collab",
+      "variant_index": 5,
+      "angle": "late-night payoff",
+      "hook": "The local feed is moving fast. End the night with a familiar win.",
+      "script": "The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: Local bakery collab sells out in minutes across San Francisco. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco students launch a playful citywide scavenger hunt",
+      "story_url": "https://example.com/scavenger-hunt",
+      "variant_index": 1,
+      "angle": "local moment hook",
+      "hook": "San Francisco is already talking about this: San Francisco students launch a playful citywide scavenger hunt",
+      "script": "San Francisco is already talking about this: San Francisco students launch a playful citywide scavenger hunt Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: San Francisco students launch a playful citywide scavenger hunt Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: San Francisco students launch a playful citywide scavenger hunt Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco students launch a playful citywide scavenger hunt",
+      "story_url": "https://example.com/scavenger-hunt",
+      "variant_index": 2,
+      "angle": "commuter craving",
+      "hook": "On the way across San Francisco, the local buzz meets a Big Mac craving.",
+      "script": "On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco students launch a playful citywide scavenger hunt",
+      "story_url": "https://example.com/scavenger-hunt",
+      "variant_index": 3,
+      "angle": "fan celebration",
+      "hook": "When San Francisco has something to celebrate, make the bite iconic.",
+      "script": "When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco students launch a playful citywide scavenger hunt",
+      "story_url": "https://example.com/scavenger-hunt",
+      "variant_index": 4,
+      "angle": "quick lunch rescue",
+      "hook": "Everyone is chasing the story. You can still grab lunch fast.",
+      "script": "Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "San Francisco students launch a playful citywide scavenger hunt",
+      "story_url": "https://example.com/scavenger-hunt",
+      "variant_index": 5,
+      "angle": "late-night payoff",
+      "hook": "The local feed is moving fast. End the night with a familiar win.",
+      "script": "The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: San Francisco students launch a playful citywide scavenger hunt. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "New public art installation becomes a selfie spot in San Francisco",
+      "story_url": "https://example.com/public-art",
+      "variant_index": 1,
+      "angle": "local moment hook",
+      "hook": "San Francisco is already talking about this: New public art installation becomes a selfie spot in San Francisco",
+      "script": "San Francisco is already talking about this: New public art installation becomes a selfie spot in San Francisco Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: New public art installation becomes a selfie spot in San Francisco Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: local moment hook. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: San Francisco is already talking about this: New public art installation becomes a selfie spot in San Francisco Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: local moment hook. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "New public art installation becomes a selfie spot in San Francisco",
+      "story_url": "https://example.com/public-art",
+      "variant_index": 2,
+      "angle": "commuter craving",
+      "hook": "On the way across San Francisco, the local buzz meets a Big Mac craving.",
+      "script": "On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+      "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: commuter craving. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: On the way across San Francisco, the local buzz meets a Big Mac craving. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: commuter craving. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "City ambience, light rhythmic music, transit whoosh, friendly concise voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "New public art installation becomes a selfie spot in San Francisco",
+      "story_url": "https://example.com/public-art",
+      "variant_index": 3,
+      "angle": "fan celebration",
+      "hook": "When San Francisco has something to celebrate, make the bite iconic.",
+      "script": "When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: fan celebration. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: When San Francisco has something to celebrate, make the bite iconic. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: fan celebration. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "New public art installation becomes a selfie spot in San Francisco",
+      "story_url": "https://example.com/public-art",
+      "variant_index": 4,
+      "angle": "quick lunch rescue",
+      "hook": "Everyone is chasing the story. You can still grab lunch fast.",
+      "script": "Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+      "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: quick lunch rescue. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: Everyone is chasing the story. You can still grab lunch fast. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: quick lunch rescue. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Bright playful music, subtle social feed notification sounds, crisp friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    },
+    {
+      "story_title": "New public art installation becomes a selfie spot in San Francisco",
+      "story_url": "https://example.com/public-art",
+      "variant_index": 5,
+      "angle": "late-night payoff",
+      "hook": "The local feed is moving fast. End the night with a familiar win.",
+      "script": "The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "visual_prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+      "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+      "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text.",
+      "duration_seconds": 8,
+      "aspect_ratio": "9:16",
+      "bfl_payload": {
+        "prompt": "Vertical mobile video ad, 9:16, polished social ad style, bright realistic lighting, fast readable visual storytelling, no on-screen news outlet logos. Market: San Francisco. Local inspiration: New public art installation becomes a selfie spot in San Francisco. Ad angle: late-night payoff. Scene: energetic local street-life montage, quick close-up of craveable burger moment, happy everyday people, clear product payoff, tasteful local flavor without showing real private individuals or implying anyone from the story endorses the product. Story beat/script: The local feed is moving fast. End the night with a familiar win. Use the campaign message as the backbone: Product: McDonald's Big Mac Audience: hungry commuters, students, sports fans, and people looking for an easy local lunch or late-night bite. Core message: the Big Mac is familiar, craveable, fast, and satisfying. Tone: upbeat, playful, local, never mean-spirited. CTA: Grab a Big Mac today. Guardrails: do not imply local news subjects endorse McDonald's. Avoid tragedy, crime, politics, disasters, health emergencies, or exploiting anyone's hardship. Angle: late-night payoff. End with: Grab a Big Mac today.",
+        "duration": 8,
+        "aspect_ratio": "9:16",
+        "audio_prompt": "Upbeat percussion, crowd energy, satisfying bite sound, warm friendly voiceover.",
+        "negative_prompt": "No logos from news outlets, no real public figures, no implying endorsement by the news subject, no tragedy, no crime scene, no politics, no medical emergency, no gore, no copyrighted characters, no distorted text."
+      },
+      "bfl_job": null
+    }
+  ]
+}

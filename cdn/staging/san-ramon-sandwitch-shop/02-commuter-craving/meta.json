@@ -1,0 +1,25 @@
+{
+  "id": "san-ramon-sandwitch-shop-02-commuter-craving",
+  "hook": "On the way across San Ramon CA, the local buzz meets a lunch craving.",
+  "cta": "Tap the link and order your sandwich now.",
+  "media_type": "script",
+  "media_file": "script.txt",
+  "script_file": "script.txt",
+  "duration_s": 10,
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "sandwitch lovers, 21-40, commute by transit"
+    ],
+    "geo": [
+      "San Ramon CA"
+    ],
+    "weight": 1,
+    "active": true
+  },
+  "source": {
+    "agent": "viral-local-ad-generator",
+    "generated_at": "2026-09-25T22:57:10Z",
+    "brief_ref": "campaign:san-ramon-sandwitch-shop"
+  }
+}

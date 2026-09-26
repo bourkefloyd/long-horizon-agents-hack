@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff5c35"/>
+      <stop offset="1" stop-color="#681cff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <circle cx="860" cy="340" r="250" fill="#fff" opacity=".12"/>
+  <text x="90" y="180" fill="#fff" font-family="Arial, sans-serif" font-size="42" font-weight="700">LONG HORIZON</text>
+  <text x="90" y="760" fill="#fff" font-family="Arial, sans-serif" font-size="112" font-weight="800">
+    <tspan x="90" dy="0">YOUR ADS</tspan>
+    <tspan x="90" dy="132">SHOULD LEARN</tspan>
+    <tspan x="90" dy="132">OVERNIGHT.</tspan>
+  </text>
+  <rect x="90" y="1510" width="650" height="130" rx="65" fill="#fff"/>
+  <text x="150" y="1594" fill="#4013a8" font-family="Arial, sans-serif" font-size="48" font-weight="700">SEE THE WINNER ’</text>
+</svg>

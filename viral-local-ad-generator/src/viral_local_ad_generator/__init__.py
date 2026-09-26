@@ -1,0 +1,2 @@
+"""Viral local ad generator."""
+

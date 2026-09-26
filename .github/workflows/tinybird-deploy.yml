@@ -1,0 +1,152 @@
+name: Tinybird deploy
+
+# Deploys tinybird/ (agent_events datasource + campaign_events / campaign_summary
+# endpoints) to the Tinybird workspace that owns the TINYBIRD_API_KEY secret,
+# optionally seeds demo events, and mirrors the token into Secret Manager so
+# Cloud Run can mount it (see deploy-cloud-run.yml, TINYBIRD_SECRET_READY).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tinybird/**"
+      - "scripts/tb_events.py"
+      - "scripts/tb_admin.py"
+      - ".github/workflows/tinybird-deploy.yml"
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Emit six demo events for sf-coffee-launch after deploying"
+        required: false
+        type: boolean
+        default: false
+      sync_gcp_secret:
+        description: "Create/refresh the TINYBIRD_API_KEY Secret Manager secret for Cloud Run"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: tinybird-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      TINYBIRD_API_KEY: ${{ secrets.TINYBIRD_API_KEY }}
+    outputs:
+      host: ${{ steps.host.outputs.host }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require secret
+        run: |
+          if [[ -z "${TINYBIRD_API_KEY}" ]]; then
+            echo "::error::Missing repository secret TINYBIRD_API_KEY"
+            exit 1
+          fi
+          echo "TINYBIRD_API_KEY is present (length ${#TINYBIRD_API_KEY})"
+
+      # Set the TINYBIRD_HOST repository variable to skip probing.
+      - name: Detect region host
+        id: host
+        env:
+          HOST_OVERRIDE: ${{ vars.TINYBIRD_HOST }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${HOST_OVERRIDE}" ]]; then
+            line="TINYBIRD_HOST=${HOST_OVERRIDE%/}"
+          else
+            line="$(python3 scripts/tb_events.py detect-host --verbose)"
+          fi
+          echo "${line}" >> "$GITHUB_ENV"
+          echo "host=${line#TINYBIRD_HOST=}" >> "$GITHUB_OUTPUT"
+          echo "Token authenticates against ${line#TINYBIRD_HOST=}"
+
+      - name: Install Tinybird CLI
+        run: |
+          curl -fsSL https://tinybird.co | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Deploy datafiles
+        working-directory: tinybird
+        run: |
+          set -uo pipefail
+          if tb --cloud --host "${TINYBIRD_HOST}" --token "${TINYBIRD_API_KEY}" deploy; then
+            echo "deployed with tb deploy (Forward workspace)"
+          else
+            echo "::warning::tb deploy failed; falling back to the Classic REST API"
+            python3 ../scripts/tb_admin.py apply
+          fi
+
+      - name: Verify datasource and pipes
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer ${TINYBIRD_API_KEY}" \
+            "${TINYBIRD_HOST}/v0/datasources/agent_events" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("datasource:", d["name"], "columns:", [c["name"] for c in d["columns"]])'
+          for pipe in campaign_events campaign_summary; do
+            curl -fsS -H "Authorization: Bearer ${TINYBIRD_API_KEY}" \
+              "${TINYBIRD_HOST}/v0/pipes/${pipe}.json?campaign_id=__probe__" >/dev/null && echo "pipe ${pipe}: ok"
+          done
+
+      - name: Seed demo events
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.seed }}
+        run: |
+          set -euo pipefail
+          run_id="$(python3 scripts/tb_events.py seed sf-coffee-launch)"
+          echo "seeded run ${run_id}"
+          sleep 5
+          python3 scripts/tb_events.py summary sf-coffee-launch
+          python3 scripts/tb_events.py read sf-coffee-launch | python3 -c 'import json,sys; rows=json.load(sys.stdin); print("campaign_events rows:", len(rows))'
+
+  gcp-secret:
+    needs: deploy
+    if: ${{ github.event_name == 'push' || inputs.sync_gcp_secret }}
+    runs-on: ubuntu-latest
+    env:
+      TINYBIRD_API_KEY: ${{ secrets.TINYBIRD_API_KEY }}
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      RUNTIME_SERVICE_ACCOUNT: ${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}
+    steps:
+      - name: Skip when GCP is not configured
+        id: gate
+        run: |
+          if [[ -z "${PROJECT_ID}" || -z "${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}" || -z "${{ vars.GCP_SERVICE_ACCOUNT }}" ]]; then
+            echo "GCP variables missing; skipping Secret Manager sync"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate with Workload Identity Federation
+        if: steps.gate.outputs.ready == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        if: steps.gate.outputs.ready == 'true'
+
+      - name: Create or refresh TINYBIRD_API_KEY secret
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          if gcloud secrets describe TINYBIRD_API_KEY --project "${PROJECT_ID}" >/dev/null 2>&1; then
+            printf '%s' "${TINYBIRD_API_KEY}" | gcloud secrets versions add TINYBIRD_API_KEY --project "${PROJECT_ID}" --data-file=-
+            echo "added a new version"
+          else
+            printf '%s' "${TINYBIRD_API_KEY}" | gcloud secrets create TINYBIRD_API_KEY --project "${PROJECT_ID}" --replication-policy=automatic --data-file=-
+            echo "created secret"
+          fi
+          if [[ -n "${RUNTIME_SERVICE_ACCOUNT}" ]]; then
+            gcloud secrets add-iam-policy-binding TINYBIRD_API_KEY --project "${PROJECT_ID}" \
+              --member "serviceAccount:${RUNTIME_SERVICE_ACCOUNT}" --role roles/secretmanager.secretAccessor >/dev/null
+            echo "granted secretAccessor to ${RUNTIME_SERVICE_ACCOUNT}"
+          fi
+          echo "Now set repository variables: TINYBIRD_SECRET_READY=true and TINYBIRD_HOST=${{ needs.deploy.outputs.host }}, then rerun deploy-cloud-run."

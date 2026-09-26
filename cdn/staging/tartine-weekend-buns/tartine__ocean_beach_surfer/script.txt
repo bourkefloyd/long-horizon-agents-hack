@@ -1,0 +1,14 @@
+Tartine Bakery x Ocean Beach surfers - 5-second vertical ad
+Campaign: Tartine Weekend Buns (tartine-weekend-buns)
+Brief: Tartine Bakery morning buns for Dolores Park weekends
+Local moment: San Francisco's Chinatown lantern-display story (source: https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420)
+
+HOOK (VO, 0s): "Fifty-five degree water. Worth it."
+SHOT ONE (0-2s): a surfer in her thirties in a dripping black wetsuit, board under her arm, Ocean Beach, gray surf and a long empty shoreline, a vintage camper van parked on the Great Highway, 6:30 AM, cold fog, pale light. she jogs out of cold gray surf, shivering, peels down her wetsuit hood.
+SHOT TWO (2-4s): wrapped in a towel on the back bumper of the van, she opens a warm paper bag. a hand tears open a caramelized, orange-zested morning bun, sugar glistening, steam curling off it, a dark-crusted round country loaf behind it.
+SHOT THREE (4-5s): she bites into the morning bun, eyes closed, sugar on her lips, waves rolling behind her.
+AUDIO: reverb-drenched surf rock guitar, slow and dreamy; a crackling crust, a paper bag rustling open; ends on a warm three-note acoustic guitar figure on the final frame.
+CTA (overlay): Get in line at 600 Guerrero
+
+Brand facts: Mission bakery at 600 Guerrero St, known for morning buns, croissants and country bread; https://tartinebakery.com/san-francisco/bakery; https://en.wikipedia.org/wiki/Tartine
+Unofficial spec work for a hackathon experiment; not affiliated with or endorsed by the brand.

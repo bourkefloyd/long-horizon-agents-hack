@@ -1,0 +1,27 @@
+{
+  "id": "tartine-weekend-buns-tartine-dolores-park-crew",
+  "hook": "Who was on bread duty?",
+  "cta": "Get in line at 600 Guerrero",
+  "media_type": "video",
+  "media_file": "creative.mp4",
+  "script_file": "script.txt",
+  "aspect": "9:16",
+  "targeting": {
+    "audience": [
+      "Dolores Park crews",
+      "Dolores Park crews and Ocean Beach surfers, weekend mornings"
+    ],
+    "geo": [
+      "US"
+    ],
+    "weight": 2,
+    "active": true
+  },
+  "source": {
+    "agent": "scripts/generate-content.py",
+    "generated_at": "2026-09-25T22:27:57Z",
+    "brief_ref": "https://www.nbcbayarea.com/news/local/san-francisco/lantern-stories-san-francisco-chinatown/3027420"
+  },
+  "poster_file": "poster.jpg",
+  "duration_s": 5
+}

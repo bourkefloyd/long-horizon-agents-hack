@@ -1,0 +1,13 @@
+Sightglass Coffee x New to SF - 5-second vertical ad
+Brief: Sightglass Coffee pour-over for the people who make San Francisco run before 8 AM
+Local moment: Mysterious ‘Burning Man marmots’ returned to wild after hitchhiking to the Bay Area (Nimble news search; https://ktla.com/news/california/hitchhiking-burning-man-marmots-returned-to-wild/)
+
+HOOK (VO, 0s): "Nobody told you about July. We did."
+SHOT ONE (0-2s): a woman in her mid-twenties who just moved to San Francisco, underdressed in a thin jacket, arms wrapped around herself, a waterfront pier with sea lions barking and the Golden Gate Bridge half-hidden in fog, a cold July afternoon, fog pouring over the hills. she shivers in a thin jacket as sea lions bark and the bridge disappears.
+SHOT TWO (2-4s): a stranger points her toward a warm doorway a block away. inside a lofty roastery with a coffee roaster turning in the background, a barista pours a pour-over into a ceramic cup, steam rising in a shaft of window light.
+SHOT THREE (4-5s): she wraps both hands around something warm and finally smiles.
+AUDIO: quirky pizzicato strings with a light marching snare; the low rumble of a coffee roaster, beans crackling, a cup set down on a wooden bar; ends on a soft two-note upright bass pluck on the final frame.
+CTA (overlay): Find the roastery at 270 7th St
+
+Brand facts: specialty coffee roaster, flagship roastery and coffee bar at 270 7th St, SoMa; https://sightglasscoffee.com/pages/sightglass-san-francisco-soma
+Unofficial spec work for a hackathon experiment; not affiliated with or endorsed by the brand.

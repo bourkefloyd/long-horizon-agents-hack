@@ -55,3 +55,10 @@ coverage/
 *.bin
 *.onnx
 models/
+
+# local app artifacts
+viral-local-ad-generator/.env
+viral-local-ad-generator/.DS_Store
+viral-local-ad-generator/runs/
+viral-local-ad-generator/.venv/
+viral-local-ad-generator/__pycache__/
